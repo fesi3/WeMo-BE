@@ -68,6 +68,11 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests((auth) -> auth
                         .requestMatchers(
+                                // 회원가입 관련 API 경로
+                                "/api/auths/check-email",
+                                "/api/auths/signup",
+                                "/api/auths/signin",
+
                                 // swagger 관련 API 문서 경로
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
