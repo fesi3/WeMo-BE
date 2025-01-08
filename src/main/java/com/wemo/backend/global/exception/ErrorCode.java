@@ -7,7 +7,8 @@ import org.springframework.http.HttpStatus;
 public enum ErrorCode {
 
     // user
-    ILLEGAL_EMAIL_DUPLICATION(HttpStatus.CONFLICT, "중복된 이메일 입니다.");
+    ILLEGAL_EMAIL_DUPLICATION(HttpStatus.CONFLICT, "사용 중인 이메일 입니다."),
+    ILLEGAL_PASSWORD_VALID(HttpStatus.BAD_REQUEST, "비밀번호가 일치하지 않습니다.");
 
     private final HttpStatus httpStatus;
     private final String message;
