@@ -1,8 +1,13 @@
 package com.wemo.backend.domain.user.service;
 
+import com.wemo.backend.domain.auth.UserAuth;
+import com.wemo.backend.domain.user.dto.SigninRequest;
 import com.wemo.backend.domain.user.dto.UserCreateRequest;
+import com.wemo.backend.domain.user.entity.User;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -11,6 +16,7 @@ public class UserServiceImpl implements UserService {
 
     private final UserStore userStore;
     private final UserReader userReader;
+    private final UserAuth userAuth;
 
     /**
      * 0. 이메일 중복 검사
@@ -30,7 +36,7 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     @Transactional
-    public void createUser(UserCreateRequest request) {
+    public void signup(UserCreateRequest request) {
 
         // 사용자 아이디 중복 검사
         userReader.checkEmailValid(request.getEmail());
@@ -38,6 +44,21 @@ public class UserServiceImpl implements UserService {
         userReader.checkPasswordValid(request.getPassword(), request.getPasswordCheck());
         // 사용자 객체 생성 및 저장
         userStore.store(request.createUser());
+    }
+
+    /**
+     * 2. 로그인
+     *
+     * @param signinRequest 아이디, 비밀번호로 로그인
+     * @return 생성된 accessToken, refreshToken 담은 HttpHeaders
+     */
+    @Override
+    public HttpHeaders signin(SigninRequest signinRequest) {
+
+        // 유저 검증 및 객체 조회
+        User user = userReader.getUser(signinRequest.getEmail(), signinRequest.getPassword());
+        // 헤더에 accessToken 및 refreshToken 생성 후 전달
+        return userAuth.generateHeaderTokens(user);
     }
 
 }
