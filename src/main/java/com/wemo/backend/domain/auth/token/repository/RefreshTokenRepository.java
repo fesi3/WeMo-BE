@@ -29,7 +29,7 @@ public class RefreshTokenRepository {
 
         ValueOperations<String, String> valueOperations = redisTemplate.opsForValue();
         valueOperations.set(refreshToken.refreshToken(), refreshToken.email());
-        redisTemplate.expire(refreshToken.refreshToken(), REFRESH_TOKEN_EXPIRATION, TimeUnit.DAYS); // TTL 설정
+        redisTemplate.expire(refreshToken.refreshToken(), REFRESH_TOKEN_EXPIRATION, TimeUnit.MILLISECONDS); // TTL 설정
     }
 
     /**
