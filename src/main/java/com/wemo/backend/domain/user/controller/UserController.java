@@ -12,13 +12,12 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+@Slf4j
 @Tag(name = "Users")
 @RestController
 @RequiredArgsConstructor
@@ -63,6 +62,22 @@ public class UserController {
 
         HttpHeaders httpHeaders = userService.signin(request);
         return ResponseEntity.status(200).headers(httpHeaders).body(SuccessResponse.successWithNoData("로그인 성공"));
+    }
+
+    @Operation(summary = "로그아웃", description = "사용자가 로그아웃을 합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "로그아웃에 성공하였습니다.",
+                    content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "400", description = "입력값을 확인해주세요.")
+    })
+    @RequestMapping(value = "/signout", method = RequestMethod.POST)
+    public ResponseEntity<SuccessResponse<String>> signout(
+                                          @RequestHeader("Authorization") String accessToken,
+                                          @RequestHeader("Refresh-Token") String refreshToken) {
+        log.info("accessToken : {}", accessToken);
+        log.info("refreshToken : {}", refreshToken);
+
+        return ResponseEntity.ok().body(SuccessResponse.successWithNoData(userService.signout(accessToken, refreshToken)));
     }
 
 }

@@ -10,4 +10,6 @@ public interface UserReader {
 
     User getUser(String email, String password);
 
+    User getUserByEmail(String email);
+
 }

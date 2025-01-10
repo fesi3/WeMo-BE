@@ -50,6 +50,20 @@ public class UserReaderImpl implements UserReader {
     }
 
     /**
+     * 이메일로 유저 객체 조회
+     *
+     * @param email 이메일
+     * @return 해당하는 유저 객체
+     */
+    @Override
+    public User getUserByEmail(String email) {
+
+        return userRepository.findByEmail(email).orElseThrow(
+                () -> new CustomException(ILLEGAL_USER_NOT_EXIST)
+        );
+    }
+
+    /**
      * 비밀번호 확인
      *
      * @param comparePassword 새로 입력한 비밀번호
