@@ -14,6 +14,10 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: true
+    # SQL 문 포맷 설정
+    properties:
+      hibernate:
+        format_sql: true
 
 logging:
   level:

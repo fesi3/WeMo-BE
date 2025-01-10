@@ -49,6 +49,15 @@ dependencies {
 	// 검증 관련 의존성
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 
+	// JWT (JSON Web Token) 라이브러리
+	implementation 'com.auth0:java-jwt:3.18.2'
+	implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
+	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.5'
+	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.5'
+
+	// Redis 관련 의존성
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
 }
 
 tasks.named('test') {

@@ -1,5 +1,8 @@
 package com.wemo.backend.global.config;
 
+import com.wemo.backend.domain.auth.JwtAuthenticationFilter;
+import com.wemo.backend.domain.auth.JwtTokenProvider;
+import com.wemo.backend.domain.auth.token.service.TokenBlacklistService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,6 +14,7 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 
 import java.util.Arrays;
@@ -32,6 +36,9 @@ public class SecurityConfig {
 
         return new BCryptPasswordEncoder();
     }
+
+    private final JwtTokenProvider jwtTokenProvider;
+    private final TokenBlacklistService tokenBlacklistService;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -80,7 +87,10 @@ public class SecurityConfig {
                                 ).permitAll()
 
                         .anyRequest().authenticated()
-                );
+
+                )
+                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, tokenBlacklistService), UsernamePasswordAuthenticationFilter.class);
+
 
         //세션 설정
         http
