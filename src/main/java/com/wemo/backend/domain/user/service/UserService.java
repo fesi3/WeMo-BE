@@ -2,6 +2,7 @@ package com.wemo.backend.domain.user.service;
 
 import com.wemo.backend.domain.user.dto.SigninRequest;
 import com.wemo.backend.domain.user.dto.UserCreateRequest;
+import com.wemo.backend.domain.user.dto.UserInfoResponse;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 
@@ -15,5 +16,7 @@ public interface UserService {
     HttpHeaders signin(SigninRequest request);
 
      String signout(String accessToken, String refreshToken);
+
+    UserInfoResponse getUserInfo(String email);
 
 }
