@@ -2,12 +2,15 @@ package com.wemo.backend.domain.auth.token.service;
 
 import com.wemo.backend.domain.auth.token.entity.RefreshToken;
 import com.wemo.backend.domain.auth.token.repository.RefreshTokenRepository;
+import com.wemo.backend.global.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
+
+import static com.wemo.backend.global.exception.ErrorCode.ILLEGAL_REFRESH_TOKEN_NOT_VALID;
 
 @Component
 @RequiredArgsConstructor
@@ -36,7 +39,21 @@ public class RefreshTokenManager {
         }
 
         refreshTokenRepository.save(new RefreshToken(refreshToken, email));
+
         return refreshToken;
+    }
+
+    /**
+     * refreshToken 유효성 검증
+     *
+     * @param refreshToken jwt 형태의 refreshToken
+     * @return 검증이 완료된 refreshToken 객체 반환
+     */
+    public RefreshToken getRefreshToken(String refreshToken) {
+        return refreshTokenRepository.findByEmail(refreshToken).orElseThrow(
+                () -> new CustomException(ILLEGAL_REFRESH_TOKEN_NOT_VALID)
+        );
+
     }
 
 }
