@@ -8,6 +8,7 @@ import com.wemo.backend.domain.auth.token.service.RefreshTokenManager;
 import com.wemo.backend.domain.auth.token.service.TokenBlacklistService;
 import com.wemo.backend.domain.user.dto.SigninRequest;
 import com.wemo.backend.domain.user.dto.UserCreateRequest;
+import com.wemo.backend.domain.user.dto.UserInfoResponse;
 import com.wemo.backend.domain.user.entity.User;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -94,6 +95,19 @@ public class UserServiceImpl implements UserService {
         log.info("refreshToken 삭제 완료");
 
         return "로그아웃 성공";
+    }
+
+    /**
+     * 4. 회원 정보 조회
+     *
+     * @param email 이메일
+     * @return 해당 유저의 회원 정보 (이메일, 닉네임, 회사명, 프로필이미지, 가입일자) 반환
+     */
+    @Override
+    public UserInfoResponse getUserInfo(String email) {
+
+        User user = userReader.getUserByEmail(email);
+        return UserInfoResponse.fromEntity(user);
     }
 
 }
