@@ -18,6 +18,12 @@ public class ErrorResponse {
 
     }
 
+    public ErrorResponse(boolean success, String message, HttpStatus httpStatus) {
+        this.success = success;
+        this.message = message;
+        this.httpStatus = httpStatus;
+    }
+
     static public ErrorResponse create() {
 
         return new ErrorResponse();
