@@ -89,4 +89,14 @@ public class Plan extends Timestamped {
     @Comment("모임 id")
     private Meeting meeting;
 
+    public void open() {
+
+        this.opened = true;
+    }
+
+    public void close() {
+
+        this.fulled = true;
+    }
+
 }

@@ -38,4 +38,16 @@ public class PlanController {
         return ResponseEntity.status(201).body(SuccessResponse.successWithData(planService.createPlan(userDetails.getUsername(), request, meetingId)));
     }
 
+    @Operation(summary = "일정 참여", description = "일정에 참여합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "일정에 참여되었습니다.",
+                    content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "404", description = "해당 모임이 존재하지 않습니다.")
+    })
+    @RequestMapping(value = "/{planId}/attendance", method = RequestMethod.POST)
+    public ResponseEntity<SuccessResponse<String>> joinPlan(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                            @PathVariable Long planId) {
+        return ResponseEntity.status(201).body(SuccessResponse.successWithNoData(planService.joinPlan(userDetails.getUsername(), planId)));
+    }
+
 }

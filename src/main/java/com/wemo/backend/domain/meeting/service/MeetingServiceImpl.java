@@ -48,7 +48,7 @@ public class MeetingServiceImpl implements MeetingService {
      *
      * @param email 이메일
      * @param meetingId 모임 id
-     * @return 성공 메세지 반환
+     * @return 성공 응답 메세지
      */
     @Override
     @Transactional

@@ -13,8 +13,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import static com.wemo.backend.global.exception.ErrorCode.ALREADY_MEETING_JOINED;
-import static com.wemo.backend.global.exception.ErrorCode.ILLEGAL_CATEGORY_NOT_FOUND;
+import static com.wemo.backend.global.exception.ErrorCode.*;
 
 @Component
 @RequiredArgsConstructor
@@ -52,7 +51,7 @@ public class MeetingStoreImpl implements MeetingStore {
 
         boolean alreadyJoined = meetingMemberRepository.existsByUserAndMeeting(user, meeting);
 
-        if (alreadyJoined) throw new CustomException(ALREADY_MEETING_JOINED);
+        if (alreadyJoined) throw new CustomException(ALREADY_JOINED_MEETING);
 
         MeetingMember meetingMember = MeetingMember.builder()
                 .user(user)
