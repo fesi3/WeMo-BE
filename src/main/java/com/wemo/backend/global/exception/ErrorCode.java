@@ -26,7 +26,13 @@ public enum ErrorCode {
     ILLEGAL_ADDRESS_NOT_VALID(HttpStatus.BAD_REQUEST, "주소 값이 유효하지 않습니다."),
     ILLEGAL_PLAN_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 일정입니다."),
     ALREADY_JOINED_PLAN(HttpStatus.BAD_REQUEST, "이미 참여한 일정입니다."),
-    PLAN_IS_FULLED(HttpStatus.BAD_REQUEST, "모집 정원이 마감된 일정입니다.");
+    PLAN_IS_FULLED(HttpStatus.BAD_REQUEST, "모집 정원이 마감된 일정입니다."),
+    PLAN_ATTENDANCE_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 일정에 참여 기록이 없습니다."),
+
+    // review
+    REVIEW_ALREADY_EXISTS(HttpStatus.BAD_REQUEST ,"이미 후기를 등록한 일정입니다."),
+    REVIEW_CREATION_BEFORE_PLAN_END(HttpStatus.BAD_REQUEST,"일정이 완료되지 않아 후기를 작성할 수 없습니다.");
+
 
     private final HttpStatus httpStatus;
     private final String message;
