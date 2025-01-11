@@ -1,0 +1,88 @@
+package com.wemo.backend.domain.plan.dto;
+
+import com.wemo.backend.domain.image.entity.Image;
+import com.wemo.backend.domain.meeting.entity.Meeting;
+import com.wemo.backend.domain.plan.entity.Plan;
+import lombok.Builder;
+import lombok.Getter;
+
+import java.time.LocalDateTime;
+
+@Getter
+@Builder
+public class PlanCreateResponse {
+
+    private Long planId;
+
+    private String planName;
+
+    private String category;
+
+    private String address;
+
+    private double longitude;
+
+    private double latitude;
+
+    private String planImagePath;
+
+    private String content;
+
+    private LocalDateTime dateTime;
+
+    private LocalDateTime registrationEnd;
+
+    private int capacity;
+
+    private LocalDateTime createdAt;
+
+    private LocalDateTime updatedAt;
+
+    private boolean isOpened;
+
+    private boolean isFulled;
+
+    // 이미지가 있는 경우
+    public static PlanCreateResponse fromEntityWithImage(Plan plan, Meeting meeting, Image image) {
+
+        return PlanCreateResponse.builder()
+                .planId(plan.getId())
+                .planName(plan.getPlanName())
+                .category(meeting.getCategory().getCategoryName())
+                .address(plan.getAddress())
+                .longitude(plan.getLongitude())
+                .latitude(plan.getLatitude())
+                .planImagePath(image.getFileUrl())
+                .content(plan.getContent())
+                .dateTime(plan.getDateTime())
+                .registrationEnd(plan.getRegistrationEnd())
+                .capacity(plan.getCapacity())
+                .createdAt(plan.getCreatedAt())
+                .updatedAt(plan.getUpdatedAt())
+                .isOpened(plan.isOpened())
+                .isFulled(plan.isFulled())
+                .build();
+    }
+
+    // 이미지가 없는 경우
+    public static PlanCreateResponse fromEntity(Plan plan, Meeting meeting) {
+
+        return PlanCreateResponse.builder()
+                .planId(plan.getId())
+                .planName(plan.getPlanName())
+                .category(meeting.getCategory().getCategoryName())
+                .address(plan.getAddress())
+                .longitude(plan.getLongitude())
+                .latitude(plan.getLatitude())
+                .content(plan.getContent())
+                .dateTime(plan.getDateTime())
+                .registrationEnd(plan.getRegistrationEnd())
+                .capacity(plan.getCapacity())
+                .createdAt(plan.getCreatedAt())
+                .updatedAt(plan.getUpdatedAt())
+                .isOpened(plan.isOpened())
+                .isFulled(plan.isFulled())
+                .build();
+    }
+
+}
