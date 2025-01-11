@@ -20,32 +20,32 @@ public class User extends Timestamped {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "USER_ID", nullable = false)
+    @Column(name = "user_id", nullable = false)
     @Comment("유저 id")
     private UUID id;
 
-    @Column(name = "EMAIL", nullable = false, unique = true)
+    @Column(name = "email", nullable = false, unique = true)
     @Comment("이메일")
     private String email;
 
-    @Column(name = "COMPANY_NAME", nullable = false)
+    @Column(name = "company_name", nullable = false)
     @Comment("회사명")
     private String companyName;
 
-    @Column(name = "NICKNAME", nullable = false)
+    @Column(name = "nickname", nullable = false)
     @Comment("닉네임")
     private String nickname;
 
-    @Column(name = "PASSWORD", nullable = false)
+    @Column(name = "password", nullable = false)
     @Comment("비밀번호")
     private String password;
 
-    @Column(name = "PROFILE_IMAGE_PATH", nullable = false)
+    @Column(name = "profile_image_path", nullable = false)
     @Comment("프로필 이미지")
     private String profileImagePath;
 
     @Enumerated(value = EnumType.STRING)
-    @Column(name = "LOGIN_TYPE")
+    @Column(name = "login_type")
     private LoginType loginType;
 
 }
