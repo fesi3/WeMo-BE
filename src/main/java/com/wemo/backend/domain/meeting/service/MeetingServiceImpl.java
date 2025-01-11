@@ -1,5 +1,6 @@
 package com.wemo.backend.domain.meeting.service;
 
+import com.wemo.backend.domain.image.entity.Image;
 import com.wemo.backend.domain.image.service.ImageStore;
 import com.wemo.backend.domain.meeting.dto.MeetingCreateRequest;
 import com.wemo.backend.domain.meeting.entity.Meeting;
@@ -33,7 +34,7 @@ public class MeetingServiceImpl implements MeetingService {
         Meeting meeting = meetingStore.storeMeeting(request, userByEmail);
 
         // 모임 대표 이미지 저장
-        imageStore.storeMeetingImage(userByEmail, meeting.getId(), request.getFileUrl());
+        imageStore.storeImage(userByEmail, meeting.getId(), request.getFileUrl(), Image.EntityType.MEETING);
 
     }
 
