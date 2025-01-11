@@ -16,7 +16,10 @@ public class SwaggerConfig {
         return new OpenAPI()
                 .components(new Components())
                 .info(apiInfo())
-                .addTagsItem(new Tag().name("Users").description("사용자 관련 API"));
+                .addTagsItem(new Tag().name("Users").description("사용자 관련 API"))
+                .addTagsItem(new Tag().name("Meetings").description("모임 관련 API"))
+                .addTagsItem(new Tag().name("Plans").description("일정 관련 API"));
+
     }
 
     private Info apiInfo() {
