@@ -1,4 +1,11 @@
 package com.wemo.backend.domain.meeting.service;
 
+import com.wemo.backend.domain.meeting.dto.MeetingCreateRequest;
+import org.springframework.stereotype.Service;
+
+@Service
 public interface MeetingService {
+
+    void createMeeting(String email, MeetingCreateRequest request);
+
 }

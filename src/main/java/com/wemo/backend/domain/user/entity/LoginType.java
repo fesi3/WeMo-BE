@@ -7,10 +7,10 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum LoginType {
 
-    GENERAL("일반유저"),
-    KAKAO("카카오유저"),
-    GOOGLE("구글유저"),
-    NAVER("네이버유저");
+    GENERAL("일반"),
+    KAKAO("카카오"),
+    GOOGLE("구글"),
+    NAVER("네이버");
 
     private final String userType;
 

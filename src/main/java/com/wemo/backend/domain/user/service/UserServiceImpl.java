@@ -36,6 +36,7 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public void checkEmail(String email) {
+
         // 사용자 아이디 중복 검사
         userReader.checkEmailValid(email);
     }
@@ -80,7 +81,9 @@ public class UserServiceImpl implements UserService {
      * @return 응답 메세지
      */
     @Override
+    @Transactional
     public String signout(String accessToken, String refreshToken) {
+
         // Bearer 제거
         String cleanToken = accessToken.replace("Bearer ", "");
 

@@ -2,9 +2,11 @@ package com.wemo.backend.domain.user.dto;
 
 import com.wemo.backend.domain.user.entity.User;
 import lombok.Builder;
+import lombok.Getter;
 
 import java.time.LocalDateTime;
 
+@Getter
 @Builder
 public class UserInfoResponse {
 

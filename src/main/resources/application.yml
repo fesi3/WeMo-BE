@@ -10,16 +10,23 @@ spring:
     username: ${DB_USER}
     password: ${DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
+
   jpa:
     hibernate:
       ddl-auto: update
+      # 테이블명 설정
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
     show-sql: true
     # SQL 문 포맷 설정
     properties:
       hibernate:
         format_sql: true
+  sql:
+    init:
+      data-locations: classpath:category.sql
+      mode: never
 
 logging:
   level:
     org.hibernate.SQL: debug
-
