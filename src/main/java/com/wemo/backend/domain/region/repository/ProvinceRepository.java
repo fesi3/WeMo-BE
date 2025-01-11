@@ -1,4 +1,12 @@
 package com.wemo.backend.domain.region.repository;
 
-public interface ProvinceRepository {
+import com.wemo.backend.domain.region.entity.Province;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.Optional;
+
+public interface ProvinceRepository extends JpaRepository<Province, Long> {
+
+    Optional<Province> findByProvinceName(String provinceName);
+
 }

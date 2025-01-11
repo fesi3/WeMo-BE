@@ -1,10 +1,12 @@
 package com.wemo.backend.domain.category.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
 import org.hibernate.annotations.Comment;
 
 @Entity
 @Table(name = "TB_CATEGORY")
+@Getter
 public class Category {
 
     @Id

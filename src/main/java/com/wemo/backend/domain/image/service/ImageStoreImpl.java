@@ -13,16 +13,18 @@ public class ImageStoreImpl implements ImageStore {
     private final ImageRepository imageRepository;
 
     @Override
-    public void storeMeetingImage(User user, Long meetingId, String fileUrl) {
+    public Image storeImage(User user, Long entityId, String fileUrl, Image.EntityType entityType) {
 
         Image image = Image.builder()
                 .user(user)
-                .entityType(Image.EntityType.MEETING)
-                .entityId(meetingId)
+                .entityType(entityType)
+                .entityId(entityId)
                 .fileUrl(fileUrl)
                 .build();
 
         imageRepository.save(image);
+
+        return image;
     }
 
 }
