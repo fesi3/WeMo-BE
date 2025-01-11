@@ -19,6 +19,7 @@ public enum ErrorCode {
 
     // meeting
     ILLEGAL_MEETING_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 모임입니다."),
+    ALREADY_MEETING_JOINED(HttpStatus.BAD_REQUEST, "이미 가입된 모임입니다."),
 
     // plan
     ILLEGAL_PLAN_NOT_GRANTED(HttpStatus.BAD_REQUEST, "모임장만 일정을 생성할 수 있습니다."),

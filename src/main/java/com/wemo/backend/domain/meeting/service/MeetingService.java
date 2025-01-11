@@ -8,4 +8,6 @@ public interface MeetingService {
 
     void createMeeting(String email, MeetingCreateRequest request);
 
+    String joinMeeting(String email, Long meetingId);
+
 }

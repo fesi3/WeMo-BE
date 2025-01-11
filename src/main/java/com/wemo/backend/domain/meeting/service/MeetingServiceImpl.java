@@ -17,6 +17,7 @@ public class MeetingServiceImpl implements MeetingService {
     private final UserReader userReader;
     private final MeetingStore meetingStore;
     private final ImageStore imageStore;
+    private final MeetingReader meetingReader;
 
     /**
      * 0. 모임 생성
@@ -27,6 +28,7 @@ public class MeetingServiceImpl implements MeetingService {
     @Override
     @Transactional
     public void createMeeting(String email, MeetingCreateRequest request) {
+
         // 유저 객체 검증
         User userByEmail = userReader.getUserByEmail(email);
 
@@ -36,6 +38,28 @@ public class MeetingServiceImpl implements MeetingService {
         // 모임 대표 이미지 저장
         imageStore.storeImage(userByEmail, meeting.getId(), request.getFileUrl(), Image.EntityType.MEETING);
 
+        // 모임 생성자는 자동으로 가입
+        meetingStore.joinMeeting(userByEmail, meeting);
+
+    }
+
+    /**
+     * 모임 가입
+     *
+     * @param email 이메일
+     * @param meetingId 모임 id
+     * @return 성공 메세지 반환
+     */
+    @Override
+    @Transactional
+    public String joinMeeting(String email, Long meetingId) {
+
+        User user = userReader.getUserByEmail(email);
+        Meeting meeting = meetingReader.getMeeting(meetingId);
+
+        meetingStore.joinMeeting(user, meeting);
+
+        return "모임 가입 성공";
     }
 
 }
