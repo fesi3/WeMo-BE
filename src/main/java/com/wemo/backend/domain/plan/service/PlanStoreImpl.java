@@ -73,6 +73,19 @@ public class PlanStoreImpl implements PlanStore{
                 .build();
 
         attendanceRepository.save(attendance);
+
+        // 인원 수 변경에 따른 일정 상태값 변경
+        updatePlanStatus(plan, allByPlan.size() + 1); // 기존 참여 인원에 새 참여자를 추가
+    }
+
+    @Transactional
+    private void updatePlanStatus(Plan plan, int participants) {
+        // 최소 인원 충족 시 개설 확정
+        if (participants >= 5) plan.open();
+
+        // 정원 마감 시 개설 마감
+        if (participants >= plan.getCapacity()) plan.close();
+
     }
 
 }
