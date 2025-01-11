@@ -6,7 +6,7 @@ import com.wemo.backend.global.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import static com.wemo.backend.global.exception.ErrorCode.ILLEGAL_MEETING_NOT_FOUND;
+import static com.wemo.backend.global.exception.ErrorCode.*;
 
 @Component
 @RequiredArgsConstructor

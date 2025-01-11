@@ -22,7 +22,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Map;
 
-import static com.wemo.backend.global.exception.ErrorCode.ILLEGAL_PLAN_NOT_GRANTED;
+import static com.wemo.backend.global.exception.ErrorCode.*;
 
 @Slf4j
 @Service

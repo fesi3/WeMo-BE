@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.wemo.backend.global.exception.ErrorCode.ILLEGAL_ADDRESS_NOT_VALID;
+import static com.wemo.backend.global.exception.ErrorCode.*;
 
 @Service
 public class RegionServiceImpl {

@@ -17,8 +17,7 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static com.wemo.backend.global.exception.ErrorCode.ALREADY_JOINED_PLAN;
-import static com.wemo.backend.global.exception.ErrorCode.PLAN_IS_FULLED;
+import static com.wemo.backend.global.exception.ErrorCode.*;
 
 @Slf4j
 @Component
