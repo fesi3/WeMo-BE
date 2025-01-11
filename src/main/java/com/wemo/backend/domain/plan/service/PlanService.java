@@ -9,4 +9,6 @@ public interface PlanService {
 
     PlanCreateResponse createPlan(String email, PlanCreateRequest request, Long meetingId);
 
+    String joinPlan(String email, Long planId);
+
 }

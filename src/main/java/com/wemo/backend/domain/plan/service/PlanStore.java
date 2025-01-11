@@ -10,4 +10,6 @@ public interface PlanStore {
 
     Plan storePlan(PlanCreateRequest request, District district, User user, Meeting meeting);
 
+    void joinPlan(User user, Plan plan);
+
 }

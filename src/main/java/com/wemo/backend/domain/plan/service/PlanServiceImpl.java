@@ -41,6 +41,8 @@ public class PlanServiceImpl implements PlanService {
 
     private final PlanStore planStore;
 
+    private final PlanReader planReader;
+
     /**
      * 0. 일정 생성
      *
@@ -76,6 +78,9 @@ public class PlanServiceImpl implements PlanService {
 
         Plan plan = planStore.storePlan(request, district, user, meeting);
 
+        // 주최자는 일정에 자동으로 참여
+        planStore.joinPlan(user, plan);
+
         // 이미지 저장 (선택)
         if (!request.getFileUrl().isEmpty()) {
             Image image = imageStore.storeImage(user, plan.getId(), request.getFileUrl(), Image.EntityType.PLAN);
@@ -83,6 +88,24 @@ public class PlanServiceImpl implements PlanService {
         }
 
         return PlanCreateResponse.fromEntity(plan, meeting);
+    }
+
+    /**
+     * 일정 참여
+     *
+     * @param email 이메일
+     * @param planId 일정 id
+     * @return 성공 응답 메세지
+     */
+    @Override
+    public String joinPlan(String email, Long planId) {
+
+        User user = userReader.getUserByEmail(email);
+        Plan plan = planReader.getPlan(planId);
+
+        planStore.joinPlan(user, plan);
+
+        return "일정 참여 신청 완료되었습니다.";
     }
 
 }
