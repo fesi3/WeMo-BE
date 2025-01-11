@@ -13,10 +13,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "Meetings")
 @RestController
@@ -37,6 +34,18 @@ public class MeetingController {
                                                                  @Valid @RequestBody MeetingCreateRequest request) {
         meetingService.createMeeting(userDetails.getUsername(), request);
         return ResponseEntity.status(201).body(SuccessResponse.successWithNoData("모임 생성 성공"));
+    }
+
+    @Operation(summary = "모임 가입", description = "모임에 가입합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "모임에 가입되었습니다.",
+                    content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "404", description = "해당 모임이 존재하지 않습니다.")
+    })
+    @RequestMapping(value = "/{meetingId}", method = RequestMethod.POST)
+    public ResponseEntity<SuccessResponse<String>> joinMeeting(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                               @PathVariable Long meetingId) {
+        return ResponseEntity.status(201).body(SuccessResponse.successWithNoData(meetingService.joinMeeting(userDetails.getUsername(), meetingId)));
     }
 
 }
