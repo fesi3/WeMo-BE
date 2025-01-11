@@ -34,6 +34,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             log.info("요청 URI: {}, accessToken: {}", requestURI, accessToken);
             log.info("refreshToken: {}", refreshToken);
 
+            // 예외 경로 설정 (로그인, 회원가입 등)
+            if (isExcludedPath(requestURI)) {
+                filterChain.doFilter(request, response); // 필터를 건너뜀
+                return;
+            }
+
             // 로그아웃 요청 처리
             if ("/api/auths/signout".equals(requestURI)) {
                 if (!validateLogoutRequest(accessToken, refreshToken, response)) {
@@ -44,7 +50,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
 
             // 일반 요청 처리
-            if (accessToken != null) {
+            if (accessToken == null || accessToken.isEmpty()) {
+                log.warn("accessToken이 존재하지 않습니다.");
+                sendErrorResponse(response, "accessToken이 요청에 포함되지 않았습니다.", HttpStatus.BAD_REQUEST);
+                return;
+            }
+
+            else {
                 // 1. accessToken이 블랙리스트에 포함되어 있는지 확인
                 if (tokenBlacklistService.isBlacklisted(accessToken)) {
                     sendErrorResponse(response, "이미 로그아웃된 토큰입니다. 로그인 후 다시 시도해주세요.", HttpStatus.UNAUTHORIZED);
@@ -112,6 +124,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         ErrorResponse errorResponse = new ErrorResponse(false, message, httpStatus);
         response.getWriter().write(new ObjectMapper().writeValueAsString(errorResponse));
+    }
+
+    private boolean isExcludedPath(String requestURI) {
+        return requestURI.startsWith("/api/auths/check-email") ||
+                requestURI.startsWith("/api/auths/signin") ||
+                requestURI.startsWith("/api/auths/signup");
     }
 
 }
