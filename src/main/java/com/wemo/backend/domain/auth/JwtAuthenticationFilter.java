@@ -129,7 +129,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private boolean isExcludedPath(String requestURI) {
         return requestURI.startsWith("/api/auths/check-email") ||
                 requestURI.startsWith("/api/auths/signin") ||
-                requestURI.startsWith("/api/auths/signup");
+                requestURI.startsWith("/api/auths/signup") ||
+                requestURI.startsWith("/swagger-ui/") ||
+                requestURI.startsWith("/swagger-ui.html") ||
+                requestURI.startsWith("/v3/api-docs");
     }
 
 }
