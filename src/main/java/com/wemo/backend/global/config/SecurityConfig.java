@@ -88,6 +88,7 @@ public class SecurityConfig {
                                 ).permitAll()
                                 // 비회원 허용 경로
                                 .requestMatchers(HttpMethod.GET, "/api/meetings/**").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/plans/**").permitAll()
 
                                 .anyRequest().authenticated()
 
