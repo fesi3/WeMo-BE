@@ -1,5 +1,6 @@
 package com.wemo.backend.domain.plan.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -46,11 +47,29 @@ public class PlanListResponse {
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
-
+    
+    @JsonProperty("isOpened")
     private boolean isOpened;
 
+    @JsonProperty("isFulled")
     private boolean isFulled;
 
+    @JsonProperty("isLiked")
     private boolean isLiked;
+
+    @JsonProperty("isOpened")
+    public boolean getIsOpened() {
+        return isOpened;
+    }
+
+    @JsonProperty("isFulled")
+    public boolean getIsFulled() {
+        return isFulled;
+    }
+
+    @JsonProperty("isLiked")
+    public boolean getIsLiked() {
+        return isLiked;
+    }
 
 }
