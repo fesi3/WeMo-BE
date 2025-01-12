@@ -28,6 +28,8 @@ public enum ErrorCode {
     ALREADY_JOINED_PLAN(HttpStatus.BAD_REQUEST, "이미 참여한 일정입니다."),
     PLAN_IS_FULLED(HttpStatus.BAD_REQUEST, "모집 정원이 마감된 일정입니다."),
     PLAN_ATTENDANCE_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 일정에 참여 기록이 없습니다."),
+    ALREADY_LIKED_PLAN(HttpStatus.BAD_REQUEST, "이미 좋아요한 일정입니다."),
+    LIKE_NOT_FOUND(HttpStatus.NOT_FOUND, "좋아요를 누르지 않은 일정입니다."),
 
     // review
     REVIEW_ALREADY_EXISTS(HttpStatus.BAD_REQUEST ,"이미 후기를 등록한 일정입니다."),

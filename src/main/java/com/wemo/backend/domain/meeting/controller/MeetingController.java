@@ -26,9 +26,9 @@ public class MeetingController {
 
     @Operation(summary = "모임 생성", description = "모임을 생성합니다.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "모임이 생성되었습니다.",
-                    content = @Content(mediaType = "application/json")),
-            @ApiResponse(responseCode = "400", description = "입력값을 확인해주세요.")
+            @ApiResponse(responseCode = "201", description = "모임이 생성되었습니다."),
+            @ApiResponse(responseCode = "400", description = "입력값을 확인해주세요.",
+                    content = @Content(mediaType = "application/json"))
     })
     @RequestMapping(value = "", method = RequestMethod.POST)
     public ResponseEntity<SuccessResponse<String>> createMeeting(@AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -39,9 +39,9 @@ public class MeetingController {
 
     @Operation(summary = "모임 가입", description = "모임에 가입합니다.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "모임에 가입되었습니다.",
-                    content = @Content(mediaType = "application/json")),
-            @ApiResponse(responseCode = "404", description = "해당 모임이 존재하지 않습니다.")
+            @ApiResponse(responseCode = "201", description = "모임에 가입되었습니다."),
+            @ApiResponse(responseCode = "404", description = "존재하지 않는 모임입니다.",
+                    content = @Content(mediaType = "application/json"))
     })
     @RequestMapping(value = "/{meetingId}", method = RequestMethod.POST)
     public ResponseEntity<SuccessResponse<String>> joinMeeting(@AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -51,9 +51,9 @@ public class MeetingController {
 
     @Operation(summary = "모임 상세 조회", description = "모임 상세 조회합니다.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "요청한 모임에 대한 상세 정보입니다.",
-                    content = @Content(mediaType = "application/json")),
-            @ApiResponse(responseCode = "404", description = "해당 모임이 존재하지 않습니다.")
+            @ApiResponse(responseCode = "200", description = "요청한 모임에 대한 상세 정보입니다."),
+            @ApiResponse(responseCode = "404", description = "존재하지 않는 모임입니다.",
+                    content = @Content(mediaType = "application/json"))
     })
     @RequestMapping(value = "/{meetingId}", method = RequestMethod.GET)
     public ResponseEntity<SuccessResponse<MeetingDetailResponse>> getMeetingDetail(@PathVariable Long meetingId) {

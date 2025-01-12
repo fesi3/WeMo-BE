@@ -26,10 +26,11 @@ public class ReviewController {
 
     @Operation(summary = "후기 생성", description = "후기를 생성합니다.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "후기가 등록되었습니다.",
+            @ApiResponse(responseCode = "201", description = "후기가 등록되었습니다."),
+            @ApiResponse(responseCode = "400", description = "입력값을 확인해주세요.",
                     content = @Content(mediaType = "application/json")),
-            @ApiResponse(responseCode = "400", description = "입력값을 확인해주세요."),
-            @ApiResponse(responseCode = "404", description = "존재하지 않는 일정입니다.")
+            @ApiResponse(responseCode = "404", description = "존재하지 않는 일정입니다.",
+                    content = @Content(mediaType = "application/json"))
     })
     @RequestMapping(value = "/{planId}", method = RequestMethod.POST)
     public ResponseEntity<SuccessResponse<ReviewCreateResponse>> createReview(@AuthenticationPrincipal UserDetailsImpl userDetails,
