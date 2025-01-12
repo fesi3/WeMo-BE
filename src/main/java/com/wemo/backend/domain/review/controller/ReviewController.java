@@ -38,4 +38,5 @@ public class ReviewController {
                                                                               @Valid @RequestBody ReviewCreateRequest request) {
         return ResponseEntity.status(201).body(SuccessResponse.successWithData(reviewService.createReview(userDetails.getUsername(), planId, request)));
     }
+
 }
