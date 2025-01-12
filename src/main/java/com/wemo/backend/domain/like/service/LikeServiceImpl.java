@@ -43,4 +43,19 @@ public class LikeServiceImpl implements LikeService {
         return "일정에 좋아요를 눌렀습니다.";
     }
 
+    @Override
+    public String deleteLikePlan(String email, Long planId) {
+
+        // 유효성 검사
+        User user = userReader.getUserByEmail(email);
+        Plan plan = planReader.getPlan(planId);
+
+        // 좋아요를 누르지 않은 일정이라면 예외 반환
+        likeReader.validateLikeToDelete(user, plan);
+
+        likeStore.deleteLike(user, plan);
+
+        return "일정에 좋아요를 취소했습니다.";
+    }
+
 }

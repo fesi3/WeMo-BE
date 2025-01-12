@@ -9,4 +9,6 @@ public interface LikeRepository extends JpaRepository<Like, Long> {
 
     boolean existsByUserAndPlan(User user, Plan plan);
 
+    Like findByUserAndPlan(User user, Plan plan);
+
 }

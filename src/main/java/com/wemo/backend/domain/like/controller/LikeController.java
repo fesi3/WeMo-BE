@@ -27,7 +27,7 @@ public class LikeController {
 
     @Operation(summary = "일정 좋아요", description = "일정에 좋아요를 누릅니다.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "일정에 좋아요를 눌렀습니다."),
+            @ApiResponse(responseCode = "201", description = "일정에 좋아요를 눌렀습니다."),
             @ApiResponse(responseCode = "404", description = "존재하지 않는 일정입니다.",
                     content = @Content(mediaType = "application/json"))
     })
@@ -35,5 +35,17 @@ public class LikeController {
     public ResponseEntity<SuccessResponse<String>> likePlan(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                                             @PathVariable Long planId) {
         return ResponseEntity.status(201).body(SuccessResponse.successWithNoData(likeService.likePlan(userDetails.getUsername(), planId)));
+    }
+
+    @Operation(summary = "일정 좋아요 취소", description = "일정에 누른 좋아요를 삭제합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "일정에 누른 좋아요를 취소했습니다."),
+            @ApiResponse(responseCode = "404", description = "존재하지 않는 일정입니다.",
+                    content = @Content(mediaType = "application/json"))
+    })
+    @RequestMapping(value = "/{planId}", method = RequestMethod.DELETE)
+    public ResponseEntity<SuccessResponse<String>> deleteLikePlan(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                                  @PathVariable Long planId) {
+        return ResponseEntity.ok(SuccessResponse.successWithNoData(likeService.deleteLikePlan(userDetails.getUsername(), planId)));
     }
 }

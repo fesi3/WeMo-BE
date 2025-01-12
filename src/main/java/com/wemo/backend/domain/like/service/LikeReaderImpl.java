@@ -22,4 +22,10 @@ public class LikeReaderImpl implements LikeReader{
 
     }
 
+    @Override
+    public void validateLikeToDelete(User user, Plan plan) {
+
+        if (!likeRepository.existsByUserAndPlan(user, plan)) throw new CustomException(LIKE_NOT_FOUND);
+    }
+
 }

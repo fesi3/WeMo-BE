@@ -7,4 +7,6 @@ public interface LikeReader {
 
     void validateLike(User user, Plan plan);
 
+    void validateLikeToDelete(User user, Plan plan);
+
 }

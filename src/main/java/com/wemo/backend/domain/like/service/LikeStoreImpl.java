@@ -12,7 +12,6 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class LikeStoreImpl implements LikeStore {
 
-
     private final LikeRepository likeRepository;
 
     @Override
@@ -25,6 +24,14 @@ public class LikeStoreImpl implements LikeStore {
                 .build();
 
         likeRepository.save(like);
+    }
+
+    @Override
+    public void deleteLike(User user, Plan plan) {
+
+        Like like = likeRepository.findByUserAndPlan(user, plan);
+
+        likeRepository.delete(like);
     }
 
 }
