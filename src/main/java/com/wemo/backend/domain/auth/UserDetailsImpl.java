@@ -14,6 +14,11 @@ public record UserDetailsImpl(User user) implements UserDetails {
         return null;
     }
 
+    public boolean isGuest() {
+
+        return this.getUsername() == null || this.getUsername().isEmpty();
+    }
+
     @Override
     public String getPassword() {
 

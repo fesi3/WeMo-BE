@@ -1,12 +1,15 @@
 package com.wemo.backend.domain.plan.service;
 
+import com.wemo.backend.domain.auth.UserDetailsImpl;
 import com.wemo.backend.domain.image.entity.Image;
 import com.wemo.backend.domain.image.service.ImageStore;
 import com.wemo.backend.domain.meeting.entity.Meeting;
 import com.wemo.backend.domain.meeting.service.MeetingReader;
 import com.wemo.backend.domain.plan.dto.PlanCreateRequest;
 import com.wemo.backend.domain.plan.dto.PlanCreateResponse;
+import com.wemo.backend.domain.plan.dto.PlanCursorPagingResponse;
 import com.wemo.backend.domain.plan.entity.Plan;
+import com.wemo.backend.domain.plan.repository.PlanRepository;
 import com.wemo.backend.domain.region.entity.District;
 import com.wemo.backend.domain.region.entity.Province;
 import com.wemo.backend.domain.region.repository.DistrictRepository;
@@ -42,6 +45,8 @@ public class PlanServiceImpl implements PlanService {
     private final PlanStore planStore;
 
     private final PlanReader planReader;
+
+    private final PlanRepository planRepository;
 
     /**
      * 0. 일정 생성
@@ -98,6 +103,7 @@ public class PlanServiceImpl implements PlanService {
      * @return 성공 응답 메세지
      */
     @Override
+    @Transactional
     public String joinPlan(String email, Long planId) {
 
         User user = userReader.getUserByEmail(email);
@@ -106,6 +112,23 @@ public class PlanServiceImpl implements PlanService {
         planStore.joinPlan(user, plan);
 
         return "일정 참여 신청 완료되었습니다.";
+    }
+
+    @Override
+    @Transactional
+    public PlanCursorPagingResponse getPlanList(UserDetailsImpl userDetails, Long cursor, int size, String query, String province, String district, String startDate, String endDate, Long categoryId, String sort) {
+
+        PlanCursorPagingResponse response;
+
+        if (userDetails != null && !userDetails.isGuest()) {
+            // 회원인 경우
+            response = planRepository.getPlanListByUser(userDetails.getUsername(), cursor, size, query, province, district, startDate, endDate, categoryId, sort);
+        } else {
+            // 비회원인 경우
+            response = planRepository.getPlanListByGuest(cursor, size, query, province, district, startDate, endDate, categoryId, sort);
+        }
+
+        return response;
     }
 
 }
