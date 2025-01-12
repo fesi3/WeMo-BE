@@ -43,6 +43,13 @@ public class LikeServiceImpl implements LikeService {
         return "일정에 좋아요를 눌렀습니다.";
     }
 
+    /**
+     * 일정 좋아요 취소
+     *
+     * @param email 이메일
+     * @param planId 일정 id
+     * @return 성공 메세지
+     */
     @Override
     public String deleteLikePlan(String email, Long planId) {
 
