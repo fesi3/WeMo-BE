@@ -1,5 +1,7 @@
 package com.wemo.backend.domain.review.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.wemo.backend.domain.meeting.dto.MeetingInfoResponse;
 import com.wemo.backend.domain.meeting.entity.Meeting;
 import com.wemo.backend.domain.plan.entity.Plan;
@@ -54,13 +56,37 @@ public class PlanDetailResponse {
     
     private MeetingInfoResponse meetingInfo;
 
+    @JsonProperty("isCanceled")
     private boolean isCanceled;
 
+    @JsonProperty("isLiked")
     private boolean isLiked;
 
+    @JsonProperty("isOpened")
     private boolean isOpened;
 
+    @JsonProperty("isFulled")
     private boolean isFulled;
+
+    @JsonProperty("isCanceled")
+    public boolean getIsCanceled() {
+        return isCanceled;
+    }
+
+    @JsonProperty("isLiked")
+    public boolean getIsLiked() {
+        return isLiked;
+    }
+
+    @JsonProperty("isOpened")
+    public boolean getIsOpened() {
+        return isOpened;
+    }
+
+    @JsonProperty("isFulled")
+    public boolean getIsFulled() {
+        return isFulled;
+    }
 
     public static PlanDetailResponse fromEntity(Plan plan, String planImagePath, Meeting meeting, int participants, int likeCount, List<UserListInfo> userList, MeetingInfoResponse meetingInfoResponse, boolean isLiked) {
 
