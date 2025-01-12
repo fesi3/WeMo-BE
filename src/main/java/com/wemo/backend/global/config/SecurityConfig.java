@@ -6,6 +6,7 @@ import com.wemo.backend.domain.auth.token.service.TokenBlacklistService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -85,8 +86,10 @@ public class SecurityConfig {
                                 "/swagger-ui.html",
                                 "/v3/api-docs/**"
                                 ).permitAll()
+                                // 비회원 허용 경로
+                                .requestMatchers(HttpMethod.GET, "/api/meetings/**").permitAll()
 
-                        .anyRequest().authenticated()
+                                .anyRequest().authenticated()
 
                 )
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, tokenBlacklistService), UsernamePasswordAuthenticationFilter.class);

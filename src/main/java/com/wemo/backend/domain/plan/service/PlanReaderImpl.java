@@ -1,5 +1,7 @@
 package com.wemo.backend.domain.plan.service;
 
+import com.wemo.backend.domain.meeting.entity.Meeting;
+import com.wemo.backend.domain.plan.entity.Attendance;
 import com.wemo.backend.domain.plan.entity.Plan;
 import com.wemo.backend.domain.plan.repository.AttendanceRepository;
 import com.wemo.backend.domain.plan.repository.PlanRepository;
@@ -7,6 +9,8 @@ import com.wemo.backend.domain.user.entity.User;
 import com.wemo.backend.global.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 import static com.wemo.backend.global.exception.ErrorCode.*;
 
@@ -33,6 +37,18 @@ public class PlanReaderImpl implements PlanReader {
 
         if (!exists) throw new CustomException(PLAN_ATTENDANCE_NOT_FOUND);
 
+    }
+
+    @Override
+    public List<Plan> getPlanByMeeting(Meeting meeting) {
+
+        return planRepository.findAllByMeeting(meeting);
+    }
+
+    @Override
+    public List<Attendance> getAttendanceList(Plan plan) {
+
+        return attendanceRepository.findAllByPlan(plan);
     }
 
 }

@@ -5,11 +5,13 @@ import com.wemo.backend.global.entity.Timestamped;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Comment;
 
 @Entity
 @Table(name = "TB_MEETING_MEMBER")
+@Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
