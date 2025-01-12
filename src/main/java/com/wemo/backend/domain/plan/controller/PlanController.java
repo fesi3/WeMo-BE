@@ -3,6 +3,7 @@ package com.wemo.backend.domain.plan.controller;
 import com.wemo.backend.domain.auth.UserDetailsImpl;
 import com.wemo.backend.domain.plan.dto.PlanCreateRequest;
 import com.wemo.backend.domain.plan.dto.PlanCreateResponse;
+import com.wemo.backend.domain.plan.dto.PlanCursorPagingResponse;
 import com.wemo.backend.domain.plan.service.PlanService;
 import com.wemo.backend.global.response.SuccessResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -26,9 +27,9 @@ public class PlanController {
 
     @Operation(summary = "일정 생성", description = "일정을 생성합니다.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "일정이 생성되었습니다.",
-                    content = @Content(mediaType = "application/json")),
-            @ApiResponse(responseCode = "400", description = "입력값을 확인해주세요.")
+            @ApiResponse(responseCode = "201", description = "일정이 생성되었습니다."),
+            @ApiResponse(responseCode = "400", description = "입력값을 확인해주세요.",
+                    content = @Content(mediaType = "application/json"))
     })
     @RequestMapping(value = "/{meetingId}", method = RequestMethod.POST)
     public ResponseEntity<SuccessResponse<PlanCreateResponse>> createPlan(@AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -40,14 +41,34 @@ public class PlanController {
 
     @Operation(summary = "일정 참여", description = "일정에 참여합니다.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "일정에 참여되었습니다.",
-                    content = @Content(mediaType = "application/json")),
-            @ApiResponse(responseCode = "404", description = "해당 모임이 존재하지 않습니다.")
+            @ApiResponse(responseCode = "201", description = "일정에 참여되었습니다."),
+            @ApiResponse(responseCode = "404", description = "존재하지 않는 일정입니다.",
+                    content = @Content(mediaType = "application/json"))
     })
     @RequestMapping(value = "/{planId}/attendance", method = RequestMethod.POST)
     public ResponseEntity<SuccessResponse<String>> joinPlan(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                                             @PathVariable Long planId) {
         return ResponseEntity.status(201).body(SuccessResponse.successWithNoData(planService.joinPlan(userDetails.getUsername(), planId)));
+    }
+
+    @Operation(summary = "일정 목록 조회", description = "회원 또는 비회원이 요청하는 일정의 목록을 반환합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "요청한 일정 목록이 반환되었습니다.")
+    })
+    @RequestMapping(value = "", method = RequestMethod.GET)
+    public ResponseEntity<SuccessResponse<PlanCursorPagingResponse>> getGatherings(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                                                   @RequestParam(required = false) Long cursor, // 커서 파라미터 추가
+                                                                                   @RequestParam int size,
+                                                                                   @RequestParam(required = false) String query,
+                                                                                   @RequestParam(required = false) String province,
+                                                                                   @RequestParam(required = false) String district,
+                                                                                   @RequestParam(required = false) String startDate,
+                                                                                   @RequestParam(required = false) String endDate,
+                                                                                   @RequestParam(required = false) Long categoryId,
+                                                                                   @RequestParam(required = false) String sort) {
+
+        PlanCursorPagingResponse response = planService.getPlanList(userDetails, cursor, size, query, province, district, startDate, endDate, categoryId, sort);
+        return ResponseEntity.ok(SuccessResponse.successWithData(response));
     }
 
 }

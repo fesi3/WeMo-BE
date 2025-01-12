@@ -89,6 +89,10 @@ public class Plan extends Timestamped {
     @Comment("모임 id")
     private Meeting meeting;
 
+    @Column(name = "view_count")
+    @Comment("조회수")
+    private int viewCount;
+
     public void open() {
 
         this.opened = true;
