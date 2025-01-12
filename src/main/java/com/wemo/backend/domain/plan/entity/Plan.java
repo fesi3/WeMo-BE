@@ -103,4 +103,10 @@ public class Plan extends Timestamped {
         this.fulled = true;
     }
 
+    public void updateViewCount() {
+
+        this.viewCount++;
+
+    }
+
 }

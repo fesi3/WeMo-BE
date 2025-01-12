@@ -11,4 +11,6 @@ public interface LikeRepository extends JpaRepository<Like, Long> {
 
     Like findByUserAndPlan(User user, Plan plan);
 
+    int countByPlan(Plan plan);
+
 }

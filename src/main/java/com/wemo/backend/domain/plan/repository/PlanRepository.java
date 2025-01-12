@@ -10,4 +10,5 @@ import java.util.List;
 public interface PlanRepository extends JpaRepository<Plan, Long>, PlanCursorQueryDsl {
 
     List<Plan> findAllByMeeting(Meeting meeting);
+
 }

@@ -28,6 +28,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws IOException {
         try {
             String requestURI = request.getRequestURI();
+            String method = request.getMethod(); // HTTP 메서드 가져오기
+
             String accessToken = jwtTokenProvider.resolveToken(request);
             String refreshToken = jwtTokenProvider.resolveRefreshToken(request);
 
@@ -38,6 +40,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (isExcludedPath(requestURI)) {
                 filterChain.doFilter(request, response); // 필터를 건너뜀
                 return;
+            }
+
+            if (requestURI.startsWith("/api/plans") && "GET".equalsIgnoreCase(method)) {
+                // 토큰이 없는 경우 비회원으로 처리
+                if (accessToken == null) {
+                    filterChain.doFilter(request, response);
+                    return;
+                }
             }
 
             // 로그아웃 요청 처리
@@ -127,14 +137,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private boolean isExcludedPath(String requestURI) {
+
         return requestURI.startsWith("/api/auths/check-email") ||
                 requestURI.startsWith("/api/auths/signin") ||
                 requestURI.startsWith("/api/auths/signup") ||
                 requestURI.startsWith("/swagger-ui/") ||
                 requestURI.startsWith("/swagger-ui.html") ||
                 requestURI.startsWith("/v3/api-docs") ||
-                requestURI.startsWith("/api/meetings") ||
-                requestURI.startsWith("/api/plans");
+                requestURI.startsWith("/api/meetings");
     }
 
 }

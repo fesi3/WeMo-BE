@@ -2,12 +2,16 @@ package com.wemo.backend.domain.plan.service;
 
 import com.wemo.backend.domain.auth.UserDetailsImpl;
 import com.wemo.backend.domain.image.entity.Image;
+import com.wemo.backend.domain.image.service.ImageReader;
 import com.wemo.backend.domain.image.service.ImageStore;
+import com.wemo.backend.domain.like.repository.LikeRepository;
+import com.wemo.backend.domain.meeting.dto.MeetingInfoResponse;
 import com.wemo.backend.domain.meeting.entity.Meeting;
 import com.wemo.backend.domain.meeting.service.MeetingReader;
 import com.wemo.backend.domain.plan.dto.PlanCreateRequest;
 import com.wemo.backend.domain.plan.dto.PlanCreateResponse;
 import com.wemo.backend.domain.plan.dto.PlanCursorPagingResponse;
+import com.wemo.backend.domain.plan.entity.Attendance;
 import com.wemo.backend.domain.plan.entity.Plan;
 import com.wemo.backend.domain.plan.repository.PlanRepository;
 import com.wemo.backend.domain.region.entity.District;
@@ -15,6 +19,8 @@ import com.wemo.backend.domain.region.entity.Province;
 import com.wemo.backend.domain.region.repository.DistrictRepository;
 import com.wemo.backend.domain.region.repository.ProvinceRepository;
 import com.wemo.backend.domain.region.service.RegionServiceImpl;
+import com.wemo.backend.domain.review.dto.PlanDetailResponse;
+import com.wemo.backend.domain.user.dto.UserListInfo;
 import com.wemo.backend.domain.user.entity.User;
 import com.wemo.backend.domain.user.service.UserReader;
 import com.wemo.backend.global.exception.CustomException;
@@ -23,9 +29,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
-import static com.wemo.backend.global.exception.ErrorCode.*;
+import static com.wemo.backend.global.exception.ErrorCode.ILLEGAL_PLAN_NOT_GRANTED;
 
 @Slf4j
 @Service
@@ -47,6 +55,10 @@ public class PlanServiceImpl implements PlanService {
     private final PlanReader planReader;
 
     private final PlanRepository planRepository;
+
+    private final LikeRepository likeRepository;
+
+    private final ImageReader imageReader;
 
     /**
      * 0. 일정 생성
@@ -129,6 +141,65 @@ public class PlanServiceImpl implements PlanService {
         }
 
         return response;
+    }
+
+    @Override
+    @Transactional
+    public PlanDetailResponse getPlanDetail(UserDetailsImpl userDetails, Long planId) {
+
+        // 일정 유효성 검사
+        Plan plan = planReader.getPlan(planId);
+
+        // 일정 이미지 URL 조회
+        String planImageUrl = getImageUrl(planId, Image.EntityType.PLAN);
+
+        // 일정 참여자 및 좋아요 정보 조회
+        List<UserListInfo> userList = getUserListFromAttendance(plan);
+        int participants = userList.size();
+
+        int likeCount = likeRepository.countByPlan(plan);
+        boolean isLiked = isPlanLikedByUser(userDetails, plan);
+        log.info("일정에 대한 좋아요 여부 : {}", isLiked);
+
+        // 일정으로 모임 정보 생성
+        MeetingInfoResponse meetingInfoResponse = getMeetingInfoResponse(plan);
+
+        plan.updateViewCount();
+
+        // PlanDetailResponse 생성 및 반환
+        return PlanDetailResponse.fromEntity(plan, planImageUrl, plan.getMeeting(), participants, likeCount, userList, meetingInfoResponse, isLiked);
+    }
+
+    private String getImageUrl(Long entityId, Image.EntityType entityType) {
+
+        Image image = imageReader.getImage(entityId, entityType);
+        return image != null ? image.getFileUrl() : null;
+    }
+
+    private List<UserListInfo> getUserListFromAttendance(Plan plan) {
+
+        List<Attendance> attendanceList = planReader.getAttendanceList(plan);
+        return attendanceList.stream()
+                .map(UserListInfo::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    private boolean isPlanLikedByUser(UserDetailsImpl userDetails, Plan plan) {
+
+        if (userDetails == null || userDetails.isGuest()) {
+            return false;
+        }
+
+        User user = userReader.getUserByEmail(userDetails.getUsername());
+        log.info("일정 상세 조회 시 유저 존재 : {}", user.getEmail());
+        return likeRepository.existsByUserAndPlan(user, plan);
+    }
+
+    private MeetingInfoResponse getMeetingInfoResponse(Plan plan) {
+
+        Meeting meeting = plan.getMeeting();
+        String meetingImageUrl = getImageUrl(meeting.getId(), Image.EntityType.MEETING);
+        return MeetingInfoResponse.fromEntity(meeting, meetingImageUrl);
     }
 
 }

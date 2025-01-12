@@ -5,6 +5,7 @@ import com.wemo.backend.domain.plan.dto.PlanCreateRequest;
 import com.wemo.backend.domain.plan.dto.PlanCreateResponse;
 import com.wemo.backend.domain.plan.dto.PlanCursorPagingResponse;
 import com.wemo.backend.domain.plan.service.PlanService;
+import com.wemo.backend.domain.review.dto.PlanDetailResponse;
 import com.wemo.backend.global.response.SuccessResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -69,6 +70,20 @@ public class PlanController {
 
         PlanCursorPagingResponse response = planService.getPlanList(userDetails, cursor, size, query, province, district, startDate, endDate, categoryId, sort);
         return ResponseEntity.ok(SuccessResponse.successWithData(response));
+    }
+
+    @Operation(summary = "일정 상세 조회", description = "회원 또는 비회원이 요청한 일정의 상세 정보를 반환합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "요청한 일정의 상세 내용이 반환되었습니다."),
+            @ApiResponse(responseCode = "404", description = "존재하지 않는 일정입니다.",
+                    content = @Content(mediaType = "application/json"))
+    })
+    @RequestMapping(value = "/{planId}", method = RequestMethod.GET)
+    public ResponseEntity<SuccessResponse<PlanDetailResponse>> getPlanDetail(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                                             @PathVariable Long planId) {
+
+
+        return ResponseEntity.ok(SuccessResponse.successWithData(planService.getPlanDetail(userDetails, planId)));
     }
 
 }

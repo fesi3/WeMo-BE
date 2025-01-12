@@ -21,7 +21,6 @@ public class PlanCursorPagingResponse {
         this.planList = planListResponses;
         this.nextCursor = planListResponses.isEmpty() ? null : planListResponses.get(planListResponses.size() - 1).getPlanId();
 
-
     }
 
 }
