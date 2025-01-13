@@ -3,6 +3,7 @@ package com.wemo.backend.domain.review.controller;
 import com.wemo.backend.domain.auth.UserDetailsImpl;
 import com.wemo.backend.domain.review.dto.ReviewCreateRequest;
 import com.wemo.backend.domain.review.dto.ReviewCreateResponse;
+import com.wemo.backend.domain.review.dto.ReviewPagingResponse;
 import com.wemo.backend.domain.review.service.ReviewService;
 import com.wemo.backend.global.response.SuccessResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -12,6 +13,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -37,6 +41,24 @@ public class ReviewController {
                                                                               @PathVariable Long planId,
                                                                               @Valid @RequestBody ReviewCreateRequest request) {
         return ResponseEntity.status(201).body(SuccessResponse.successWithData(reviewService.createReview(userDetails.getUsername(), planId, request)));
+    }
+
+    @Operation(summary = "후기 목록 조회", description = "회원 또는 비회원이 요청하는 후기의 목록을 반환합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "요청한 후기 목록이 반환되었습니다.")
+    })
+    @RequestMapping(value = "", method = RequestMethod.GET)
+    public ResponseEntity<SuccessResponse<ReviewPagingResponse>> getHeartList(@RequestParam(defaultValue = "1") int page,
+                                                                              @RequestParam int size,
+                                                                              @RequestParam(required = false) String province,
+                                                                              @RequestParam(required = false) String district,
+                                                                              @RequestParam(required = false) String startDate,
+                                                                              @RequestParam(required = false) String endDate,
+                                                                              @RequestParam(required = false) Long categoryId,
+                                                                              @RequestParam(required = false) String sort) {
+
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
+        return ResponseEntity.ok(SuccessResponse.successWithData(reviewService.getReviewList(pageable, province, district, startDate, endDate, categoryId, sort)));
     }
 
 }

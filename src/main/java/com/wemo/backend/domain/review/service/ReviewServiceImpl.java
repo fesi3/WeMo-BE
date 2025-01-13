@@ -1,11 +1,13 @@
 package com.wemo.backend.domain.review.service;
 
+import com.wemo.backend.domain.auth.UserDetailsImpl;
 import com.wemo.backend.domain.image.entity.Image;
 import com.wemo.backend.domain.image.service.ImageStore;
 import com.wemo.backend.domain.plan.entity.Plan;
 import com.wemo.backend.domain.plan.service.PlanReader;
 import com.wemo.backend.domain.review.dto.ReviewCreateRequest;
 import com.wemo.backend.domain.review.dto.ReviewCreateResponse;
+import com.wemo.backend.domain.review.dto.ReviewPagingResponse;
 import com.wemo.backend.domain.review.entity.Review;
 import com.wemo.backend.domain.review.repository.ReviewRepository;
 import com.wemo.backend.domain.user.entity.User;
@@ -13,6 +15,7 @@ import com.wemo.backend.domain.user.service.UserReader;
 import com.wemo.backend.global.exception.CustomException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -74,6 +77,24 @@ public class ReviewServiceImpl implements ReviewService {
         }
         return ReviewCreateResponse.fromEntity(plan, review);
 
+    }
+
+    /**
+     * 전체 후기 목록 조회 (페이지 기반 페이징처리)
+     *
+     * @param pageable 페이징 관련 데이터
+     * @param province 시/도
+     * @param district 군/구
+     * @param startDate 필터링 시작날짜
+     * @param endDate 필터링 끝날짜
+     * @param categoryId 카테고리 id
+     * @param sort 정렬 기준
+     * @return 페이징 처리된 후기 목록
+     */
+    @Override
+    public ReviewPagingResponse getReviewList(Pageable pageable, String province, String district, String startDate, String endDate, Long categoryId, String sort) {
+
+        return new ReviewPagingResponse(reviewRepository.getReviewList(pageable, province, district, startDate, endDate, categoryId, sort));
     }
 
 }
