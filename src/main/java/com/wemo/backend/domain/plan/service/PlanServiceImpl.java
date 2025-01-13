@@ -8,6 +8,7 @@ import com.wemo.backend.domain.like.repository.LikeRepository;
 import com.wemo.backend.domain.meeting.dto.MeetingInfoResponse;
 import com.wemo.backend.domain.meeting.entity.Meeting;
 import com.wemo.backend.domain.meeting.service.MeetingReader;
+import com.wemo.backend.domain.meeting.service.MeetingStore;
 import com.wemo.backend.domain.plan.dto.PlanCreateRequest;
 import com.wemo.backend.domain.plan.dto.PlanCreateResponse;
 import com.wemo.backend.domain.plan.dto.PlanCursorPagingResponse;
@@ -59,6 +60,8 @@ public class PlanServiceImpl implements PlanService {
     private final LikeRepository likeRepository;
 
     private final ImageReader imageReader;
+
+    private final MeetingStore meetingStore;
 
     /**
      * 0. 일정 생성
@@ -123,6 +126,9 @@ public class PlanServiceImpl implements PlanService {
 
         planStore.joinPlan(user, plan);
 
+        // 일정 참여 시 모임에도 자동으로 가입
+        meetingStore.joinMeeting(user, plan.getMeeting());
+
         return "일정 참여 신청 완료되었습니다.";
     }
 
@@ -159,7 +165,6 @@ public class PlanServiceImpl implements PlanService {
 
         int likeCount = likeRepository.countByPlan(plan);
         boolean isLiked = isPlanLikedByUser(userDetails, plan);
-        log.info("일정에 대한 좋아요 여부 : {}", isLiked);
 
         // 일정으로 모임 정보 생성
         MeetingInfoResponse meetingInfoResponse = getMeetingInfoResponse(plan);
@@ -191,7 +196,6 @@ public class PlanServiceImpl implements PlanService {
         }
 
         User user = userReader.getUserByEmail(userDetails.getUsername());
-        log.info("일정 상세 조회 시 유저 존재 : {}", user.getEmail());
         return likeRepository.existsByUserAndPlan(user, plan);
     }
 

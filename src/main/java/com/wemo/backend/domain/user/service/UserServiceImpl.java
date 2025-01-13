@@ -9,10 +9,13 @@ import com.wemo.backend.domain.auth.token.service.TokenBlacklistService;
 import com.wemo.backend.domain.user.dto.SigninRequest;
 import com.wemo.backend.domain.user.dto.UserCreateRequest;
 import com.wemo.backend.domain.user.dto.UserInfoResponse;
+import com.wemo.backend.domain.user.dto.UserMeetingPagingResponse;
 import com.wemo.backend.domain.user.entity.User;
+import com.wemo.backend.domain.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 
@@ -28,6 +31,8 @@ public class UserServiceImpl implements UserService {
     private final TokenBlacklistService tokenBlacklistService;
     private final RefreshTokenManager refreshTokenManager;
     private final RefreshTokenRepository refreshTokenRepository;
+
+    private final UserRepository userRepository;
 
     /**
      * 0. 이메일 중복 검사
@@ -111,6 +116,12 @@ public class UserServiceImpl implements UserService {
 
         User user = userReader.getUserByEmail(email);
         return UserInfoResponse.fromEntity(user);
+    }
+
+    @Override
+    public UserMeetingPagingResponse getMyMeetingList(String email, Pageable pageable) {
+
+        return new UserMeetingPagingResponse(userRepository.getUserMeetingList(email, pageable));
     }
 
 }
