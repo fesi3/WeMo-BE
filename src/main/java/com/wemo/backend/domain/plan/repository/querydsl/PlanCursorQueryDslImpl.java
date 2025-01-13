@@ -54,9 +54,9 @@ public class PlanCursorQueryDslImpl implements PlanCursorQueryDsl {
 
     private PlanCursorPagingResponse getPlanList(String email, Long cursor, int size, String query, String province, String district, String startDate, String endDate, Long categoryId, String sort) {
 
-        updateIsClosedStatus();
+        updateIsFulledStatus();
 
-        log.info("{} 모임 목록 조회 요청", (email != null) ? email : "비회원");
+        log.info("{} 일정 목록 조회 요청", (email != null) ? email : "비회원");
 
         String sortField = (sort == null) ? DEFAULT_SORT_FIELD : sort;
 
@@ -202,7 +202,7 @@ public class PlanCursorQueryDslImpl implements PlanCursorQueryDsl {
         return condition;
     }
 
-    private void updateIsClosedStatus() {
+    private void updateIsFulledStatus() {
 
         long updatedCount = queryFactory.update(plan)
                 .set(plan.fulled, true)
@@ -210,7 +210,7 @@ public class PlanCursorQueryDslImpl implements PlanCursorQueryDsl {
                         .and(plan.fulled.eq(false)))
                 .execute();
 
-        log.info("모임의 모집 마감 상태가 {} 번 업데이트되었습니다.", updatedCount);
+        log.info("일정의 모집 마감 상태가 {} 번 업데이트되었습니다.", updatedCount);
     }
 
 }

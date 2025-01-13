@@ -2,6 +2,7 @@ package com.wemo.backend.domain.user.controller;
 
 import com.wemo.backend.domain.auth.UserDetailsImpl;
 import com.wemo.backend.domain.user.dto.UserMeetingPagingResponse;
+import com.wemo.backend.domain.user.dto.UserPlanPagingResponse;
 import com.wemo.backend.domain.user.service.UserService;
 import com.wemo.backend.global.response.SuccessResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -40,4 +41,19 @@ public class UserDashboardController {
         return ResponseEntity.ok(SuccessResponse.successWithData(userService.getMyMeetingList(userDetails.getUsername(), pageable)));
     }
 
+
+    @Operation(summary = "내 일정 목록 조회", description = "유저가 참여한 일정의 목록을 반환합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "내가 참여한 일정의 목록이 반환되었습니다.")
+    })
+    @RequestMapping(value = "/plans", method = RequestMethod.GET)
+    public ResponseEntity<SuccessResponse<UserPlanPagingResponse>> getMyPlanList(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                                                 @RequestParam(defaultValue = "1") int page,
+                                                                                 @RequestParam(defaultValue = "10") int size) {
+
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
+
+        return ResponseEntity.ok(SuccessResponse.successWithData(userService.getMyPlanList(userDetails.getUsername(), pageable)));
+
+    }
 }
