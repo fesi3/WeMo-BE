@@ -213,5 +213,4 @@ public class PlanCursorQueryDslImpl implements PlanCursorQueryDsl {
         log.info("모임의 모집 마감 상태가 {} 번 업데이트되었습니다.", updatedCount);
     }
 
-
 }
