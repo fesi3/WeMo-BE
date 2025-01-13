@@ -133,12 +133,25 @@ public class UserServiceImpl implements UserService {
      *
      * @param email 이메일
      * @param pageable 페이징 처리 데이터
-     * @return 유저가 참여한 일정 목록 조회
+     * @return 유저가 참여한 일정 목록
      */
     @Override
     public UserPlanPagingResponse getMyPlanList(String email, Pageable pageable) {
 
         return new UserPlanPagingResponse(userRepository.getUserPlanList(email, pageable));
+    }
+
+    /**
+     * 내가 쓴 후기 목록 조회
+     *
+     * @param email 이메일
+     * @param pageable 페이징 처리 데이터
+     * @return 유저가 작성한 후기 목록
+     */
+    @Override
+    public UserReviewPagingResponse getMyReviewList(String email, Pageable pageable) {
+
+        return new UserReviewPagingResponse(userRepository.getUserReviewList(email, pageable));
     }
 
 }
