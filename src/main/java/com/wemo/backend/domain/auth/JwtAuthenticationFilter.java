@@ -50,6 +50,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
             }
 
+            if (requestURI.startsWith("/api/reviews") && "GET".equalsIgnoreCase(method)) {
+                // 토큰이 없는 경우 비회원으로 처리
+                if (accessToken == null) {
+                    filterChain.doFilter(request, response);
+                    return;
+                }
+            }
+
             // 로그아웃 요청 처리
             if ("/api/auths/signout".equals(requestURI)) {
                 if (!validateLogoutRequest(accessToken, refreshToken, response)) {

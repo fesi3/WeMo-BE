@@ -21,6 +21,8 @@ import org.springframework.web.cors.CorsConfiguration;
 import java.util.Arrays;
 import java.util.Collections;
 
+import static org.springframework.http.HttpMethod.GET;
+
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -87,8 +89,9 @@ public class SecurityConfig {
                                 "/v3/api-docs/**"
                                 ).permitAll()
                                 // 비회원 허용 경로
-                                .requestMatchers(HttpMethod.GET, "/api/meetings/**").permitAll()
-                                .requestMatchers(HttpMethod.GET, "/api/plans/**").permitAll()
+                                .requestMatchers(GET, "/api/meetings/**").permitAll()
+                                .requestMatchers(GET, "/api/plans/**").permitAll()
+                                .requestMatchers(GET, "/api/reviews/**").permitAll()
 
                                 .anyRequest().authenticated()
 
