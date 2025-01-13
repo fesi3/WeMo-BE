@@ -6,10 +6,7 @@ import com.wemo.backend.domain.auth.token.entity.RefreshToken;
 import com.wemo.backend.domain.auth.token.repository.RefreshTokenRepository;
 import com.wemo.backend.domain.auth.token.service.RefreshTokenManager;
 import com.wemo.backend.domain.auth.token.service.TokenBlacklistService;
-import com.wemo.backend.domain.user.dto.SigninRequest;
-import com.wemo.backend.domain.user.dto.UserCreateRequest;
-import com.wemo.backend.domain.user.dto.UserInfoResponse;
-import com.wemo.backend.domain.user.dto.UserMeetingPagingResponse;
+import com.wemo.backend.domain.user.dto.*;
 import com.wemo.backend.domain.user.entity.User;
 import com.wemo.backend.domain.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
@@ -118,10 +115,30 @@ public class UserServiceImpl implements UserService {
         return UserInfoResponse.fromEntity(user);
     }
 
+    /**
+     * 내가 속한 모임 목록 조회
+     *
+     * @param email 이메일
+     * @param pageable 페이징 처리 데이터
+     * @return 유저가 속한 모임 목록
+     */
     @Override
     public UserMeetingPagingResponse getMyMeetingList(String email, Pageable pageable) {
 
         return new UserMeetingPagingResponse(userRepository.getUserMeetingList(email, pageable));
+    }
+
+    /**
+     * 내가 참여한 일정 목록 조회
+     *
+     * @param email 이메일
+     * @param pageable 페이징 처리 데이터
+     * @return 유저가 참여한 일정 목록 조회
+     */
+    @Override
+    public UserPlanPagingResponse getMyPlanList(String email, Pageable pageable) {
+
+        return new UserPlanPagingResponse(userRepository.getUserPlanList(email, pageable));
     }
 
 }

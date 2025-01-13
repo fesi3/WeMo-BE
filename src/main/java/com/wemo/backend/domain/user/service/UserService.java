@@ -1,9 +1,6 @@
 package com.wemo.backend.domain.user.service;
 
-import com.wemo.backend.domain.user.dto.SigninRequest;
-import com.wemo.backend.domain.user.dto.UserCreateRequest;
-import com.wemo.backend.domain.user.dto.UserInfoResponse;
-import com.wemo.backend.domain.user.dto.UserMeetingPagingResponse;
+import com.wemo.backend.domain.user.dto.*;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
@@ -22,5 +19,7 @@ public interface UserService {
     UserInfoResponse getUserInfo(String email);
 
     UserMeetingPagingResponse getMyMeetingList(String email, Pageable pageable);
+
+    UserPlanPagingResponse getMyPlanList(String email, Pageable pageable);
 
 }
