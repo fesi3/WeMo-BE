@@ -6,8 +6,10 @@ import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.wemo.backend.domain.image.entity.Image;
+import com.wemo.backend.domain.review.entity.QReview;
 import com.wemo.backend.domain.user.dto.UserMeetingListResponse;
 import com.wemo.backend.domain.user.dto.UserPlanListResponse;
+import com.wemo.backend.domain.user.dto.UserReviewListResponse;
 import jakarta.persistence.EntityManager;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -18,6 +20,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import static com.wemo.backend.domain.category.entity.QCategory.category;
 import static com.wemo.backend.domain.image.entity.QImage.image;
 import static com.wemo.backend.domain.like.entity.QLike.like;
 import static com.wemo.backend.domain.meeting.entity.QMeeting.meeting;
@@ -26,6 +29,7 @@ import static com.wemo.backend.domain.plan.entity.QAttendance.attendance;
 import static com.wemo.backend.domain.plan.entity.QPlan.plan;
 import static com.wemo.backend.domain.region.entity.QDistrict.district;
 import static com.wemo.backend.domain.region.entity.QProvince.province;
+import static com.wemo.backend.domain.review.entity.QReview.review;
 import static com.wemo.backend.domain.user.entity.QUser.user;
 
 @Slf4j
@@ -200,6 +204,61 @@ public class UserQueryDslImpl implements UserQueryDsl {
         ).orElse(0L);
 
         return new PageImpl<>(planListResponses, pageable, total);
+
+    }
+
+    @Override
+    public Page<UserReviewListResponse> getUserReviewList(String email, Pageable pageable) {
+
+        JPAQuery<UserReviewListResponse> queryBuilder = queryFactory
+                .select(
+                        Projections.constructor(
+                                UserReviewListResponse.class,
+                                review.id,
+                                review.plan.planName,
+                                review.plan.dateTime,
+                                category.categoryName,
+                                review.plan.address,
+                                review.score,
+                                review.comment,
+                                Expressions.as(
+                                        queryFactory.select(image.fileUrl)
+                                                .from(image)
+                                                .where(image.entityId.eq(review.id),
+                                                        image.entityType.eq(Image.EntityType.REVIEW)),
+                                        "reviewImagePath"
+                                ),
+                                review.createdAt,
+                                review.updatedAt
+                        )
+                )
+                .from(review)
+                .leftJoin(review.plan, plan)
+                .leftJoin(plan.meeting, meeting)  // meeting과 조인
+                .leftJoin(meeting.category, category)  // category와 조인
+                .leftJoin(image).on(image.entityId.eq(review.id) // Image 엔티티와 review.id를 조인
+                        .and(image.entityType.eq(Image.EntityType.REVIEW)))
+                .where(review.user.email.eq(email)) // 유저가 작성한 후기만
+                .orderBy(review.createdAt.desc());
+
+        List<UserReviewListResponse> reviewListResponses = queryBuilder
+                .limit(pageable.getPageSize())
+                .offset(pageable.getOffset())
+                .fetch();
+
+        // 총 개수 조회
+        long total = Optional.ofNullable(
+                queryFactory
+                        .select(review.count())
+                        .from(review)
+                        .leftJoin(review.plan, plan)
+                        .leftJoin(plan.meeting, meeting)
+                        .leftJoin(meeting.category, category)
+                        .where(review.user.email.eq(email))
+                        .fetchOne()
+        ).orElse(0L);
+
+        return new PageImpl<>(reviewListResponses, pageable, total);
 
     }
 

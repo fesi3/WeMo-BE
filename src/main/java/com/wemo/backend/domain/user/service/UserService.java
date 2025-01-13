@@ -22,4 +22,6 @@ public interface UserService {
 
     UserPlanPagingResponse getMyPlanList(String email, Pageable pageable);
 
+    UserReviewPagingResponse getMyReviewList(String email, Pageable pageable);
+
 }
