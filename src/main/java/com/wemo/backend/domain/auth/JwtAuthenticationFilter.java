@@ -42,6 +42,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 return;
             }
 
+            if (requestURI.startsWith("/api/meetings") && "GET".equalsIgnoreCase(method)) {
+                // 토큰이 없는 경우 비회원으로 처리
+                if (accessToken == null) {
+                    filterChain.doFilter(request, response);
+                    return;
+                }
+            }
+
             if (requestURI.startsWith("/api/plans") && "GET".equalsIgnoreCase(method)) {
                 // 토큰이 없는 경우 비회원으로 처리
                 if (accessToken == null) {
@@ -151,8 +159,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 requestURI.startsWith("/api/auths/signup") ||
                 requestURI.startsWith("/swagger-ui/") ||
                 requestURI.startsWith("/swagger-ui.html") ||
-                requestURI.startsWith("/v3/api-docs") ||
-                requestURI.startsWith("/api/meetings");
+                requestURI.startsWith("/v3/api-docs");
     }
 
 }
