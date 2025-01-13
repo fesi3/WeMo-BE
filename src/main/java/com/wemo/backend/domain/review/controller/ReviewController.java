@@ -48,7 +48,7 @@ public class ReviewController {
             @ApiResponse(responseCode = "200", description = "요청한 후기 목록이 반환되었습니다.")
     })
     @RequestMapping(value = "", method = RequestMethod.GET)
-    public ResponseEntity<SuccessResponse<ReviewPagingResponse>> getHeartList(@RequestParam(defaultValue = "1") int page,
+    public ResponseEntity<SuccessResponse<ReviewPagingResponse>> getReviewList(@RequestParam(defaultValue = "1") int page,
                                                                               @RequestParam int size,
                                                                               @RequestParam(required = false) String province,
                                                                               @RequestParam(required = false) String district,
