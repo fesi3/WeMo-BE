@@ -1,0 +1,152 @@
+package com.wemo.backend.domain.review.repository.querydsl;
+
+import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.jpa.impl.JPAQuery;
+import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.wemo.backend.domain.image.entity.Image;
+import com.wemo.backend.domain.review.dto.ReviewListResponse;
+import jakarta.persistence.EntityManager;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+
+import static com.querydsl.jpa.JPAExpressions.select;
+import static com.wemo.backend.domain.image.entity.QImage.image;
+import static com.wemo.backend.domain.plan.entity.QPlan.plan;
+import static com.wemo.backend.domain.review.entity.QReview.review;
+import static com.wemo.backend.domain.user.entity.QUser.user;
+
+@Slf4j
+public class ReviewQueryDslImpl implements ReviewQueryDsl {
+
+    private final JPAQueryFactory queryFactory;
+
+    public ReviewQueryDslImpl(EntityManager em) {
+
+        this.queryFactory = new JPAQueryFactory(em);
+    }
+
+    @Override
+    public Page<ReviewListResponse> getReviewList(Pageable pageable, String province, String district, String startDate, String endDate, Long categoryId, String sort) {
+
+        JPAQuery<ReviewListResponse> queryBuilder = queryFactory
+                .select(
+                        Projections.constructor(
+                                ReviewListResponse.class,
+                                plan.id,
+                                plan.planName,
+                                Expressions.as(
+                                        select(image.fileUrl)
+                                                .from(image)
+                                                .where(image.entityId.eq(plan.id),
+                                                        image.entityType.eq(Image.EntityType.PLAN)),
+                                        "planImagePath"
+                                ),
+                                plan.meeting.category.categoryName,
+                                plan.address,
+                                user.nickname,
+                                user.profileImagePath,
+                                review.id,
+                                review.score,
+                                review.comment,
+                                Expressions.as(
+                                        select(image.fileUrl)
+                                                .from(image)
+                                                .where(image.entityId.eq(review.id),
+                                                        image.entityType.eq(Image.EntityType.REVIEW)),
+                                        "reviewImagePath"
+                                ),
+                                review.createdAt,
+                                review.updatedAt
+                        )
+                )
+                .from(review)
+                .leftJoin(review.plan, plan)
+                .leftJoin(review.user, user);
+
+        // 필터링 적용
+        applyFilters(queryBuilder, province, district, startDate, endDate, categoryId, sort);
+
+        // 페이징 적용
+        List<ReviewListResponse> reviewDetailInfoList = queryBuilder
+                .limit(pageable.getPageSize())
+                .offset(pageable.getOffset())
+                .fetch();
+
+        long total = Optional.ofNullable(
+                queryFactory
+                        .select(review.count())
+                        .from(review)
+                        .leftJoin(review.plan, plan)
+                        .leftJoin(review.user, user)
+                        .where(applyFiltersForTotalCount(province, district, startDate, endDate, categoryId)) // 필터를 적용한 메서드 호출
+                        .fetchOne()
+        ).orElse(0L);
+
+        return new PageImpl<>(reviewDetailInfoList, pageable, total);
+
+    }
+
+    // 필터링 적용
+    private void applyFilters(JPAQuery<ReviewListResponse> queryBuilder, String province, String district, String startDate, String endDate, Long categoryId, String sort) {
+
+        if (province != null && !province.isEmpty()) {
+            queryBuilder.where(plan.district.province.provinceName.contains(province));
+        }
+
+        if (district != null && !district.isEmpty()) {
+            queryBuilder.where(plan.district.districtName.eq(district));
+        }
+
+        if (startDate != null && !startDate.isEmpty() && endDate != null && !endDate.isEmpty()) {
+            LocalDate start = LocalDate.parse(startDate);
+            LocalDate end = LocalDate.parse(endDate);
+            queryBuilder.where(review.createdAt.between(start.atStartOfDay(), end.atTime(23, 59, 59)));
+        }
+
+        if (categoryId != null) {
+            queryBuilder.where(plan.meeting.category.id.eq(categoryId));
+        }
+
+        // 정렬 조건 적용
+        if ("ratingOrder".equals(sort)) {
+            queryBuilder.orderBy(review.score.desc());
+        } else {
+            queryBuilder.orderBy(review.createdAt.desc());
+        }
+    }
+
+    // 필터링된 총 개수를 위한 메서드
+    private BooleanBuilder applyFiltersForTotalCount(String province, String district, String startDate, String endDate, Long categoryId) {
+
+        BooleanBuilder builder = new BooleanBuilder();
+
+        if (province != null && !province.isEmpty()) {
+            builder.and(plan.district.province.provinceName.contains(province));
+        }
+
+        if (district != null && !district.isEmpty()) {
+            builder.and(plan.district.districtName.eq(district));
+        }
+
+        if (startDate != null && !startDate.isEmpty() && endDate != null && !endDate.isEmpty()) {
+            LocalDate start = LocalDate.parse(startDate);
+            LocalDate end = LocalDate.parse(endDate);
+            builder.and(review.createdAt.between(start.atStartOfDay(), end.atTime(23, 59, 59)));
+        }
+
+        if (categoryId != null) {
+            builder.and(plan.meeting.category.id.eq(categoryId));
+        }
+
+        return builder;
+    }
+
+}
