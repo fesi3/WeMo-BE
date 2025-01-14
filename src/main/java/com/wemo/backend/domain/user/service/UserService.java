@@ -26,4 +26,6 @@ public interface UserService {
 
     UserPlanPagingResponse getPlanListReviewAvailable(String email, Pageable pageable);
 
+    UserUpdateResponse updateProfile(String email, UserUpdateRequest request);
+
 }

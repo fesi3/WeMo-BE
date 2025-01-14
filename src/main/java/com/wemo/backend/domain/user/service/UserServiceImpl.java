@@ -28,7 +28,6 @@ public class UserServiceImpl implements UserService {
     private final TokenBlacklistService tokenBlacklistService;
     private final RefreshTokenManager refreshTokenManager;
     private final RefreshTokenRepository refreshTokenRepository;
-
     private final UserRepository userRepository;
 
     /**
@@ -167,6 +166,23 @@ public class UserServiceImpl implements UserService {
     public UserPlanPagingResponse getPlanListReviewAvailable(String email, Pageable pageable) {
 
         return new UserPlanPagingResponse(userRepository.getUserPlanListReviewAvailable(email, pageable));
+    }
+
+    /**
+     * 회원 정보 수정
+     *
+     * @param email 이메일
+     * @param request 수정 요청 데이터 (닉네임, 프로필 이미지)
+     * @return 수정된 회원 정보
+     */
+    @Override
+    @Transactional
+    public UserUpdateResponse updateProfile(String email, UserUpdateRequest request) {
+
+        User user = userReader.getUserByEmail(email);
+        User updateUser = user.update(request);
+
+        return UserUpdateResponse.fromEntity(updateUser);
     }
 
 }

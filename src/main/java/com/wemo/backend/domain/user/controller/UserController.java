@@ -1,10 +1,7 @@
 package com.wemo.backend.domain.user.controller;
 
 import com.wemo.backend.domain.auth.UserDetailsImpl;
-import com.wemo.backend.domain.user.dto.EmailCheckRequest;
-import com.wemo.backend.domain.user.dto.SigninRequest;
-import com.wemo.backend.domain.user.dto.UserCreateRequest;
-import com.wemo.backend.domain.user.dto.UserInfoResponse;
+import com.wemo.backend.domain.user.dto.*;
 import com.wemo.backend.domain.user.service.UserService;
 import com.wemo.backend.global.response.SuccessResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -91,6 +88,17 @@ public class UserController {
     @RequestMapping(value = "/users", method = RequestMethod.GET)
     public ResponseEntity<SuccessResponse<UserInfoResponse>> getUserInfo(@AuthenticationPrincipal UserDetailsImpl userDetails) {
         return ResponseEntity.ok(SuccessResponse.successWithData(userService.getUserInfo(userDetails.getUsername())));
+    }
+
+    @Operation(summary = "회원 정보 수정", description = "사용자가 회원 정보를 수정합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "회원 정보가 수정되었습니다.",
+                    content = @Content(mediaType = "application/json"))
+    })
+    @RequestMapping(value = "/profile", method = RequestMethod.PUT)
+    public ResponseEntity<SuccessResponse<UserUpdateResponse>> updateProfile(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                                             @Valid @RequestBody UserUpdateRequest request) {
+        return ResponseEntity.ok(SuccessResponse.successWithData(userService.updateProfile(userDetails.getUsername(), request)));
     }
 
 }
