@@ -14,4 +14,8 @@ public interface AttendanceReader {
 
     void delete(Attendance attendance);
 
+    boolean existAttendance(User user, Plan plan);
+
+    int getParticipantsCount(Plan plan);
+
 }

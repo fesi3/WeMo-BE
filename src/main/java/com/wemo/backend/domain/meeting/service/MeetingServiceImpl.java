@@ -202,10 +202,9 @@ public class MeetingServiceImpl implements MeetingService {
         List<Plan> planList = planReader.getPlanByMeeting(meeting);
 
         return planList.stream().map(plan -> {
-            List<Attendance> attendanceList = attendanceReader.getAttendanceList(plan);
             List<String> planImageList = imageReader.getImageList(plan.getId(), Image.EntityType.PLAN);
 
-            return PlanListInfo.fromEntity(plan, attendanceList.size(), planImageList);
+            return PlanListInfo.fromEntity(plan, attendanceReader.getParticipantsCount(plan), planImageList);
         }).collect(Collectors.toList());
     }
 

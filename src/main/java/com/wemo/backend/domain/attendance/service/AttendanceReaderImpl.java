@@ -38,4 +38,24 @@ public class AttendanceReaderImpl implements AttendanceReader {
         attendanceRepository.delete(attendance);
     }
 
+    /**
+     * 일정 참여 내역 조회
+     *
+     * @param user 유저 객체
+     * @param plan 일정 객체
+     * @return 참여 내역이 있다면 true, 없다면 false
+     */
+    @Override
+    public boolean existAttendance(User user, Plan plan) {
+
+        return attendanceRepository.existsByUserAndPlan(user, plan);
+
+    }
+
+    @Override
+    public int getParticipantsCount(Plan plan) {
+
+        return (int) attendanceRepository.countByPlan(plan);
+    }
+
 }
