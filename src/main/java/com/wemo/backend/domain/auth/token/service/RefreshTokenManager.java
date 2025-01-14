@@ -5,12 +5,14 @@ import com.wemo.backend.domain.auth.token.repository.RefreshTokenRepository;
 import com.wemo.backend.global.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
 import static com.wemo.backend.global.exception.ErrorCode.*;
+import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 @Component
 @RequiredArgsConstructor
@@ -54,6 +56,42 @@ public class RefreshTokenManager {
                 () -> new CustomException(ILLEGAL_REFRESH_TOKEN_NOT_VALID)
         );
 
+    }
+
+    /**
+     * refreshToken 유효성 검증
+     *
+     * @param refreshToken 검증할 refreshToken
+     * @return 유저 아이디 반환, 유효하지 않은 경우 null
+     */
+    public String validateRefreshToken(String refreshToken) {
+
+        Optional<RefreshToken> token = refreshTokenRepository.findByEmail(refreshToken);
+        return token.map(RefreshToken::email).orElse(null);
+    }
+
+    /**
+     * refreshToken 검증하고 새로운 토큰 생성 및 발급
+     *
+     * @param refreshToken 검증할 refreshToken
+     * @return 새로 생성된 accessToken, refreshToken 담은 HttpHeaders
+     */
+    public HttpHeaders reissueToken(String refreshToken) {
+
+        String email = validateRefreshToken(refreshToken);
+        if (email == null) {
+            throw new CustomException(ILLEGAL_REFRESH_TOKEN_NOT_VALID);
+        }
+        // 유효성 검사 후 기존 발급된 refreshToken 삭제
+        refreshTokenRepository.delete(getRefreshToken(refreshToken));
+
+        String newAccessToken = jwtTokenUtils.generateAccessToken(email);
+        String newRefreshToken = jwtTokenUtils.generateRefreshToken(email);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(AUTHORIZATION, "Bearer " + newAccessToken);
+        headers.set("Refresh-Token", newRefreshToken);
+        return headers;
     }
 
 }

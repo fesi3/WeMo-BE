@@ -17,9 +17,12 @@ public class SwaggerConfig {
                 .components(new Components())
                 .info(apiInfo())
                 .addTagsItem(new Tag().name("Users").description("사용자 관련 API"))
+                .addTagsItem(new Tag().name("Images").description("이미지 관련 API"))
                 .addTagsItem(new Tag().name("Meetings").description("모임 관련 API"))
                 .addTagsItem(new Tag().name("Plans").description("일정 관련 API"))
-                .addTagsItem(new Tag().name("Reviews").description("후기 관련 API"));
+                .addTagsItem(new Tag().name("Reviews").description("후기 관련 API"))
+                .addTagsItem(new Tag().name("Regions").description("지역 관련 API"))
+                .addTagsItem(new Tag().name("Token").description("토큰 관련 API"));
 
     }
 
