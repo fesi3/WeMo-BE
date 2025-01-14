@@ -30,6 +30,7 @@ public enum ErrorCode {
     PLAN_ATTENDANCE_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 일정에 참여 기록이 없습니다."),
     ALREADY_LIKED_PLAN(HttpStatus.BAD_REQUEST, "이미 좋아요한 일정입니다."),
     LIKE_NOT_FOUND(HttpStatus.NOT_FOUND, "좋아요를 누르지 않은 일정입니다."),
+    USER_ATTENDANCE_NECESSARY(HttpStatus.BAD_REQUEST, "주최자는 필수 참여입니다."),
 
     // review
     REVIEW_ALREADY_EXISTS(HttpStatus.BAD_REQUEST ,"이미 후기를 등록한 일정입니다."),
