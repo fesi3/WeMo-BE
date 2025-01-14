@@ -92,6 +92,7 @@ public class SecurityConfig {
                                 .requestMatchers(GET, "/api/meetings/**").permitAll()
                                 .requestMatchers(GET, "/api/plans/**").permitAll()
                                 .requestMatchers(GET, "/api/reviews/**").permitAll()
+                                .requestMatchers(GET, "/api/regions/**").permitAll()
 
                                 .anyRequest().authenticated()
 
