@@ -3,6 +3,7 @@ package com.wemo.backend.domain.meeting.controller;
 import com.wemo.backend.domain.auth.UserDetailsImpl;
 import com.wemo.backend.domain.meeting.dto.MeetingCreateRequest;
 import com.wemo.backend.domain.meeting.dto.MeetingDetailResponse;
+import com.wemo.backend.domain.meeting.dto.MeetingUpdateRequest;
 import com.wemo.backend.domain.meeting.service.MeetingService;
 import com.wemo.backend.global.response.SuccessResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -58,6 +59,19 @@ public class MeetingController {
     @RequestMapping(value = "/{meetingId}", method = RequestMethod.GET)
     public ResponseEntity<SuccessResponse<MeetingDetailResponse>> getMeetingDetail(@PathVariable Long meetingId) {
         return ResponseEntity.ok(SuccessResponse.successWithData(meetingService.getMeetingDetail(meetingId)));
+    }
+
+    @Operation(summary = "모임 정보 수정", description = "모임 정보를 수정합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "모임 정보가 수정되었습니다."),
+            @ApiResponse(responseCode = "404", description = "존재하지 않는 모임입니다.",
+                    content = @Content(mediaType = "application/json"))
+    })
+    @RequestMapping(value = "/{meetingId}", method = RequestMethod.PATCH)
+    public ResponseEntity<SuccessResponse<String>> updateMeeting(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                                 @PathVariable Long meetingId,
+                                                                 @Valid @RequestBody MeetingUpdateRequest request) {
+        return ResponseEntity.ok(SuccessResponse.successWithNoData(meetingService.updateMeeting(userDetails.getUsername(), meetingId, request)));
     }
 
 }

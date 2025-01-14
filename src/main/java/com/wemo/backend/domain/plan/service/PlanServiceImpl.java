@@ -12,6 +12,7 @@ import com.wemo.backend.domain.meeting.service.MeetingStore;
 import com.wemo.backend.domain.plan.dto.PlanCreateRequest;
 import com.wemo.backend.domain.plan.dto.PlanCreateResponse;
 import com.wemo.backend.domain.plan.dto.PlanCursorPagingResponse;
+import com.wemo.backend.domain.plan.dto.PlanDetailResponse;
 import com.wemo.backend.domain.plan.entity.Attendance;
 import com.wemo.backend.domain.plan.entity.Plan;
 import com.wemo.backend.domain.plan.repository.PlanRepository;
@@ -20,7 +21,6 @@ import com.wemo.backend.domain.region.entity.Province;
 import com.wemo.backend.domain.region.repository.DistrictRepository;
 import com.wemo.backend.domain.region.repository.ProvinceRepository;
 import com.wemo.backend.domain.region.service.RegionServiceImpl;
-import com.wemo.backend.domain.plan.dto.PlanDetailResponse;
 import com.wemo.backend.domain.user.dto.UserListInfo;
 import com.wemo.backend.domain.user.entity.User;
 import com.wemo.backend.domain.user.service.UserReader;
@@ -30,12 +30,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static com.wemo.backend.global.exception.ErrorCode.ILLEGAL_PLAN_NOT_GRANTED;
+import static com.wemo.backend.global.exception.ErrorCode.ILLEGAL_MEETING_GRANTED;
 
 @Slf4j
 @Service
@@ -81,7 +80,7 @@ public class PlanServiceImpl implements PlanService {
 
         // 모임장인지 검증
         Meeting meeting = meetingReader.getMeeting(meetingId);
-        if (user.getId() != meeting.getUser().getId()) throw new CustomException(ILLEGAL_PLAN_NOT_GRANTED);
+        if (user.getId() != meeting.getUser().getId()) throw new CustomException(ILLEGAL_MEETING_GRANTED);
 
         // 주소 저장
         // Step 1: 주소 파싱

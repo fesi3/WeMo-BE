@@ -42,4 +42,10 @@ public class Meeting extends Timestamped {
     @Comment("유저 id")
     private User user;
 
+    public void updateDescription(String description) {
+
+        this.description = description;
+
+    }
+
 }

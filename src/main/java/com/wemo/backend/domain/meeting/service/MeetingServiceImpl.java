@@ -5,6 +5,7 @@ import com.wemo.backend.domain.image.service.ImageReader;
 import com.wemo.backend.domain.image.service.ImageStore;
 import com.wemo.backend.domain.meeting.dto.MeetingCreateRequest;
 import com.wemo.backend.domain.meeting.dto.MeetingDetailResponse;
+import com.wemo.backend.domain.meeting.dto.MeetingUpdateRequest;
 import com.wemo.backend.domain.meeting.entity.Meeting;
 import com.wemo.backend.domain.plan.dto.PlanListInfo;
 import com.wemo.backend.domain.plan.entity.Attendance;
@@ -16,6 +17,7 @@ import com.wemo.backend.domain.review.service.ReviewReader;
 import com.wemo.backend.domain.user.dto.UserListInfo;
 import com.wemo.backend.domain.user.entity.User;
 import com.wemo.backend.domain.user.service.UserReader;
+import com.wemo.backend.global.exception.CustomException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,6 +25,8 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static com.wemo.backend.global.exception.ErrorCode.ILLEGAL_MEETING_GRANTED;
 
 @Service
 @RequiredArgsConstructor
@@ -113,6 +117,29 @@ public class MeetingServiceImpl implements MeetingService {
                 reviewListInfoList.size(),
                 reviewListInfoList
         );
+    }
+
+    /**
+     * 모임 정보 수정
+     *
+     * @param email 이메일
+     * @param meetingId 모임 id
+     * @param request 수정 요청 데이터 (모임 설명)
+     * @return 성공 메세지
+     */
+    @Override
+    @Transactional
+    public String updateMeeting(String email, Long meetingId, MeetingUpdateRequest request) {
+
+        User user = userReader.getUserByEmail(email);
+
+        Meeting meeting = meetingReader.getMeeting(meetingId);
+
+        if (!meeting.getUser().getEmail().equals(user.getEmail())) throw new CustomException(ILLEGAL_MEETING_GRANTED);
+
+        meeting.updateDescription(request.getDescription());
+
+        return "모임 내용이 수정되었습니다.";
     }
 
     private List<UserListInfo> getUserListInfo(Meeting meeting) {
