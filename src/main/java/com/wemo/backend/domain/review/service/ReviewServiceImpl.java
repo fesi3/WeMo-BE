@@ -3,6 +3,7 @@ package com.wemo.backend.domain.review.service;
 import com.wemo.backend.domain.auth.UserDetailsImpl;
 import com.wemo.backend.domain.image.entity.Image;
 import com.wemo.backend.domain.image.service.ImageStore;
+import com.wemo.backend.domain.plan.entity.Attendance;
 import com.wemo.backend.domain.plan.entity.Plan;
 import com.wemo.backend.domain.plan.service.PlanReader;
 import com.wemo.backend.domain.review.dto.ReviewCreateRequest;
@@ -59,13 +60,14 @@ public class ReviewServiceImpl implements ReviewService {
             throw new CustomException(REVIEW_ALREADY_EXISTS);
         }
 
-        // 참여 내역 검사
-        planReader.validateAttendance(user, plan);
-
         // 일정이 완료되었는지 확인
         if (plan.getDateTime().isAfter(LocalDateTime.now())) {
             throw new CustomException(REVIEW_CREATION_BEFORE_PLAN_END);
         }
+
+        // 참여 내역 검사 후 상태값 변경
+        Attendance attendance = planReader.validateAttendance(user, plan);
+        attendance.updateStatus();
 
         // 후기 저장
         Review review = reviewStore.storeReview(request, user, plan);

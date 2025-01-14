@@ -11,7 +11,7 @@ public interface PlanReader {
 
     Plan getPlan(Long planId);
 
-    void validateAttendance(User user, Plan plan);
+    Attendance validateAttendance(User user, Plan plan);
 
     List<Plan> getPlanByMeeting(Meeting meeting);
 

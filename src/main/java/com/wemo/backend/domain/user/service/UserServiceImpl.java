@@ -154,4 +154,17 @@ public class UserServiceImpl implements UserService {
         return new UserReviewPagingResponse(userRepository.getUserReviewList(email, pageable));
     }
 
+    /**
+     * 후기 작성 가능한 일정 목록 조회
+     *
+     * @param email 이메일
+     * @param pageable 페이징 처리 데이터
+     * @return 후기 작성 가능한 일정 목록
+     */
+    @Override
+    public UserPlanPagingResponse getPlanListReviewAvailable(String email, Pageable pageable) {
+
+        return new UserPlanPagingResponse(userRepository.getUserPlanListReviewAvailable(email, pageable));
+    }
+
 }

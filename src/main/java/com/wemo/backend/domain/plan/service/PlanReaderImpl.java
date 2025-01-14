@@ -31,12 +31,11 @@ public class PlanReaderImpl implements PlanReader {
     }
 
     @Override
-    public void validateAttendance(User user, Plan plan) {
+    public Attendance validateAttendance(User user, Plan plan) {
 
-        boolean exists = attendanceRepository.existsByUserAndPlan(user, plan);
-
-        if (!exists) throw new CustomException(PLAN_ATTENDANCE_NOT_FOUND);
-
+        return attendanceRepository.findByUserAndPlan(user, plan).orElseThrow(
+                () -> new CustomException(PLAN_ATTENDANCE_NOT_FOUND)
+        );
     }
 
     @Override
