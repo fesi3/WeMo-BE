@@ -1,0 +1,34 @@
+package com.wemo.backend.domain.user.controller;
+
+import com.wemo.backend.domain.auth.token.service.RefreshTokenManager;
+import com.wemo.backend.global.response.SuccessResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
+
+@Tag(name = "Token")
+@RestController
+@RequiredArgsConstructor
+public class TokenController {
+
+    private final RefreshTokenManager refreshTokenManager;
+
+    @Operation(summary = "토큰 재발급", description = "accessToken을 재발급합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "accessToken 재발급되었습니다.")
+    })
+    @RequestMapping(value = "/api/auths/reissue", method = RequestMethod.POST)
+    public ResponseEntity<SuccessResponse<String>> reissueToken(@RequestHeader("Refresh-Token") String refreshToken) {
+
+        HttpHeaders httpHeaders = refreshTokenManager.reissueToken(refreshToken);
+        return ResponseEntity.status(200).headers(httpHeaders).body(SuccessResponse.successWithNoData("accessToken 재발급 성공"));
+    }
+}

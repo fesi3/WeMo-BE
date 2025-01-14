@@ -40,9 +40,9 @@ public class UserController {
 
     @Operation(summary = "회원 가입", description = "사용자를 생성합니다.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "사용자가 생성되었습니다.",
-                    content = @Content(mediaType = "application/json")),
-            @ApiResponse(responseCode = "400", description = "입력값을 확인해주세요.")
+            @ApiResponse(responseCode = "201", description = "사용자가 생성되었습니다."),
+            @ApiResponse(responseCode = "400", description = "입력값을 확인해주세요.",
+                    content = @Content(mediaType = "application/json"))
     })
     @RequestMapping(value = "/signup",method = RequestMethod.POST)
     public ResponseEntity<SuccessResponse<String>> signup(@Valid @RequestBody UserCreateRequest request) {
@@ -53,9 +53,9 @@ public class UserController {
 
     @Operation(summary = "로그인", description = "사용자가 로그인을 합니다.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "로그인에 성공하였습니다.",
-                    content = @Content(mediaType = "application/json")),
-            @ApiResponse(responseCode = "400", description = "입력값을 확인해주세요.")
+            @ApiResponse(responseCode = "200", description = "로그인에 성공하였습니다."),
+            @ApiResponse(responseCode = "400", description = "입력값을 확인해주세요.",
+                    content = @Content(mediaType = "application/json"))
     })
     @RequestMapping(value = "/signin", method = RequestMethod.POST)
     public ResponseEntity<SuccessResponse<String>> signin(@Valid @RequestBody SigninRequest request) {
@@ -66,9 +66,9 @@ public class UserController {
 
     @Operation(summary = "로그아웃", description = "사용자가 로그아웃을 합니다.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "로그아웃에 성공하였습니다.",
-                    content = @Content(mediaType = "application/json")),
-            @ApiResponse(responseCode = "400", description = "입력값을 확인해주세요.")
+            @ApiResponse(responseCode = "200", description = "로그아웃에 성공하였습니다."),
+            @ApiResponse(responseCode = "400", description = "입력값을 확인해주세요.",
+                    content = @Content(mediaType = "application/json"))
     })
     @RequestMapping(value = "/signout", method = RequestMethod.POST)
     public ResponseEntity<SuccessResponse<String>> signout(
@@ -82,8 +82,7 @@ public class UserController {
 
     @Operation(summary = "회원 정보 조회", description = "사용자가 회원 정보를 조회합니다.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "성공적으로 회원 정보를 조회하였습니다.",
-                    content = @Content(mediaType = "application/json"))
+            @ApiResponse(responseCode = "200", description = "성공적으로 회원 정보를 조회하였습니다.")
     })
     @RequestMapping(value = "/users", method = RequestMethod.GET)
     public ResponseEntity<SuccessResponse<UserInfoResponse>> getUserInfo(@AuthenticationPrincipal UserDetailsImpl userDetails) {
@@ -92,12 +91,12 @@ public class UserController {
 
     @Operation(summary = "회원 정보 수정", description = "사용자가 회원 정보를 수정합니다.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "회원 정보가 수정되었습니다.",
-                    content = @Content(mediaType = "application/json"))
+            @ApiResponse(responseCode = "200", description = "회원 정보가 수정되었습니다.")
     })
     @RequestMapping(value = "/profile", method = RequestMethod.PUT)
     public ResponseEntity<SuccessResponse<UserUpdateResponse>> updateProfile(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                                                              @Valid @RequestBody UserUpdateRequest request) {
+
         return ResponseEntity.ok(SuccessResponse.successWithData(userService.updateProfile(userDetails.getUsername(), request)));
     }
 
