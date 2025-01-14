@@ -23,7 +23,7 @@ import java.util.Optional;
 import static com.wemo.backend.domain.attendance.entity.QAttendance.attendance;
 import static com.wemo.backend.domain.category.entity.QCategory.category;
 import static com.wemo.backend.domain.image.entity.QImage.image;
-import static com.wemo.backend.domain.like.entity.QLike.like;
+import static com.wemo.backend.domain.like.entity.QLikes.likes;
 import static com.wemo.backend.domain.meeting.entity.QMeeting.meeting;
 import static com.wemo.backend.domain.meetingMember.entity.QMeetingMember.meetingMember;
 import static com.wemo.backend.domain.plan.entity.QPlan.plan;
@@ -156,10 +156,10 @@ public class UserQueryDslImpl implements UserQueryDsl {
                                         "participants"
                                 ),
                                 Expressions.as(
-                                        queryFactory.select(like.count())
-                                                .from(like)
-                                                .where(like.plan.id.eq(plan.id)),
-                                        "likeCount"
+                                        queryFactory.select(likes.count())
+                                                .from(likes)
+                                                .where(likes.plan.id.eq(plan.id)),
+                                        "likesCount"
                                 ),
                                 plan.viewCount,
                                 plan.createdAt,
@@ -168,17 +168,17 @@ public class UserQueryDslImpl implements UserQueryDsl {
                                 plan.canceled,
                                 plan.fulled,
                                 Expressions.as(
-                                        queryFactory.select(like.count())
-                                                .from(like)
+                                        queryFactory.select(likes.count())
+                                                .from(likes)
                                                 .where(
-                                                        like.plan.id.eq(plan.id)
+                                                        likes.plan.id.eq(plan.id)
                                                                 .and(
                                                                         email != null
-                                                                                ? like.user.email.eq(email)
-                                                                                : like.user.email.isNull()
+                                                                                ? likes.user.email.eq(email)
+                                                                                : likes.user.email.isNull()
                                                                 )
                                                 ).gt(0L),
-                                        "isLiked")
+                                        "islikesd")
                         )
                 )
                 .from(plan)
@@ -186,7 +186,6 @@ public class UserQueryDslImpl implements UserQueryDsl {
                 .leftJoin(attendance).on(attendance.plan.eq(plan))
                 .where(attendance.user.email.eq(email)) // 유저가 참여한 일정
                 .orderBy(plan.createdAt.desc());
-
 
         // 페이징 처리
         List<UserPlanListResponse> planListResponses = queryBuilder

@@ -1,5 +1,6 @@
 package com.wemo.backend.domain.like.entity;
 
+import com.querydsl.core.annotations.QueryEntity;
 import com.wemo.backend.domain.plan.entity.Plan;
 import com.wemo.backend.domain.user.entity.User;
 import com.wemo.backend.global.entity.Timestamped;
@@ -14,7 +15,8 @@ import org.hibernate.annotations.Comment;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Like extends Timestamped {
+@QueryEntity
+public class Likes extends Timestamped {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -24,12 +24,14 @@ import com.wemo.backend.domain.region.repository.DistrictRepository;
 import com.wemo.backend.domain.region.repository.ProvinceRepository;
 import com.wemo.backend.domain.region.service.RegionServiceImpl;
 import com.wemo.backend.domain.user.dto.UserListInfo;
+import com.wemo.backend.domain.user.dto.UserPlanPagingResponse;
 import com.wemo.backend.domain.user.entity.User;
 import com.wemo.backend.domain.user.service.UserReader;
 import com.wemo.backend.global.exception.CustomException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -244,6 +246,29 @@ public class PlanServiceImpl implements PlanService {
         attendanceStore.quitPlan(user, plan);
 
         return "일정 참여가 취소되었습니다.";
+    }
+
+    /**
+     * 좋아요한 일정 목록 조회
+     *
+     * @param email       이메일
+     * @param pageable    페이징 처리 데이터
+     * @param query       검색어
+     * @param province    시/도 데이터
+     * @param district    군/구 데이터
+     * @param startDate   시작 날짜
+     * @param endDate     끝 날짜
+     * @param categoryId  카테고리 id
+     * @param sort        정렬 기준
+     * @return 조건에 해당하는 좋아요한 일정 목록
+     */
+    @Override
+    @Transactional
+    public UserPlanPagingResponse getLikedPlanList(String email, Pageable pageable, String query, String province, String district, String startDate, String endDate, Long categoryId, String sort) {
+
+        // 유저 검증
+        userReader.getUserByEmail(email);
+        return new UserPlanPagingResponse(planRepository.getLikedPlanList(email, pageable, query, province, district, startDate, endDate,categoryId, sort));
     }
 
     private List<UserListInfo> getUserListFromAttendance(Plan plan) {

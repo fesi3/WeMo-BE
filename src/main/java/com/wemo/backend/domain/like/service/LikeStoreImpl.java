@@ -1,6 +1,6 @@
 package com.wemo.backend.domain.like.service;
 
-import com.wemo.backend.domain.like.entity.Like;
+import com.wemo.backend.domain.like.entity.Likes;
 import com.wemo.backend.domain.like.repository.LikeRepository;
 import com.wemo.backend.domain.plan.entity.Plan;
 import com.wemo.backend.domain.user.entity.User;
@@ -18,7 +18,7 @@ public class LikeStoreImpl implements LikeStore {
     @Transactional
     public void storeLike(User user, Plan plan) {
 
-        Like like = Like.builder()
+        Likes like = Likes.builder()
                 .user(user)
                 .plan(plan)
                 .build();
@@ -29,7 +29,7 @@ public class LikeStoreImpl implements LikeStore {
     @Override
     public void deleteLike(User user, Plan plan) {
 
-        Like like = likeRepository.findByUserAndPlan(user, plan);
+        Likes like = likeRepository.findByUserAndPlan(user, plan);
 
         likeRepository.delete(like);
     }
