@@ -74,4 +74,16 @@ public class MeetingController {
         return ResponseEntity.ok(SuccessResponse.successWithNoData(meetingService.updateMeeting(userDetails.getUsername(), meetingId, request)));
     }
 
+    @Operation(summary = "모임 삭제", description = "모임을 삭제합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "모임이 삭제되었습니다."),
+            @ApiResponse(responseCode = "404", description = "존재하지 않는 모임입니다.",
+                    content = @Content(mediaType = "application/json"))
+    })
+    @RequestMapping(value = "/{meetingId}", method = RequestMethod.DELETE)
+    public ResponseEntity<SuccessResponse<String>> deleteMeeting(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                                 @PathVariable Long meetingId) {
+        return ResponseEntity.ok(SuccessResponse.successWithNoData(meetingService.deleteMeeting(userDetails.getUsername(), meetingId)));
+    }
+
 }

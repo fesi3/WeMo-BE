@@ -1,5 +1,7 @@
 package com.wemo.backend.domain.meeting.service;
 
+import com.wemo.backend.domain.attendance.entity.Attendance;
+import com.wemo.backend.domain.attendance.service.AttendanceReader;
 import com.wemo.backend.domain.image.entity.Image;
 import com.wemo.backend.domain.image.service.ImageReader;
 import com.wemo.backend.domain.image.service.ImageStore;
@@ -7,8 +9,9 @@ import com.wemo.backend.domain.meeting.dto.MeetingCreateRequest;
 import com.wemo.backend.domain.meeting.dto.MeetingDetailResponse;
 import com.wemo.backend.domain.meeting.dto.MeetingUpdateRequest;
 import com.wemo.backend.domain.meeting.entity.Meeting;
+import com.wemo.backend.domain.meetingMember.service.MeetingMemberReader;
+import com.wemo.backend.domain.meetingMember.service.MeetingMemberStore;
 import com.wemo.backend.domain.plan.dto.PlanListInfo;
-import com.wemo.backend.domain.plan.entity.Attendance;
 import com.wemo.backend.domain.plan.entity.Plan;
 import com.wemo.backend.domain.plan.service.PlanReader;
 import com.wemo.backend.domain.review.dto.ReviewListInfo;
@@ -20,6 +23,7 @@ import com.wemo.backend.domain.user.service.UserReader;
 import com.wemo.backend.global.exception.CustomException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -28,17 +32,21 @@ import java.util.stream.Collectors;
 
 import static com.wemo.backend.global.exception.ErrorCode.ILLEGAL_MEETING_GRANTED;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class MeetingServiceImpl implements MeetingService {
 
     private final UserReader userReader;
     private final MeetingStore meetingStore;
+    private final MeetingMemberStore meetingMemberStore;
     private final ImageStore imageStore;
     private final MeetingReader meetingReader;
+    private final MeetingMemberReader meetingMemberReader;
     private final PlanReader planReader;
     private final ReviewReader reviewReader;
     private final ImageReader imageReader;
+    private final AttendanceReader attendanceReader;
 
     /**
      * 0. 모임 생성
@@ -60,7 +68,7 @@ public class MeetingServiceImpl implements MeetingService {
         imageStore.storeImage(userByEmail, meeting.getId(), request.getFileUrl(), Image.EntityType.MEETING);
 
         // 모임 생성자는 자동으로 가입
-        meetingStore.joinMeeting(userByEmail, meeting);
+        meetingMemberStore.storeMemberToMeeting(userByEmail, meeting);
 
     }
 
@@ -78,7 +86,7 @@ public class MeetingServiceImpl implements MeetingService {
         User user = userReader.getUserByEmail(email);
         Meeting meeting = meetingReader.getMeeting(meetingId);
 
-        meetingStore.joinMeeting(user, meeting);
+        meetingMemberStore.storeMemberToMeeting(user, meeting);
 
         return "모임 가입 성공";
     }
@@ -142,8 +150,50 @@ public class MeetingServiceImpl implements MeetingService {
         return "모임 내용이 수정되었습니다.";
     }
 
+    @Override
+    @Transactional
+    public String deleteMeeting(String email, Long meetingId) {
+
+        User user = userReader.getUserByEmail(email);
+
+        Meeting meeting = meetingReader.getMeeting(meetingId);
+
+        if (!meeting.getUser().getEmail().equals(user.getEmail())) {
+            log.warn("사용자 {}가 권한 없이 모임 id {}를 삭제하려 했습니다.", user.getEmail(), meetingId);
+            throw new CustomException(ILLEGAL_MEETING_GRANTED);
+        }
+
+        // 모임 삭제 처리
+        meeting.softDelete();
+
+        // 모임과 연관된 계획 정보 조회
+        List<Plan> plans = planReader.getPlanByMeeting(meeting);
+        plans.forEach(plan -> {
+            // 계획에 속한 참석자 정보 삭제
+            attendanceReader.getAttendanceList(plan).forEach(attendanceReader::delete);
+            // 후기 정보 삭제
+            reviewReader.getReviewByPlan(plan).forEach(review -> {
+                // 후기와 관련된 이미지 삭제
+                imageReader.deleteImage(review.getId(), Image.EntityType.REVIEW);
+                reviewReader.delete(review);
+            });
+            // 계획에 속한 이미지 삭제
+            imageReader.deleteImage(plan.getId(), Image.EntityType.PLAN);
+            // 계획 정보 삭제
+            planReader.delete(plan);
+        });
+
+        // 모임과 연관된 멤버 정보 삭제
+        meetingMemberReader.getMemberListByMeeting(meeting).forEach(meetingMemberReader::delete);
+
+        // 모임에 속한 이미지 삭제
+        imageReader.deleteImage(meetingId, Image.EntityType.MEETING);
+
+        return "모임이 삭제되었습니다.";
+    }
+
     private List<UserListInfo> getUserListInfo(Meeting meeting) {
-        return meetingReader.getMemberByMeeting(meeting).stream()
+        return meetingMemberReader.getMemberListByMeeting(meeting).stream()
                 .map(UserListInfo::fromEntity)
                 .collect(Collectors.toList());
     }
@@ -152,7 +202,7 @@ public class MeetingServiceImpl implements MeetingService {
         List<Plan> planList = planReader.getPlanByMeeting(meeting);
 
         return planList.stream().map(plan -> {
-            List<Attendance> attendanceList = planReader.getAttendanceList(plan);
+            List<Attendance> attendanceList = attendanceReader.getAttendanceList(plan);
             List<String> planImageList = imageReader.getImageList(plan.getId(), Image.EntityType.PLAN);
 
             return PlanListInfo.fromEntity(plan, attendanceList.size(), planImageList);

@@ -20,4 +20,10 @@ public class ReviewReaderImpl implements ReviewReader {
         return reviewRepository.findAllByPlan(plan);
     }
 
+    @Override
+    public void delete(Review review) {
+
+        reviewRepository.delete(review);
+    }
+
 }

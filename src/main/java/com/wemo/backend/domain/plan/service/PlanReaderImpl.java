@@ -1,18 +1,15 @@
 package com.wemo.backend.domain.plan.service;
 
 import com.wemo.backend.domain.meeting.entity.Meeting;
-import com.wemo.backend.domain.plan.entity.Attendance;
 import com.wemo.backend.domain.plan.entity.Plan;
-import com.wemo.backend.domain.plan.repository.AttendanceRepository;
 import com.wemo.backend.domain.plan.repository.PlanRepository;
-import com.wemo.backend.domain.user.entity.User;
 import com.wemo.backend.global.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-import static com.wemo.backend.global.exception.ErrorCode.*;
+import static com.wemo.backend.global.exception.ErrorCode.ILLEGAL_PLAN_NOT_FOUND;
 
 @Component
 @RequiredArgsConstructor
@@ -20,7 +17,6 @@ public class PlanReaderImpl implements PlanReader {
 
     private final PlanRepository planRepository;
 
-    private final AttendanceRepository attendanceRepository;
 
     @Override
     public Plan getPlan(Long planId) {
@@ -31,23 +27,16 @@ public class PlanReaderImpl implements PlanReader {
     }
 
     @Override
-    public Attendance validateAttendance(User user, Plan plan) {
-
-        return attendanceRepository.findByUserAndPlan(user, plan).orElseThrow(
-                () -> new CustomException(PLAN_ATTENDANCE_NOT_FOUND)
-        );
-    }
-
-    @Override
     public List<Plan> getPlanByMeeting(Meeting meeting) {
 
         return planRepository.findAllByMeeting(meeting);
     }
 
     @Override
-    public List<Attendance> getAttendanceList(Plan plan) {
+    public void delete(Plan plan) {
 
-        return attendanceRepository.findAllByPlan(plan);
+        planRepository.delete(plan);
+
     }
 
 }
