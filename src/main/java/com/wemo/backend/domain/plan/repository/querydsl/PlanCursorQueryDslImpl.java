@@ -17,10 +17,10 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import static com.wemo.backend.domain.attendance.entity.QAttendance.attendance;
 import static com.wemo.backend.domain.image.entity.QImage.image;
 import static com.wemo.backend.domain.like.entity.QLike.like;
 import static com.wemo.backend.domain.meeting.entity.QMeeting.meeting;
-import static com.wemo.backend.domain.plan.entity.QAttendance.attendance;
 import static com.wemo.backend.domain.plan.entity.QPlan.plan;
 import static com.wemo.backend.domain.region.entity.QDistrict.district;
 import static com.wemo.backend.domain.region.entity.QProvince.province;

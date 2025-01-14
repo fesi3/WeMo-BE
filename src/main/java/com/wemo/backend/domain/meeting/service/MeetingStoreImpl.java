@@ -4,8 +4,8 @@ import com.wemo.backend.domain.category.entity.Category;
 import com.wemo.backend.domain.category.repository.CategoryRepository;
 import com.wemo.backend.domain.meeting.dto.MeetingCreateRequest;
 import com.wemo.backend.domain.meeting.entity.Meeting;
-import com.wemo.backend.domain.meeting.entity.MeetingMember;
-import com.wemo.backend.domain.meeting.repository.MeetingMemberRepository;
+import com.wemo.backend.domain.meetingMember.entity.MeetingMember;
+import com.wemo.backend.domain.meetingMember.repository.MeetingMemberRepository;
 import com.wemo.backend.domain.meeting.repository.MeetingRepository;
 import com.wemo.backend.domain.user.entity.User;
 import com.wemo.backend.global.exception.CustomException;
@@ -22,8 +22,6 @@ public class MeetingStoreImpl implements MeetingStore {
     private final CategoryRepository categoryRepository;
 
     private final MeetingRepository meetingRepository;
-
-    private final MeetingMemberRepository meetingMemberRepository;
 
     @Override
     @Transactional
@@ -43,22 +41,6 @@ public class MeetingStoreImpl implements MeetingStore {
         meetingRepository.save(meeting);
 
         return meeting;
-    }
-
-    @Override
-    @Transactional
-    public void joinMeeting(User user, Meeting meeting) {
-
-        boolean alreadyJoined = meetingMemberRepository.existsByUserAndMeeting(user, meeting);
-
-        if (alreadyJoined) throw new CustomException(ALREADY_JOINED_MEETING);
-
-        MeetingMember meetingMember = MeetingMember.builder()
-                .user(user)
-                .meeting(meeting)
-                .build();
-
-        meetingMemberRepository.save(meetingMember);
     }
 
 }

@@ -8,6 +8,4 @@ public interface MeetingStore {
 
     Meeting storeMeeting(MeetingCreateRequest request, User user);
 
-    void joinMeeting(User user, Meeting meeting);
-
 }

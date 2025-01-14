@@ -1,10 +1,10 @@
 package com.wemo.backend.domain.plan.service;
 
+import com.wemo.backend.domain.attendance.entity.Attendance;
 import com.wemo.backend.domain.meeting.entity.Meeting;
 import com.wemo.backend.domain.plan.dto.PlanCreateRequest;
-import com.wemo.backend.domain.plan.entity.Attendance;
 import com.wemo.backend.domain.plan.entity.Plan;
-import com.wemo.backend.domain.plan.repository.AttendanceRepository;
+import com.wemo.backend.domain.attendance.repository.AttendanceRepository;
 import com.wemo.backend.domain.plan.repository.PlanRepository;
 import com.wemo.backend.domain.region.entity.District;
 import com.wemo.backend.domain.user.entity.User;

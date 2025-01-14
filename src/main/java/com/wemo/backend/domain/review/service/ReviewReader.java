@@ -9,4 +9,6 @@ public interface ReviewReader {
 
     List<Review> getReviewByPlan(Plan plan);
 
+    void delete(Review review);
+
 }

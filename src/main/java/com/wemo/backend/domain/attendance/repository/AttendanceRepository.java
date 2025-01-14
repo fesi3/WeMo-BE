@@ -1,6 +1,6 @@
-package com.wemo.backend.domain.plan.repository;
+package com.wemo.backend.domain.attendance.repository;
 
-import com.wemo.backend.domain.plan.entity.Attendance;
+import com.wemo.backend.domain.attendance.entity.Attendance;
 import com.wemo.backend.domain.plan.entity.Plan;
 import com.wemo.backend.domain.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;

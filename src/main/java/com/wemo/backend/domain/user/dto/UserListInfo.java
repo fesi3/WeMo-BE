@@ -1,7 +1,7 @@
 package com.wemo.backend.domain.user.dto;
 
-import com.wemo.backend.domain.meeting.entity.MeetingMember;
-import com.wemo.backend.domain.plan.entity.Attendance;
+import com.wemo.backend.domain.attendance.entity.Attendance;
+import com.wemo.backend.domain.meetingMember.entity.MeetingMember;
 import lombok.Builder;
 import lombok.Getter;
 
