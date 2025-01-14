@@ -20,4 +20,6 @@ public interface PlanService {
 
     String cancelPlan(String email, Long planId);
 
+    String cancelAttendance(String email, Long planId);
+
 }

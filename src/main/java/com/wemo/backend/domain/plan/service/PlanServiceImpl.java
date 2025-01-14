@@ -2,6 +2,7 @@ package com.wemo.backend.domain.plan.service;
 
 import com.wemo.backend.domain.attendance.entity.Attendance;
 import com.wemo.backend.domain.attendance.service.AttendanceReader;
+import com.wemo.backend.domain.attendance.service.AttendanceStore;
 import com.wemo.backend.domain.auth.UserDetailsImpl;
 import com.wemo.backend.domain.image.entity.Image;
 import com.wemo.backend.domain.image.service.ImageReader;
@@ -35,7 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static com.wemo.backend.global.exception.ErrorCode.ILLEGAL_MEETING_GRANTED;
+import static com.wemo.backend.global.exception.ErrorCode.*;
 
 @Slf4j
 @Service
@@ -63,6 +64,8 @@ public class PlanServiceImpl implements PlanService {
     private final ImageReader imageReader;
 
     private final AttendanceReader attendanceReader;
+
+    private final AttendanceStore attendanceStore;
 
     private final MeetingMemberStore meetingMemberStore;
 
@@ -102,7 +105,7 @@ public class PlanServiceImpl implements PlanService {
         Plan plan = planStore.storePlan(request, district, user, meeting);
 
         // 주최자는 일정에 자동으로 참여
-        planStore.joinPlan(user, plan);
+        attendanceStore.attendPlan(user, plan);
 
         // 이미지 저장 (선택)
         if (!request.getFileUrls().isEmpty()) {
@@ -128,10 +131,10 @@ public class PlanServiceImpl implements PlanService {
         User user = userReader.getUserByEmail(email);
         Plan plan = planReader.getPlan(planId);
 
-        planStore.joinPlan(user, plan);
+        attendanceStore.attendPlan(user, plan);
 
         // 일정 참여 시 모임에도 자동으로 가입
-        meetingMemberStore.storeMemberToMeeting(user, plan.getMeeting());
+        meetingMemberStore.forceJoinMeeting(user, plan.getMeeting());
 
         return "일정 참여 신청 완료되었습니다.";
     }
@@ -220,6 +223,27 @@ public class PlanServiceImpl implements PlanService {
         plan.cancel();
 
         return "일정이 정상적으로 취소되었습니다.";
+    }
+
+    /**
+     * 일정 참여 취소
+     *
+     * @param email 이메일
+     * @param planId 일정 id
+     * @return 성공 메세지
+     */
+    @Override
+    public String cancelAttendance(String email, Long planId) {
+
+        // 유저 검증 및 조회
+        User user = userReader.getUserByEmail(email);
+
+        // 일정 검증 및 조회
+        Plan plan = planReader.getPlan(planId);
+
+        attendanceStore.quitPlan(user, plan);
+
+        return "일정 참여가 취소되었습니다.";
     }
 
     private List<UserListInfo> getUserListFromAttendance(Plan plan) {

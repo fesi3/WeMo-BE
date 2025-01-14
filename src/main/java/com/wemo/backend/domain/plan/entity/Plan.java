@@ -93,26 +93,34 @@ public class Plan extends Timestamped {
     @Comment("조회수")
     private int viewCount;
 
+    // 개설 확정
     public void open() {
-
         this.opened = true;
     }
 
+    // 개설 미확정
     public void close() {
+        this.opened = false;
+    }
 
+    // 조회 수 증가
+    public void updateViewCount() {
+        this.viewCount++;
+    }
+
+    // 모집 취소
+    public void cancel() {
+        this.canceled = true;
+    }
+
+    // 모집 마감 (정원 초과 또는 기간 마감)
+    public void full() {
         this.fulled = true;
     }
 
-    public void updateViewCount() {
-
-        this.viewCount++;
-
-    }
-
-    public void cancel() {
-
-        this.canceled = true;
-
+    // 재모집 (모집 정원 남은 경우)
+    public void hasCapacity() {
+        this.fulled = false;
     }
 
 }
