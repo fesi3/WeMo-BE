@@ -18,4 +18,6 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
 
     long countByPlan(Plan plan);
 
+    List<Attendance> findAllByUserAndPlanOpened(User user, boolean opened);
+
 }
