@@ -18,4 +18,6 @@ public interface AttendanceReader {
 
     int getParticipantsCount(Plan plan);
 
+    List<Attendance> getAttendanceByUser(User user);
+
 }

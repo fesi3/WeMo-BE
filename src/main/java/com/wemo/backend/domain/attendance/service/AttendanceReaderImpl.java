@@ -58,4 +58,10 @@ public class AttendanceReaderImpl implements AttendanceReader {
         return (int) attendanceRepository.countByPlan(plan);
     }
 
+    @Override
+    public List<Attendance> getAttendanceByUser(User user) {
+
+        return attendanceRepository.findAllByUserAndPlanOpened(user, true);
+    }
+
 }
