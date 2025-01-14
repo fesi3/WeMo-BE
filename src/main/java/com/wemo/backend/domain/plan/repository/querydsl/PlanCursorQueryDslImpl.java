@@ -134,7 +134,8 @@ public class PlanCursorQueryDslImpl implements PlanCursorQueryDsl {
                         queryFactory.select(image.fileUrl)
                                 .from(image)
                                 .where(image.entityId.eq(plan.id),
-                                        image.entityType.eq(Image.EntityType.PLAN)),
+                                        image.entityType.eq(Image.EntityType.PLAN),
+                                        image.main.eq(true)),
                         "planImagePath"
                 ),
                 plan.dateTime,
