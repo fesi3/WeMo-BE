@@ -19,7 +19,7 @@ import java.util.Optional;
 
 import static com.wemo.backend.domain.attendance.entity.QAttendance.attendance;
 import static com.wemo.backend.domain.image.entity.QImage.image;
-import static com.wemo.backend.domain.like.entity.QLike.like;
+import static com.wemo.backend.domain.like.entity.QLikes.likes;
 import static com.wemo.backend.domain.meeting.entity.QMeeting.meeting;
 import static com.wemo.backend.domain.plan.entity.QPlan.plan;
 import static com.wemo.backend.domain.region.entity.QDistrict.district;
@@ -50,7 +50,6 @@ public class PlanCursorQueryDslImpl implements PlanCursorQueryDsl {
         return getPlanList(null, cursor, size, query, province, district, startDate, endDate, categoryId, sort);
     }
 
-
     private PlanCursorPagingResponse getPlanList(String email, Long cursor, int size, String query, String province, String district, String startDate, String endDate, Long categoryId, String sort) {
 
         updateIsFulledStatus();
@@ -70,7 +69,7 @@ public class PlanCursorQueryDslImpl implements PlanCursorQueryDsl {
         }
 
         List<PlanListResponse> planListResponses = queryFactory
-                .select(buildGatheringListProjection(email))
+                .select(buildPlanListProjection(email))
                 .from(plan)
                 .leftJoin(plan.user, user)
                 .where(listConditions)
@@ -91,7 +90,7 @@ public class PlanCursorQueryDslImpl implements PlanCursorQueryDsl {
         return new PlanCursorPagingResponse(planListResponses, (int) planCount);
     }
 
-    private ConstructorExpression<PlanListResponse> buildGatheringListProjection(String email) {
+    public ConstructorExpression<PlanListResponse> buildPlanListProjection(String email) {
 
         return Projections.constructor(
                 PlanListResponse.class,
@@ -149,10 +148,10 @@ public class PlanCursorQueryDslImpl implements PlanCursorQueryDsl {
                         "participants"
                 ),
                 Expressions.as(
-                        queryFactory.select(like.count())
-                                .from(like)
-                                .where(like.plan.id.eq(plan.id)),
-                        "likeCount"
+                        queryFactory.select(likes.count())
+                                .from(likes)
+                                .where(likes.plan.id.eq(plan.id)),
+                        "likesCount"
                 ),
                 plan.viewCount,
                 plan.createdAt,
@@ -160,21 +159,26 @@ public class PlanCursorQueryDslImpl implements PlanCursorQueryDsl {
                 plan.opened,
                 plan.fulled,
                 Expressions.as(
-                        queryFactory.select(like.count())
-                                .from(like)
+                        queryFactory.select(likes.count())
+                                .from(likes)
                                 .where(
-                                        like.plan.id.eq(plan.id)
+                                        likes.plan.id.eq(plan.id)
                                                 .and(
                                                         email != null
-                                                                ? like.user.email.eq(email)
-                                                                : like.user.email.isNull()
+                                                                ? likes.user.email.eq(email)
+                                                                : likes.user.email.isNull()
                                                 )
                                 ).gt(0L),
-                        "isLiked")
+                        "islikesd")
         );
     }
 
     private BooleanExpression buildFilterConditions(String query, String province, String district, String startDate, String endDate, Long categoryId) {
+
+        return getBooleanExpression(query, province, district, startDate, endDate, categoryId);
+    }
+
+    static BooleanExpression getBooleanExpression(String query, String province, String district, String startDate, String endDate, Long categoryId) {
 
         BooleanExpression condition = plan.canceled.eq(false);
 
