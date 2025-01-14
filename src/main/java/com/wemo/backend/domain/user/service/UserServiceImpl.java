@@ -1,11 +1,19 @@
 package com.wemo.backend.domain.user.service;
 
+import com.wemo.backend.domain.attendance.entity.Attendance;
+import com.wemo.backend.domain.attendance.service.AttendanceReader;
 import com.wemo.backend.domain.auth.JwtTokenProvider;
 import com.wemo.backend.domain.auth.UserAuth;
 import com.wemo.backend.domain.auth.token.entity.RefreshToken;
 import com.wemo.backend.domain.auth.token.repository.RefreshTokenRepository;
 import com.wemo.backend.domain.auth.token.service.RefreshTokenManager;
 import com.wemo.backend.domain.auth.token.service.TokenBlacklistService;
+import com.wemo.backend.domain.like.entity.Likes;
+import com.wemo.backend.domain.like.service.LikeReader;
+import com.wemo.backend.domain.plan.entity.Plan;
+import com.wemo.backend.domain.plan.service.PlanReader;
+import com.wemo.backend.domain.review.entity.Review;
+import com.wemo.backend.domain.review.service.ReviewReader;
 import com.wemo.backend.domain.user.dto.*;
 import com.wemo.backend.domain.user.entity.User;
 import com.wemo.backend.domain.user.repository.UserRepository;
@@ -15,6 +23,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Slf4j
 @Service
@@ -29,6 +39,9 @@ public class UserServiceImpl implements UserService {
     private final RefreshTokenManager refreshTokenManager;
     private final RefreshTokenRepository refreshTokenRepository;
     private final UserRepository userRepository;
+    private final AttendanceReader attendanceReader;
+    private final LikeReader likeReader;
+    private final ReviewReader reviewReader;
 
     /**
      * 0. 이메일 중복 검사
@@ -111,7 +124,11 @@ public class UserServiceImpl implements UserService {
     public UserInfoResponse getUserInfo(String email) {
 
         User user = userReader.getUserByEmail(email);
-        return UserInfoResponse.fromEntity(user);
+
+        List<Attendance> joinedPlanList = attendanceReader.getAttendanceByUser(user);
+        List<Likes> likedPlanList = likeReader.getLikeCountByUser(user);
+        List<Review> reviewList = reviewReader.getReviewByUser(user);
+        return UserInfoResponse.fromEntity(user, joinedPlanList.size(), likedPlanList.size(), reviewList.size());
     }
 
     /**
