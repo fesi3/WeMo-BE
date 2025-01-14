@@ -160,7 +160,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 requestURI.startsWith("/swagger-ui/") ||
                 requestURI.startsWith("/swagger-ui.html") ||
                 requestURI.startsWith("/v3/api-docs") ||
-                requestURI.startsWith("/api/regions");
+                requestURI.startsWith("/api/regions") ||
+                requestURI.equals("/api/auths/reissue");
     }
 
 }

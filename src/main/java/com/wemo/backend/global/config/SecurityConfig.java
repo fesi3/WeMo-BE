@@ -83,6 +83,9 @@ public class SecurityConfig {
                                 "/api/auths/signup",
                                 "/api/auths/signin",
 
+                                // 토큰 재발급 API 경로
+                                "/api/auths/reissue",
+
                                 // swagger 관련 API 문서 경로
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
