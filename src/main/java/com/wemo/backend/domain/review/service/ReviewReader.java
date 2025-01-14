@@ -16,4 +16,6 @@ public interface ReviewReader {
 
     void validateReview(User user, Review review);
 
+    List<Review> getReviewByUser(User user);
+
 }

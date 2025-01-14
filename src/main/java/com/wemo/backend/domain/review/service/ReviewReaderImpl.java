@@ -45,4 +45,10 @@ public class ReviewReaderImpl implements ReviewReader {
         if (!user.getEmail().equals(review.getUser().getEmail())) throw new CustomException(ILLEGAL_REVIEW_GRANTED);
     }
 
+    @Override
+    public List<Review> getReviewByUser(User user) {
+
+        return reviewRepository.findAllByUser(user);
+    }
+
 }

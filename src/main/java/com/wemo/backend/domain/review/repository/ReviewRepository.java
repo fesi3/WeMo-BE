@@ -14,4 +14,6 @@ public interface ReviewRepository extends JpaRepository<Review, Long>, ReviewQue
 
     List<Review> findAllByPlan(Plan plan);
 
+    List<Review> findAllByUser(User user);
+
 }
