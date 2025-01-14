@@ -3,6 +3,7 @@ package com.wemo.backend.domain.meeting.controller;
 import com.wemo.backend.domain.auth.UserDetailsImpl;
 import com.wemo.backend.domain.meeting.dto.MeetingCreateRequest;
 import com.wemo.backend.domain.meeting.dto.MeetingDetailResponse;
+import com.wemo.backend.domain.meeting.dto.MeetingMemberPagingResponse;
 import com.wemo.backend.domain.meeting.dto.MeetingUpdateRequest;
 import com.wemo.backend.domain.meeting.service.MeetingService;
 import com.wemo.backend.global.response.SuccessResponse;
@@ -13,6 +14,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -85,5 +89,21 @@ public class MeetingController {
                                                                  @PathVariable Long meetingId) {
         return ResponseEntity.ok(SuccessResponse.successWithNoData(meetingService.deleteMeeting(userDetails.getUsername(), meetingId)));
     }
+
+    @Operation(summary = "모임 멤버 목록 조회", description = "모임 멤버 목록입니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "모임에 가입한 멤버의 목록입니다."),
+            @ApiResponse(responseCode = "404", description = "존재하지 않는 모임입니다.",
+                    content = @Content(mediaType = "application/json"))
+    })
+    @RequestMapping(value = "/{meetingId}/members", method = RequestMethod.GET)
+    public ResponseEntity<SuccessResponse<MeetingMemberPagingResponse>> getMemberListByMeeting(@PathVariable Long meetingId,
+                                                                                               @RequestParam(defaultValue = "1") int page,
+                                                                                               @RequestParam(defaultValue = "10") int size) {
+
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
+        return ResponseEntity.ok(SuccessResponse.successWithData(meetingService.getMemberListByMeeting(meetingId, pageable)));
+    }
+
 
 }

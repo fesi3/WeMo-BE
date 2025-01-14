@@ -6,8 +6,10 @@ import com.wemo.backend.domain.image.service.ImageReader;
 import com.wemo.backend.domain.image.service.ImageStore;
 import com.wemo.backend.domain.meeting.dto.MeetingCreateRequest;
 import com.wemo.backend.domain.meeting.dto.MeetingDetailResponse;
+import com.wemo.backend.domain.meeting.dto.MeetingMemberPagingResponse;
 import com.wemo.backend.domain.meeting.dto.MeetingUpdateRequest;
 import com.wemo.backend.domain.meeting.entity.Meeting;
+import com.wemo.backend.domain.meeting.repository.MeetingRepository;
 import com.wemo.backend.domain.meetingMember.service.MeetingMemberReader;
 import com.wemo.backend.domain.meetingMember.service.MeetingMemberStore;
 import com.wemo.backend.domain.plan.dto.PlanListInfo;
@@ -23,6 +25,7 @@ import com.wemo.backend.global.exception.CustomException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -47,6 +50,7 @@ public class MeetingServiceImpl implements MeetingService {
     private final ReviewReader reviewReader;
     private final ImageReader imageReader;
     private final AttendanceReader attendanceReader;
+    private final MeetingRepository meetingRepository;
 
     /**
      * 0. 모임 생성
@@ -202,6 +206,22 @@ public class MeetingServiceImpl implements MeetingService {
         imageReader.deleteImage(meetingId, Image.EntityType.MEETING);
 
         return "모임이 삭제되었습니다.";
+    }
+
+    /**
+     * 모임 멤버 목록 조회
+     *
+     * @param meetingId 모임 id
+     * @param pageable 페이징 처리 데이터
+     * @return 모임에 가입된 전체 멤버 목록
+     */
+    @Override
+    public MeetingMemberPagingResponse getMemberListByMeeting(Long meetingId, Pageable pageable) {
+
+        // 모임 유효성 검사
+        Meeting meeting = meetingReader.getMeeting(meetingId);
+
+        return new MeetingMemberPagingResponse(meeting, meetingRepository.getMemberListByMeeting(meeting, pageable));
     }
 
     private List<UserListInfo> getUserListInfo(Meeting meeting) {

@@ -2,6 +2,7 @@ package com.wemo.backend.domain.user.dto;
 
 import com.wemo.backend.domain.attendance.entity.Attendance;
 import com.wemo.backend.domain.meetingMember.entity.MeetingMember;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -9,6 +10,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @Builder
+@AllArgsConstructor
 public class UserListInfo {
 
     private String nickname;
