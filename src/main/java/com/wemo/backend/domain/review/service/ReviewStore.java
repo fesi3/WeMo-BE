@@ -9,4 +9,6 @@ public interface ReviewStore {
 
     Review storeReview(ReviewCreateRequest request, User user, Plan plan);
 
+    void deleteReview(Review review);
+
 }

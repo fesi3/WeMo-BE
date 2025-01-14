@@ -15,4 +15,6 @@ public interface ReviewService {
 
     ReviewCreateResponse updateReview(String email, Long reviewId, ReviewCreateRequest request);
 
+    String deleteReview(String email, Long reviewId);
+
 }
