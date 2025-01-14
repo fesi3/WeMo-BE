@@ -22,7 +22,13 @@ public class UserInfoResponse {
 
     private LocalDateTime createdAt;
 
-    public static UserInfoResponse fromEntity(User user) {
+    private int joinedPlanCount;
+
+    private int likedPlanCount;
+
+    private int writtenReviewCount;
+
+    public static UserInfoResponse fromEntity(User user, int joinedPlanCount, int likedPlanCount, int writtenReviewCount) {
 
         return UserInfoResponse.builder()
                 .email(user.getEmail())
@@ -31,6 +37,9 @@ public class UserInfoResponse {
                 .companyName(user.getCompanyName())
                 .loginType(user.getLoginType().getUserType())
                 .createdAt(user.getCreatedAt())
+                .joinedPlanCount(joinedPlanCount)
+                .likedPlanCount(likedPlanCount)
+                .writtenReviewCount(writtenReviewCount)
                 .build();
     }
 
