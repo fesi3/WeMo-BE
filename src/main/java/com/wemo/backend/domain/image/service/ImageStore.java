@@ -13,4 +13,6 @@ public interface ImageStore {
 
     void updateImage(User user, Long entityId, List<String> fileUrls, Image.EntityType entityType);
 
+    void deleteImage(Long entityId, Image.EntityType entityType);
+
 }
