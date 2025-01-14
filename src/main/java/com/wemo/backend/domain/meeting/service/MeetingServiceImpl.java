@@ -26,6 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -105,14 +106,26 @@ public class MeetingServiceImpl implements MeetingService {
         // 모임 이미지 가져오기
         String meetingImage = imageReader.getImage(meeting.getId(), Image.EntityType.MEETING);
 
-        // 모임 멤버 정보 가져오기
-        List<UserListInfo> userListInfoList = getUserListInfo(meeting);
+        // 모임 멤버 정보 가져오기 (최근 가입한 6명까지)
+        List<UserListInfo> userListInfoList = getUserListInfo(meeting)
+                .stream()
+                .sorted(Comparator.comparing(UserListInfo::getCreatedAt).reversed()) // 가입일 기준 내림차순 정렬
+                .limit(6) // 상위 6명만 가져오기
+                .collect(Collectors.toList());
 
-        // 일정 정보 가져오기
-        List<PlanListInfo> planListInfoList = getPlanListInfo(meeting);
+        // 일정 정보 가져오기 (최근 3개까지)
+        List<PlanListInfo> planListInfoList = getPlanListInfo(meeting)
+                .stream()
+                .sorted(Comparator.comparing(PlanListInfo::getDateTime).reversed()) // 일정 날짜 기준 내림차순 정렬
+                .limit(3) // 상위 3개만 가져오기
+                .collect(Collectors.toList());
 
-        // 리뷰 정보 가져오기
-        List<ReviewListInfo> reviewListInfoList = getReviewListInfo(planListInfoList);
+        // 리뷰 정보 가져오기 (최근 2개까지)
+        List<ReviewListInfo> reviewListInfoList = getReviewListInfo(planListInfoList)
+                .stream()
+                .sorted(Comparator.comparing(ReviewListInfo::getCreatedAt).reversed()) // 작성일 기준 내림차순 정렬
+                .limit(2) // 상위 2개만 가져오기
+                .collect(Collectors.toList());
 
         return MeetingDetailResponse.fromEntity(
                 meeting,
