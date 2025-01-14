@@ -6,6 +6,7 @@ import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.wemo.backend.domain.image.entity.Image;
+import com.wemo.backend.domain.meeting.entity.QMeeting;
 import com.wemo.backend.domain.review.dto.ReviewListResponse;
 import jakarta.persistence.EntityManager;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +20,7 @@ import java.util.Optional;
 
 import static com.querydsl.jpa.JPAExpressions.select;
 import static com.wemo.backend.domain.image.entity.QImage.image;
+import static com.wemo.backend.domain.meeting.entity.QMeeting.meeting;
 import static com.wemo.backend.domain.plan.entity.QPlan.plan;
 import static com.wemo.backend.domain.review.entity.QReview.review;
 import static com.wemo.backend.domain.user.entity.QUser.user;
@@ -71,7 +73,8 @@ public class ReviewQueryDslImpl implements ReviewQueryDsl {
                 )
                 .from(review)
                 .leftJoin(review.plan, plan)
-                .leftJoin(review.user, user);
+                .leftJoin(review.user, user)
+                .where(review.plan.meeting.deletedAt.isNull());
 
         // 필터링 적용
         applyFilters(queryBuilder, province, district, startDate, endDate, categoryId, sort);
@@ -89,6 +92,7 @@ public class ReviewQueryDslImpl implements ReviewQueryDsl {
                         .leftJoin(review.plan, plan)
                         .leftJoin(review.user, user)
                         .where(applyFiltersForTotalCount(province, district, startDate, endDate, categoryId)) // 필터를 적용한 메서드 호출
+                        .where(review.plan.meeting.deletedAt.isNull())
                         .fetchOne()
         ).orElse(0L);
 
@@ -145,7 +149,11 @@ public class ReviewQueryDslImpl implements ReviewQueryDsl {
         }
 
         if (categoryId != null) {
-            builder.and(plan.meeting.category.id.eq(categoryId));
+            if (categoryId == 1) {
+                builder.and(plan.meeting.category.parentId.eq(categoryId)); // parentId가 1인 경우
+            } else {
+                builder.and(plan.meeting.category.id.eq(categoryId)); // categoryId가 1이 아닌 경우는 id로만 필터링
+            }
         }
 
         return builder;

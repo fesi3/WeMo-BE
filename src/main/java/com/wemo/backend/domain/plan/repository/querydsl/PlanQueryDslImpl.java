@@ -136,6 +136,7 @@ public class PlanQueryDslImpl implements PlanQueryDsl {
                 .where(baseConditions)
                 .where(likes.user.email.eq(email)) // 유저가 좋아요한 일정
                 .where(plan.canceled.eq(false))
+                .where(plan.meeting.deletedAt.isNull())
                 .orderBy(sortField.equals("closeDate") ? plan.registrationEnd.asc() : plan.createdAt.desc());
 
         List<PlanListResponse> planListResponses = queryBuilder
@@ -152,6 +153,7 @@ public class PlanQueryDslImpl implements PlanQueryDsl {
                         .where(baseConditions)
                         .where(likes.user.email.eq(email)) // 유저가 좋아요한 일정
                         .where(plan.canceled.eq(false))
+                        .where(plan.meeting.deletedAt.isNull())
                         .fetchOne()
         ).orElse(0L);
 

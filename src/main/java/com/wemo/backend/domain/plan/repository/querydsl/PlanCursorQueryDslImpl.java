@@ -74,6 +74,7 @@ public class PlanCursorQueryDslImpl implements PlanCursorQueryDsl {
                 .leftJoin(plan.user, user)
                 .where(listConditions)
                 .where(plan.canceled.eq(false))
+                .where(plan.meeting.deletedAt.isNull())
                 .orderBy(sortField.equals("closeDate") ? plan.registrationEnd.asc() : plan.createdAt.desc())
                 .limit(size)
                 .fetch();
@@ -84,6 +85,7 @@ public class PlanCursorQueryDslImpl implements PlanCursorQueryDsl {
                         .select(plan.count())
                         .from(plan)
                         .where(baseConditions)
+                        .where(plan.meeting.deletedAt.isNull())
                         .fetchOne()
         ).orElse(0L);
 
@@ -201,7 +203,11 @@ public class PlanCursorQueryDslImpl implements PlanCursorQueryDsl {
         }
 
         if (categoryId != null) {
-            condition = condition.and(plan.meeting.category.id.eq(categoryId));
+            if (categoryId == 1) {
+                condition = condition.and(plan.meeting.category.parentId.eq(categoryId)); // parentId가 1인 경우
+            } else {
+                condition = condition.and(plan.meeting.category.id.eq(categoryId)); // categoryId가 1이 아닌 경우는 id로만 필터링
+            }
         }
 
         return condition;
