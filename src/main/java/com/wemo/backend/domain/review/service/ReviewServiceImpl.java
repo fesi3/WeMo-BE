@@ -133,4 +133,26 @@ public class ReviewServiceImpl implements ReviewService {
         return ReviewCreateResponse.fromEntity(plan, updatedReview);
     }
 
+    /**
+     * 후기 삭제
+     *
+     * @param email 이메일
+     * @param reviewId 후기 id
+     * @return 성공 메세지
+     */
+    @Override
+    @Transactional
+    public String deleteReview(String email, Long reviewId) {
+
+        User user = userReader.getUserByEmail(email);
+        Review review = reviewReader.getReview(reviewId);
+        // 본인 후기인지 확인
+        reviewReader.validateReview(user, review);
+
+        reviewStore.deleteReview(review);
+        imageStore.deleteImage(reviewId, Image.EntityType.REVIEW);
+
+        return "후기가 정상적으로 삭제되었습니다.";
+    }
+
 }

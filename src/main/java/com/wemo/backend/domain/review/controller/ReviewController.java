@@ -76,4 +76,16 @@ public class ReviewController {
         return ResponseEntity.ok(SuccessResponse.successWithData(reviewService.updateReview(userDetails.getUsername(), reviewId, request)));
     }
 
+    @Operation(summary = "후기 삭제", description = "후기를 삭제합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "후기가 삭제되었습니다."),
+            @ApiResponse(responseCode = "404", description = "존재하지 않는 후기입니다.",
+                    content = @Content(mediaType = "application/json"))
+    })
+    @RequestMapping(value = "/{reviewId}", method = RequestMethod.DELETE)
+    public ResponseEntity<SuccessResponse<String>> deleteReview(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                                              @PathVariable Long reviewId) {
+        return ResponseEntity.ok(SuccessResponse.successWithNoData(reviewService.deleteReview(userDetails.getUsername(), reviewId)));
+    }
+
 }

@@ -31,4 +31,10 @@ public class ReviewStoreImpl implements ReviewStore {
         return review;
     }
 
+    @Override
+    public void deleteReview(Review review) {
+
+        reviewRepository.delete(review);
+    }
+
 }
