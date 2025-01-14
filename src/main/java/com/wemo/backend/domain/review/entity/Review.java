@@ -1,6 +1,7 @@
 package com.wemo.backend.domain.review.entity;
 
 import com.wemo.backend.domain.plan.entity.Plan;
+import com.wemo.backend.domain.review.dto.ReviewCreateRequest;
 import com.wemo.backend.domain.user.entity.User;
 import com.wemo.backend.global.entity.Timestamped;
 import jakarta.persistence.*;
@@ -47,5 +48,14 @@ public class Review extends Timestamped {
     @JoinColumn(name = "plan_id", nullable = false)
     @Comment("일정 id")
     private Plan plan;
+
+    public Review update(ReviewCreateRequest request) {
+
+        // 다른 필드만 업데이트, plan 필드는 유지
+        this.score = request.getScore();
+        this.comment = request.getComment();
+        return this;
+
+    }
 
 }

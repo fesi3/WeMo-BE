@@ -61,4 +61,19 @@ public class ReviewController {
         return ResponseEntity.ok(SuccessResponse.successWithData(reviewService.getReviewList(pageable, province, district, startDate, endDate, categoryId, sort)));
     }
 
+    @Operation(summary = "후기 수정", description = "후기를 수정합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "후기가 수정되었습니다."),
+            @ApiResponse(responseCode = "400", description = "입력값을 확인해주세요.",
+                    content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "404", description = "존재하지 않는 후기입니다.",
+                    content = @Content(mediaType = "application/json"))
+    })
+    @RequestMapping(value = "/{reviewId}", method = RequestMethod.PUT)
+    public ResponseEntity<SuccessResponse<ReviewCreateResponse>> updateReview(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                                              @PathVariable Long reviewId,
+                                                                              @Valid @RequestBody ReviewCreateRequest request) {
+        return ResponseEntity.ok(SuccessResponse.successWithData(reviewService.updateReview(userDetails.getUsername(), reviewId, request)));
+    }
+
 }

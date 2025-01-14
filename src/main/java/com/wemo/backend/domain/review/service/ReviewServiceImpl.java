@@ -41,6 +41,8 @@ public class ReviewServiceImpl implements ReviewService {
 
     private final AttendanceReader attendanceReader;
 
+    private final ReviewReader reviewReader;
+
     /**
      * 후기 등록
      *
@@ -77,7 +79,7 @@ public class ReviewServiceImpl implements ReviewService {
         Review review = reviewStore.storeReview(request, user, plan);
 
         // 이미지 저장 (선택)
-        if (!request.getFileUrls().isEmpty()) {
+        if (request.getFileUrls() != null || !request.getFileUrls().isEmpty()) {
             List<String> imageList = imageStore.storeImageList(user, review.getId(), request.getFileUrls(), Image.EntityType.REVIEW);
             return ReviewCreateResponse.fromEntityWithImage(plan, review, imageList);
         }
@@ -101,6 +103,34 @@ public class ReviewServiceImpl implements ReviewService {
     public ReviewPagingResponse getReviewList(Pageable pageable, String province, String district, String startDate, String endDate, Long categoryId, String sort) {
 
         return new ReviewPagingResponse(reviewRepository.getReviewList(pageable, province, district, startDate, endDate, categoryId, sort));
+    }
+
+    /**
+     * 후기 수정
+     *
+     * @param email 이메일
+     * @param reviewId 후기 id
+     * @param request 후기 수정 데이터 (평점, 내용, 이미지)
+     * @return 수정된 후기 정보
+     */
+    @Override
+    @Transactional
+    public ReviewCreateResponse updateReview(String email, Long reviewId, ReviewCreateRequest request) {
+
+        User user = userReader.getUserByEmail(email);
+        Review review = reviewReader.getReview(reviewId);
+        // 본인 후기인지 확인
+        reviewReader.validateReview(user, review);
+
+        Review updatedReview = review.update(request);
+        Plan plan = updatedReview.getPlan();
+
+        // 이미지 수정 (선택)
+        if (request.getFileUrls() != null || !request.getFileUrls().isEmpty()) {
+            imageStore.updateImage(user, reviewId, request.getFileUrls(), Image.EntityType.REVIEW);
+            return ReviewCreateResponse.fromEntityWithImage(plan, updatedReview, request.getFileUrls());
+        }
+        return ReviewCreateResponse.fromEntity(plan, updatedReview);
     }
 
 }
