@@ -70,6 +70,7 @@ public class UserQueryDslImpl implements UserQueryDsl {
                 .leftJoin(meetingMember).on(meetingMember.meeting.eq(meeting))
                 .where(meeting.user.email.eq(email) // 유저가 작성한 모임
                         .or(meetingMember.user.email.eq(email))) // 유저가 가입한 모임
+                .where(meeting.deletedAt.isNull())
                 .groupBy(meeting.id) // 그룹화
                 .orderBy(meeting.createdAt.desc());
 
@@ -87,6 +88,7 @@ public class UserQueryDslImpl implements UserQueryDsl {
                 .leftJoin(meetingMember).on(meetingMember.meeting.eq(meeting))
                 .where(meeting.user.email.eq(email)
                     .or(meetingMember.user.email.eq(email)))
+                .where(meeting.deletedAt.isNull())
                 .fetchOne()
         ).orElse(0L);
 
@@ -185,6 +187,7 @@ public class UserQueryDslImpl implements UserQueryDsl {
                 .leftJoin(plan.user, user)
                 .leftJoin(attendance).on(attendance.plan.eq(plan))
                 .where(attendance.user.email.eq(email)) // 유저가 참여한 일정
+                .where(plan.meeting.deletedAt.isNull())
                 .orderBy(plan.createdAt.desc());
 
         // 페이징 처리
@@ -200,6 +203,7 @@ public class UserQueryDslImpl implements UserQueryDsl {
                         .from(plan)
                         .leftJoin(attendance).on(attendance.plan.eq(plan))
                         .where(attendance.user.email.eq(email))
+                        .where(plan.meeting.deletedAt.isNull())
                         .fetchOne()
         ).orElse(0L);
 
@@ -240,6 +244,7 @@ public class UserQueryDslImpl implements UserQueryDsl {
                 .leftJoin(image).on(image.entityId.eq(review.id) // Image 엔티티와 review.id를 조인
                         .and(image.entityType.eq(Image.EntityType.REVIEW)))
                 .where(review.user.email.eq(email)) // 유저가 작성한 후기만
+                .where(review.plan.meeting.deletedAt.isNull())
                 .orderBy(review.createdAt.desc());
 
         List<UserReviewListResponse> reviewListResponses = queryBuilder
@@ -256,6 +261,7 @@ public class UserQueryDslImpl implements UserQueryDsl {
                         .leftJoin(plan.meeting, meeting)
                         .leftJoin(meeting.category, category)
                         .where(review.user.email.eq(email))
+                        .where(review.plan.meeting.deletedAt.isNull())
                         .fetchOne()
         ).orElse(0L);
 
@@ -305,6 +311,7 @@ public class UserQueryDslImpl implements UserQueryDsl {
                                 .and(attendance.reviewed.eq(false)) // 후기 미작성
                                 .and(plan.dateTime.before(LocalDateTime.now())) // 일정이 지남
                 )
+                .where(review.plan.meeting.deletedAt.isNull())
                 .orderBy(plan.createdAt.desc());
 
         List<UserPlanReviewableListResponse> reviewListResponses = queryBuilder
@@ -326,6 +333,7 @@ public class UserQueryDslImpl implements UserQueryDsl {
                                         .and(attendance.reviewed.eq(false)) // 후기 미작성
                                         .and(plan.dateTime.before(LocalDateTime.now())) // 일정이 지남
                         )
+                        .where(review.plan.meeting.deletedAt.isNull())
                         .fetchOne()
         ).orElse(0L);
 
