@@ -5,6 +5,8 @@ import com.wemo.backend.domain.plan.dto.PlanCreateRequest;
 import com.wemo.backend.domain.plan.dto.PlanCreateResponse;
 import com.wemo.backend.domain.plan.dto.PlanCursorPagingResponse;
 import com.wemo.backend.domain.plan.dto.PlanDetailResponse;
+import com.wemo.backend.domain.user.dto.UserPlanPagingResponse;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -21,5 +23,7 @@ public interface PlanService {
     String cancelPlan(String email, Long planId);
 
     String cancelAttendance(String email, Long planId);
+
+    UserPlanPagingResponse getLikedPlanList(String email, Pageable pageable, String query, String province, String district, String startDate, String endDate, Long categoryId, String sort);
 
 }
