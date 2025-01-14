@@ -1,12 +1,12 @@
 package com.wemo.backend.domain.plan.dto;
 
-import com.wemo.backend.domain.image.entity.Image;
 import com.wemo.backend.domain.meeting.entity.Meeting;
 import com.wemo.backend.domain.plan.entity.Plan;
 import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Builder
@@ -24,7 +24,7 @@ public class PlanCreateResponse {
 
     private double latitude;
 
-    private String planImagePath;
+    private List<String> planImagePath;
 
     private String content;
 
@@ -43,7 +43,7 @@ public class PlanCreateResponse {
     private boolean isFulled;
 
     // 이미지가 있는 경우
-    public static PlanCreateResponse fromEntityWithImage(Plan plan, Meeting meeting, Image image) {
+    public static PlanCreateResponse fromEntityWithImage(Plan plan, Meeting meeting, List<String> planImagePath) {
 
         return PlanCreateResponse.builder()
                 .planId(plan.getId())
@@ -52,7 +52,7 @@ public class PlanCreateResponse {
                 .address(plan.getAddress())
                 .longitude(plan.getLongitude())
                 .latitude(plan.getLatitude())
-                .planImagePath(image.getFileUrl())
+                .planImagePath(planImagePath)
                 .content(plan.getContent())
                 .dateTime(plan.getDateTime())
                 .registrationEnd(plan.getRegistrationEnd())

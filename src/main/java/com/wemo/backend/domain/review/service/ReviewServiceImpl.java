@@ -20,6 +20,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static com.wemo.backend.global.exception.ErrorCode.*;
 
@@ -73,9 +74,9 @@ public class ReviewServiceImpl implements ReviewService {
         Review review = reviewStore.storeReview(request, user, plan);
 
         // 이미지 저장 (선택)
-        if (!request.getFileUrl().isEmpty()) {
-            Image image = imageStore.storeImage(user, review.getId(), request.getFileUrl(), Image.EntityType.REVIEW);
-            return ReviewCreateResponse.fromEntityWithImage(plan, review, image);
+        if (!request.getFileUrls().isEmpty()) {
+            List<String> imageList = imageStore.storeImageList(user, review.getId(), request.getFileUrls(), Image.EntityType.REVIEW);
+            return ReviewCreateResponse.fromEntityWithImage(plan, review, imageList);
         }
         return ReviewCreateResponse.fromEntity(plan, review);
 

@@ -20,7 +20,7 @@ import com.wemo.backend.domain.region.entity.Province;
 import com.wemo.backend.domain.region.repository.DistrictRepository;
 import com.wemo.backend.domain.region.repository.ProvinceRepository;
 import com.wemo.backend.domain.region.service.RegionServiceImpl;
-import com.wemo.backend.domain.review.dto.PlanDetailResponse;
+import com.wemo.backend.domain.plan.dto.PlanDetailResponse;
 import com.wemo.backend.domain.user.dto.UserListInfo;
 import com.wemo.backend.domain.user.entity.User;
 import com.wemo.backend.domain.user.service.UserReader;
@@ -30,6 +30,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -102,9 +103,10 @@ public class PlanServiceImpl implements PlanService {
         planStore.joinPlan(user, plan);
 
         // 이미지 저장 (선택)
-        if (!request.getFileUrl().isEmpty()) {
-            Image image = imageStore.storeImage(user, plan.getId(), request.getFileUrl(), Image.EntityType.PLAN);
-            return PlanCreateResponse.fromEntityWithImage(plan, meeting, image);
+        if (!request.getFileUrls().isEmpty()) {
+
+            List<String> imageList = imageStore.storeImageList(user, plan.getId(), request.getFileUrls(), Image.EntityType.PLAN);
+            return PlanCreateResponse.fromEntityWithImage(plan, meeting, imageList);
         }
 
         return PlanCreateResponse.fromEntity(plan, meeting);
@@ -132,6 +134,20 @@ public class PlanServiceImpl implements PlanService {
         return "일정 참여 신청 완료되었습니다.";
     }
 
+    /**
+     * 일정 목록 조회
+     *
+     * @param userDetails 유저 정보 객체
+     * @param cursor      커서 id
+     * @param size        조회 요청 개수
+     * @param province    시/도 데이터
+     * @param district    군/구 데이터
+     * @param startDate   시작 날짜
+     * @param endDate     끝 날짜
+     * @param categoryId  카테고리 id
+     * @param sort        정렬 기준
+     * @return 조건에 해당하는 일정 목록
+     */
     @Override
     @Transactional
     public PlanCursorPagingResponse getPlanList(UserDetailsImpl userDetails, Long cursor, int size, String query, String province, String district, String startDate, String endDate, Long categoryId, String sort) {
@@ -149,6 +165,13 @@ public class PlanServiceImpl implements PlanService {
         return response;
     }
 
+    /**
+     * 일정 상세 조회
+     *
+     * @param userDetails 유저 정보 객체
+     * @param planId 일정 id
+     * @return 요청한 일정의 상세 정보
+     */
     @Override
     @Transactional
     public PlanDetailResponse getPlanDetail(UserDetailsImpl userDetails, Long planId) {
@@ -157,7 +180,7 @@ public class PlanServiceImpl implements PlanService {
         Plan plan = planReader.getPlan(planId);
 
         // 일정 이미지 URL 조회
-        String planImageUrl = getImageUrl(planId, Image.EntityType.PLAN);
+        List<String> planImageUrl = imageReader.getImageList(planId, Image.EntityType.PLAN);
 
         // 일정 참여자 및 좋아요 정보 조회
         List<UserListInfo> userList = getUserListFromAttendance(plan);
@@ -173,12 +196,6 @@ public class PlanServiceImpl implements PlanService {
 
         // PlanDetailResponse 생성 및 반환
         return PlanDetailResponse.fromEntity(plan, planImageUrl, plan.getMeeting(), participants, likeCount, userList, meetingInfoResponse, isLiked);
-    }
-
-    private String getImageUrl(Long entityId, Image.EntityType entityType) {
-
-        Image image = imageReader.getImage(entityId, entityType);
-        return image != null ? image.getFileUrl() : null;
     }
 
     private List<UserListInfo> getUserListFromAttendance(Plan plan) {
@@ -202,7 +219,7 @@ public class PlanServiceImpl implements PlanService {
     private MeetingInfoResponse getMeetingInfoResponse(Plan plan) {
 
         Meeting meeting = plan.getMeeting();
-        String meetingImageUrl = getImageUrl(meeting.getId(), Image.EntityType.MEETING);
+        String meetingImageUrl = imageReader.getImage(meeting.getId(), Image.EntityType.MEETING);
         return MeetingInfoResponse.fromEntity(meeting, meetingImageUrl);
     }
 

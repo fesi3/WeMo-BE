@@ -7,6 +7,8 @@ import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.util.List;
+
 @Getter
 @AllArgsConstructor
 public class ReviewCreateRequest {
@@ -19,6 +21,6 @@ public class ReviewCreateRequest {
     @Size(min = 5, max = 500, message = "후기는 최소 5자, 최대 500자로 입력 가능합니다.")
     private String comment;
 
-    private String fileUrl;
+    private List<String> fileUrls;
 
 }

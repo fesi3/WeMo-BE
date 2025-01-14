@@ -27,6 +27,23 @@ spring:
       data-locations: classpath:category.sql
       mode: never
 
+cloud:
+  aws:
+    region:
+      static: ${AWS_REGION}
+    stack:
+      auto: false
+    s3:
+      bucket: ${BUCKET_NAME}
+    credentials:
+      access-key: ${ACCESS_KEY}
+      secret-key: ${SECRET_KEY}
+
+presigned:
+  url:
+    expiration:
+      time: ${PRESIGNED_URL_EXPIRATION_TIME}
+
 logging:
   level:
     org.hibernate.SQL: debug

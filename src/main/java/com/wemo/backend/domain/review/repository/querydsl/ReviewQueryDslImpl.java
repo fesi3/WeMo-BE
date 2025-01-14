@@ -46,7 +46,8 @@ public class ReviewQueryDslImpl implements ReviewQueryDsl {
                                         select(image.fileUrl)
                                                 .from(image)
                                                 .where(image.entityId.eq(plan.id),
-                                                        image.entityType.eq(Image.EntityType.PLAN)),
+                                                        image.entityType.eq(Image.EntityType.PLAN),
+                                                        image.main.eq(true)),
                                         "planImagePath"
                                 ),
                                 plan.meeting.category.categoryName,
@@ -60,7 +61,8 @@ public class ReviewQueryDslImpl implements ReviewQueryDsl {
                                         select(image.fileUrl)
                                                 .from(image)
                                                 .where(image.entityId.eq(review.id),
-                                                        image.entityType.eq(Image.EntityType.REVIEW)),
+                                                        image.entityType.eq(Image.EntityType.REVIEW),
+                                                        image.main.eq(true)),
                                         "reviewImagePath"
                                 ),
                                 review.createdAt,

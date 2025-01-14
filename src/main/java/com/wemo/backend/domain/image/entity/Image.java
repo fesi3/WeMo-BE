@@ -41,6 +41,16 @@ public class Image extends Timestamped {
     @Comment("이미지 url")
     private String fileUrl;
 
+    @Column(name = "is_main", nullable = false)
+    @Comment("대표 이미지 여부")
+    @Builder.Default
+    private boolean main = false;
+
+    public void updateMain() {
+
+        this.main = true;
+    }
+
     public enum EntityType {
 
         PROFILE("유저 프로필"),

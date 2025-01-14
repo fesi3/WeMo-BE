@@ -1,6 +1,5 @@
 package com.wemo.backend.domain.meeting.dto;
 
-import com.wemo.backend.domain.image.entity.Image;
 import com.wemo.backend.domain.meeting.entity.Meeting;
 import com.wemo.backend.domain.plan.dto.PlanListInfo;
 import com.wemo.backend.domain.review.dto.ReviewListInfo;
@@ -45,12 +44,12 @@ public class MeetingDetailResponse {
 
     private List<ReviewListInfo> reviewList;
 
-    public static MeetingDetailResponse fromEntity(Meeting meeting, Image meetingImage, int memberCount, List<UserListInfo> userListInfoList, int planCounts, List<PlanListInfo> planListInfoList, int reviewCounts, List<ReviewListInfo> reviewListInfoList) {
+    public static MeetingDetailResponse fromEntity(Meeting meeting, String meetingImage, int memberCount, List<UserListInfo> userListInfoList, int planCounts, List<PlanListInfo> planListInfoList, int reviewCounts, List<ReviewListInfo> reviewListInfoList) {
 
         return MeetingDetailResponse.builder()
                 .meetingId(meeting.getId())
                 .meetingName(meeting.getMeetingName())
-                .meetingImagePath(meetingImage.getFileUrl())
+                .meetingImagePath(meetingImage)
                 .memberCount(memberCount)
                 .description(meeting.getDescription())
                 .category(meeting.getCategory().getCategoryName())

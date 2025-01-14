@@ -4,6 +4,8 @@ import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.util.List;
+
 @Getter
 @AllArgsConstructor
 public class PlanCreateRequest {
@@ -34,6 +36,6 @@ public class PlanCreateRequest {
     @Max(value = 100, message = "모집 정원은 최대 100명입니다.")
     private int capacity;
 
-    private String fileUrl;
+    private List<String> fileUrls;
 
 }

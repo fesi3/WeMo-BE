@@ -4,7 +4,7 @@ import com.wemo.backend.domain.auth.UserDetailsImpl;
 import com.wemo.backend.domain.plan.dto.PlanCreateRequest;
 import com.wemo.backend.domain.plan.dto.PlanCreateResponse;
 import com.wemo.backend.domain.plan.dto.PlanCursorPagingResponse;
-import com.wemo.backend.domain.review.dto.PlanDetailResponse;
+import com.wemo.backend.domain.plan.dto.PlanDetailResponse;
 import org.springframework.stereotype.Service;
 
 @Service

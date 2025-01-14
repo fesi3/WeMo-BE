@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Builder
@@ -22,7 +23,7 @@ public class PlanListInfo {
 
     private int capacity;
 
-    private String planImagePath;
+    private List<String> planImagePath;
 
     @JsonProperty("isOpened")
     private boolean isOpened;
@@ -39,7 +40,7 @@ public class PlanListInfo {
     public boolean getIsFulled() {
         return isFulled;
     }
-    public static PlanListInfo fromEntity(Plan plan, int participants, Image image) {
+    public static PlanListInfo fromEntity(Plan plan, int participants, List<String> planImagePath) {
 
         return PlanListInfo.builder()
                 .planId(plan.getId())
@@ -47,7 +48,7 @@ public class PlanListInfo {
                 .dateTime(plan.getDateTime())
                 .participants(participants)
                 .capacity(plan.getCapacity())
-                .planImagePath(image.getFileUrl())
+                .planImagePath(planImagePath)
                 .isOpened(plan.isOpened())
                 .isFulled(plan.isFulled())
                 .build();
