@@ -1,6 +1,5 @@
 package com.wemo.backend.domain.meeting.service;
 
-import com.wemo.backend.domain.attendance.entity.Attendance;
 import com.wemo.backend.domain.attendance.service.AttendanceReader;
 import com.wemo.backend.domain.image.entity.Image;
 import com.wemo.backend.domain.image.service.ImageReader;
@@ -59,16 +58,16 @@ public class MeetingServiceImpl implements MeetingService {
     public void createMeeting(String email, MeetingCreateRequest request) {
 
         // 유저 객체 검증
-        User userByEmail = userReader.getUserByEmail(email);
+        User user = userReader.getUserByEmail(email);
 
         // 모임 객체 저장
-        Meeting meeting = meetingStore.storeMeeting(request, userByEmail);
+        Meeting meeting = meetingStore.storeMeeting(request, user);
 
         // 모임 대표 이미지 저장
-        imageStore.storeImage(userByEmail, meeting.getId(), request.getFileUrl(), Image.EntityType.MEETING);
+        Image image = imageStore.storeImage(user, meeting.getId(), request.getFileUrl(), Image.EntityType.MEETING);
 
         // 모임 생성자는 자동으로 가입
-        meetingMemberStore.storeMemberToMeeting(userByEmail, meeting);
+        meetingMemberStore.storeMemberToMeeting(user, meeting);
 
     }
 
