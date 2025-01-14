@@ -10,4 +10,6 @@ public interface ImageReader {
 
     List<String> getImageList(Long entityId, Image.EntityType entityType);
 
+    void deleteImage(Long entityId, Image.EntityType entityType);
+
 }

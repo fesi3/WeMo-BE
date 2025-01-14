@@ -1,5 +1,7 @@
-package com.wemo.backend.domain.plan.entity;
+package com.wemo.backend.domain.attendance.entity;
 
+
+import com.wemo.backend.domain.plan.entity.Plan;
 import com.wemo.backend.domain.user.entity.User;
 import com.wemo.backend.global.entity.Timestamped;
 import jakarta.persistence.*;

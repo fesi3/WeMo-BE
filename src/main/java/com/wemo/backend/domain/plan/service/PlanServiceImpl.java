@@ -1,5 +1,7 @@
 package com.wemo.backend.domain.plan.service;
 
+import com.wemo.backend.domain.attendance.entity.Attendance;
+import com.wemo.backend.domain.attendance.service.AttendanceReader;
 import com.wemo.backend.domain.auth.UserDetailsImpl;
 import com.wemo.backend.domain.image.entity.Image;
 import com.wemo.backend.domain.image.service.ImageReader;
@@ -8,12 +10,11 @@ import com.wemo.backend.domain.like.repository.LikeRepository;
 import com.wemo.backend.domain.meeting.dto.MeetingInfoResponse;
 import com.wemo.backend.domain.meeting.entity.Meeting;
 import com.wemo.backend.domain.meeting.service.MeetingReader;
-import com.wemo.backend.domain.meeting.service.MeetingStore;
+import com.wemo.backend.domain.meetingMember.service.MeetingMemberStore;
 import com.wemo.backend.domain.plan.dto.PlanCreateRequest;
 import com.wemo.backend.domain.plan.dto.PlanCreateResponse;
 import com.wemo.backend.domain.plan.dto.PlanCursorPagingResponse;
 import com.wemo.backend.domain.plan.dto.PlanDetailResponse;
-import com.wemo.backend.domain.plan.entity.Attendance;
 import com.wemo.backend.domain.plan.entity.Plan;
 import com.wemo.backend.domain.plan.repository.PlanRepository;
 import com.wemo.backend.domain.region.entity.District;
@@ -61,7 +62,9 @@ public class PlanServiceImpl implements PlanService {
 
     private final ImageReader imageReader;
 
-    private final MeetingStore meetingStore;
+    private final AttendanceReader attendanceReader;
+
+    private final MeetingMemberStore meetingMemberStore;
 
     /**
      * 0. 일정 생성
@@ -128,7 +131,7 @@ public class PlanServiceImpl implements PlanService {
         planStore.joinPlan(user, plan);
 
         // 일정 참여 시 모임에도 자동으로 가입
-        meetingStore.joinMeeting(user, plan.getMeeting());
+        meetingMemberStore.storeMemberToMeeting(user, plan.getMeeting());
 
         return "일정 참여 신청 완료되었습니다.";
     }
@@ -199,7 +202,7 @@ public class PlanServiceImpl implements PlanService {
 
     private List<UserListInfo> getUserListFromAttendance(Plan plan) {
 
-        List<Attendance> attendanceList = planReader.getAttendanceList(plan);
+        List<Attendance> attendanceList = attendanceReader.getAttendanceList(plan);
         return attendanceList.stream()
                 .map(UserListInfo::fromEntity)
                 .collect(Collectors.toList());

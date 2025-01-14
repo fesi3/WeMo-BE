@@ -1,5 +1,6 @@
-package com.wemo.backend.domain.meeting.entity;
+package com.wemo.backend.domain.meetingMember.entity;
 
+import com.wemo.backend.domain.meeting.entity.Meeting;
 import com.wemo.backend.domain.user.entity.User;
 import com.wemo.backend.global.entity.Timestamped;
 import jakarta.persistence.*;

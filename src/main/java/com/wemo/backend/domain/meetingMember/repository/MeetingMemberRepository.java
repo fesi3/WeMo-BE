@@ -1,7 +1,7 @@
-package com.wemo.backend.domain.meeting.repository;
+package com.wemo.backend.domain.meetingMember.repository;
 
 import com.wemo.backend.domain.meeting.entity.Meeting;
-import com.wemo.backend.domain.meeting.entity.MeetingMember;
+import com.wemo.backend.domain.meetingMember.entity.MeetingMember;
 import com.wemo.backend.domain.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 

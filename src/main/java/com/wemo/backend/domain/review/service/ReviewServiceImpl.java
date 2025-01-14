@@ -1,9 +1,9 @@
 package com.wemo.backend.domain.review.service;
 
-import com.wemo.backend.domain.auth.UserDetailsImpl;
+import com.wemo.backend.domain.attendance.entity.Attendance;
+import com.wemo.backend.domain.attendance.service.AttendanceReader;
 import com.wemo.backend.domain.image.entity.Image;
 import com.wemo.backend.domain.image.service.ImageStore;
-import com.wemo.backend.domain.plan.entity.Attendance;
 import com.wemo.backend.domain.plan.entity.Plan;
 import com.wemo.backend.domain.plan.service.PlanReader;
 import com.wemo.backend.domain.review.dto.ReviewCreateRequest;
@@ -22,7 +22,8 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static com.wemo.backend.global.exception.ErrorCode.*;
+import static com.wemo.backend.global.exception.ErrorCode.REVIEW_ALREADY_EXISTS;
+import static com.wemo.backend.global.exception.ErrorCode.REVIEW_CREATION_BEFORE_PLAN_END;
 
 @Service
 @RequiredArgsConstructor
@@ -37,6 +38,8 @@ public class ReviewServiceImpl implements ReviewService {
     private final ReviewStore reviewStore;
 
     private final ImageStore imageStore;
+
+    private final AttendanceReader attendanceReader;
 
     /**
      * 후기 등록
@@ -67,7 +70,7 @@ public class ReviewServiceImpl implements ReviewService {
         }
 
         // 참여 내역 검사 후 상태값 변경
-        Attendance attendance = planReader.validateAttendance(user, plan);
+        Attendance attendance = attendanceReader.validateAttendance(user, plan);
         attendance.updateStatus();
 
         // 후기 저장

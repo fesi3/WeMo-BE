@@ -16,4 +16,6 @@ public interface MeetingService {
 
     String updateMeeting(String email, Long meetingId, MeetingUpdateRequest request);
 
+    String deleteMeeting(String email, Long meetingId);
+
 }
