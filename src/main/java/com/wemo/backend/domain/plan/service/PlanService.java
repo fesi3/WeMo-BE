@@ -18,4 +18,6 @@ public interface PlanService {
 
     PlanDetailResponse getPlanDetail(UserDetailsImpl userDetails, Long planId);
 
+    String cancelPlan(String email, Long planId);
+
 }

@@ -200,6 +200,28 @@ public class PlanServiceImpl implements PlanService {
         return PlanDetailResponse.fromEntity(plan, planImageUrl, plan.getMeeting(), participants, likeCount, userList, meetingInfoResponse, isLiked);
     }
 
+    /**
+     * 일정 모집 취소
+     *
+     * @param email 이메일
+     * @param planId 일정 id
+     * @return 성공 메세지
+     */
+    @Override
+    @Transactional
+    public String cancelPlan(String email, Long planId) {
+
+        User user = userReader.getUserByEmail(email);
+
+        Plan plan = planReader.getPlan(planId);
+
+        if (!plan.getUser().getEmail().equals(user.getEmail())) throw new CustomException(ILLEGAL_MEETING_GRANTED);
+
+        plan.cancel();
+
+        return "일정이 정상적으로 취소되었습니다.";
+    }
+
     private List<UserListInfo> getUserListFromAttendance(Plan plan) {
 
         List<Attendance> attendanceList = attendanceReader.getAttendanceList(plan);

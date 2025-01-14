@@ -109,4 +109,10 @@ public class Plan extends Timestamped {
 
     }
 
+    public void cancel() {
+
+        this.canceled = true;
+
+    }
+
 }
