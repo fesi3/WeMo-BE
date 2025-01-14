@@ -9,6 +9,7 @@ import com.wemo.backend.domain.image.entity.Image;
 import com.wemo.backend.domain.review.entity.QReview;
 import com.wemo.backend.domain.user.dto.UserMeetingListResponse;
 import com.wemo.backend.domain.user.dto.UserPlanListResponse;
+import com.wemo.backend.domain.user.dto.UserPlanReviewableListResponse;
 import com.wemo.backend.domain.user.dto.UserReviewListResponse;
 import jakarta.persistence.EntityManager;
 import lombok.extern.slf4j.Slf4j;
@@ -260,6 +261,74 @@ public class UserQueryDslImpl implements UserQueryDsl {
 
         return new PageImpl<>(reviewListResponses, pageable, total);
 
+    }
+
+    @Override
+    public Page<UserPlanReviewableListResponse> getUserPlanListReviewAvailable(String email, Pageable pageable) {
+
+        JPAQuery<UserPlanReviewableListResponse> queryBuilder = queryFactory
+                .select(
+                        Projections.constructor(
+                                UserPlanReviewableListResponse.class,
+                                plan.id,
+                                plan.planName,
+                                plan.dateTime,
+                                category.categoryName,
+                                plan.address,
+                                Expressions.as(
+                                        queryFactory.select(image.fileUrl)
+                                                .from(image)
+                                                .where(image.entityId.eq(plan.id),
+                                                        image.entityType.eq(Image.EntityType.PLAN)),
+                                        "planImagePath"
+                                ),
+                                plan.capacity,
+                                Expressions.as(
+                                        queryFactory.select(attendance.count())
+                                                .from(attendance)
+                                                .where(attendance.plan.id.eq(plan.id)
+                                                        .and(attendance.deletedAt.isNull())),
+                                        "participants"
+                                ),
+                                plan.createdAt,
+                                plan.updatedAt
+                        )
+                )
+                .from(attendance) // attendance 테이블을 from 절에서 시작
+                .leftJoin(attendance.plan, plan) // plan과 조인
+                .leftJoin(plan.meeting, meeting)
+                .leftJoin(meeting.category, category)
+                .leftJoin(attendance.user, user) // user와 조인
+                .where(
+                        attendance.user.email.eq(email) // 이메일 조건
+                                .and(attendance.reviewed.eq(false)) // 후기 미작성
+                                .and(plan.dateTime.before(LocalDateTime.now())) // 일정이 지남
+                )
+                .orderBy(plan.createdAt.desc());
+
+        List<UserPlanReviewableListResponse> reviewListResponses = queryBuilder
+                .limit(pageable.getPageSize())
+                .offset(pageable.getOffset())
+                .fetch();
+
+        // 총 개수 조회
+        long total = Optional.ofNullable(
+                queryFactory
+                        .select(plan.count())
+                        .from(attendance) // attendance 테이블을 from 절에서 시작
+                        .leftJoin(attendance.plan, plan) // plan과 조인
+                        .leftJoin(plan.meeting, meeting)
+                        .leftJoin(meeting.category, category)
+                        .leftJoin(attendance.user, user) // user와 조인
+                        .where(
+                                attendance.user.email.eq(email) // 이메일 조건
+                                        .and(attendance.reviewed.eq(false)) // 후기 미작성
+                                        .and(plan.dateTime.before(LocalDateTime.now())) // 일정이 지남
+                        )
+                        .fetchOne()
+        ).orElse(0L);
+
+        return new PageImpl<>(reviewListResponses, pageable, total);
     }
 
     private void updateIsFulledStatus() {

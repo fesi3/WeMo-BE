@@ -73,4 +73,19 @@ public class UserDashboardController {
 
     }
 
+    @Operation(summary = "후기 작성 가능한 일정 목록 조회", description = "후기 작성 가능한 일정의 목록을 반환합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "후기 작성 가능한 일정의 목록이 반환되었습니다.")
+    })
+    @RequestMapping(value = "/reviews/available", method = RequestMethod.GET)
+    public ResponseEntity<SuccessResponse<UserPlanPagingResponse>> getPlanListReviewAvailable(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                                                 @RequestParam(defaultValue = "1") int page,
+                                                                                 @RequestParam(defaultValue = "10") int size) {
+
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
+
+        return ResponseEntity.ok(SuccessResponse.successWithData(userService.getPlanListReviewAvailable(userDetails.getUsername(), pageable)));
+
+    }
+
 }
