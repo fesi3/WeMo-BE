@@ -20,7 +20,7 @@ public class UserPlanPagingResponse {
 
     private int totalPage;
 
-    public UserPlanPagingResponse(Page<UserPlanListResponse> userPlanList) {
+    public UserPlanPagingResponse(Page<?> userPlanList) {
 
         this.planCount = (int) userPlanList.getTotalElements();
         this.planList = userPlanList.getContent();
