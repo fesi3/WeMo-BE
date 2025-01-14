@@ -39,7 +39,10 @@ public enum ErrorCode {
     ILLEGAL_REVIEW_GRANTED(HttpStatus.UNAUTHORIZED, "본인이 작성한 후기만 수정/삭제가 가능합니다."),
 
     // image
-    ILLEGAL_IMAGE_COUNT(HttpStatus.BAD_REQUEST, "이미지는 한 번에 최대 10개까지 요청 가능합니다.");
+    ILLEGAL_IMAGE_COUNT(HttpStatus.BAD_REQUEST, "이미지는 한 번에 최대 10개까지 요청 가능합니다."),
+
+    // region
+    PROVINCE_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 시/도 데이터입니다.");
 
 
     private final HttpStatus httpStatus;
