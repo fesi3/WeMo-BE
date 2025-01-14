@@ -1,7 +1,10 @@
 package com.wemo.backend.domain.region.service;
 
+import com.wemo.backend.domain.region.dto.DistrictListInfo;
+import com.wemo.backend.domain.region.dto.DistrictListResponse;
 import com.wemo.backend.domain.region.dto.ProvinceListInfo;
 import com.wemo.backend.domain.region.dto.ProvinceListResponse;
+import com.wemo.backend.domain.region.entity.District;
 import com.wemo.backend.domain.region.entity.Province;
 import com.wemo.backend.global.exception.CustomException;
 import lombok.RequiredArgsConstructor;
@@ -48,10 +51,26 @@ public class RegionServiceImpl implements RegionService {
                         .provinceId(province.getId())
                         .name(province.getProvinceName())
                         .build())
-                .collect(Collectors.toList());
+                .toList();
 
         // 변환된 리스트로 ProvinceListResponse 생성
         return new ProvinceListResponse(provinceListInfos);
     }
+
+    @Override
+    public DistrictListResponse getDistrictList(Long provinceId) {
+
+        // District 객체를 DistrictListInfo로 변환하여 리스트로 수집
+        List<DistrictListInfo> districtListInfos = regionReader.getAllDistrictList(provinceId).stream()
+                .map(district -> DistrictListInfo.builder()
+                        .provinceId(provinceId)
+                        .districtId(district.getId())
+                        .name(district.getDistrictName())
+                        .build())
+                .toList();
+
+        return new DistrictListResponse(districtListInfos);
+    }
+
 
 }
