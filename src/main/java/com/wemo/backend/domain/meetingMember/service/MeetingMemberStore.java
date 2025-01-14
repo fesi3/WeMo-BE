@@ -9,4 +9,6 @@ public interface MeetingMemberStore {
 
     void storeMemberToMeeting(User user, Meeting meeting);
 
+    void forceJoinMeeting(User user, Meeting meeting);
+
 }

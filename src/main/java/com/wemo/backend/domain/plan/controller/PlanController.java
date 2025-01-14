@@ -99,4 +99,16 @@ public class PlanController {
         return ResponseEntity.ok(SuccessResponse.successWithNoData(planService.cancelPlan(userDetails.getUsername(), planId)));
     }
 
+    @Operation(summary = "일정 참여 취소", description = "일정 참여를 취소합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "일정 참여 취소되었습니다."),
+            @ApiResponse(responseCode = "404", description = "존재하지 않는 일정입니다.",
+                    content = @Content(mediaType = "application/json"))
+    })
+    @RequestMapping(value = "/{planId}/attendance", method = RequestMethod.DELETE)
+    public ResponseEntity<SuccessResponse<String>> cancelAttendance(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                            @PathVariable Long planId) {
+        return ResponseEntity.status(201).body(SuccessResponse.successWithNoData(planService.cancelAttendance(userDetails.getUsername(), planId)));
+    }
+
 }

@@ -15,4 +15,7 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
     boolean existsByUserAndPlan(User user, Plan plan);
 
     List<Attendance> findAllByPlan(Plan plan);
+
+    long countByPlan(Plan plan);
+
 }
