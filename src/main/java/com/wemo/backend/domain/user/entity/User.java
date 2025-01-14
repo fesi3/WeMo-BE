@@ -1,5 +1,6 @@
 package com.wemo.backend.domain.user.entity;
 
+import com.wemo.backend.domain.user.dto.UserUpdateRequest;
 import com.wemo.backend.global.entity.Timestamped;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -47,5 +48,12 @@ public class User extends Timestamped {
     @Enumerated(value = EnumType.STRING)
     @Column(name = "login_type")
     private LoginType loginType;
+
+    public User update(UserUpdateRequest request) {
+
+        this.nickname = request.getNickname();
+        this.profileImagePath = request.getFileUrl();
+        return this;
+    }
 
 }
