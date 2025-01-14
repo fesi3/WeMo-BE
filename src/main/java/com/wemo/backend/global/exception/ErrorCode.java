@@ -33,7 +33,10 @@ public enum ErrorCode {
 
     // review
     REVIEW_ALREADY_EXISTS(HttpStatus.BAD_REQUEST ,"이미 후기를 등록한 일정입니다."),
-    REVIEW_CREATION_BEFORE_PLAN_END(HttpStatus.BAD_REQUEST,"일정이 완료되지 않아 후기를 작성할 수 없습니다.");
+    REVIEW_CREATION_BEFORE_PLAN_END(HttpStatus.BAD_REQUEST,"일정이 완료되지 않아 후기를 작성할 수 없습니다."),
+
+    // image
+    ILLEGAL_IMAGE_COUNT(HttpStatus.BAD_REQUEST, "이미지는 한 번에 최대 10개까지 요청 가능합니다.");
 
 
     private final HttpStatus httpStatus;
