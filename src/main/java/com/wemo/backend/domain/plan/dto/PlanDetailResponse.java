@@ -1,6 +1,5 @@
-package com.wemo.backend.domain.review.dto;
+package com.wemo.backend.domain.plan.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.wemo.backend.domain.meeting.dto.MeetingInfoResponse;
 import com.wemo.backend.domain.meeting.entity.Meeting;
@@ -32,7 +31,7 @@ public class PlanDetailResponse {
 
     private double latitude;
 
-    private String planImagePath;
+    private List<String> planImagePath;
 
     private String content;
 
@@ -88,7 +87,7 @@ public class PlanDetailResponse {
         return isFulled;
     }
 
-    public static PlanDetailResponse fromEntity(Plan plan, String planImagePath, Meeting meeting, int participants, int likeCount, List<UserListInfo> userList, MeetingInfoResponse meetingInfoResponse, boolean isLiked) {
+    public static PlanDetailResponse fromEntity(Plan plan, List<String> planImagePath, Meeting meeting, int participants, int likeCount, List<UserListInfo> userList, MeetingInfoResponse meetingInfoResponse, boolean isLiked) {
 
         return PlanDetailResponse.builder()
                 .planId(plan.getId())

@@ -92,7 +92,7 @@ public class MeetingServiceImpl implements MeetingService {
         Meeting meeting = meetingReader.getMeeting(meetingId);
 
         // 모임 이미지 가져오기
-        Image meetingImage = imageReader.getImage(meeting.getId(), Image.EntityType.MEETING);
+        String meetingImage = imageReader.getImage(meeting.getId(), Image.EntityType.MEETING);
 
         // 모임 멤버 정보 가져오기
         List<UserListInfo> userListInfoList = getUserListInfo(meeting);
@@ -126,9 +126,9 @@ public class MeetingServiceImpl implements MeetingService {
 
         return planList.stream().map(plan -> {
             List<Attendance> attendanceList = planReader.getAttendanceList(plan);
-            Image planImage = imageReader.getImage(plan.getId(), Image.EntityType.PLAN);
+            List<String> planImageList = imageReader.getImageList(plan.getId(), Image.EntityType.PLAN);
 
-            return PlanListInfo.fromEntity(plan, attendanceList.size(), planImage);
+            return PlanListInfo.fromEntity(plan, attendanceList.size(), planImageList);
         }).collect(Collectors.toList());
     }
 
