@@ -141,7 +141,8 @@ public class UserQueryDslImpl implements UserQueryDsl {
                                         queryFactory.select(image.fileUrl)
                                                 .from(image)
                                                 .where(image.entityId.eq(plan.id),
-                                                        image.entityType.eq(Image.EntityType.PLAN)),
+                                                        image.entityType.eq(Image.EntityType.PLAN),
+                                                        image.main.eq(true)),
                                         "planImagePath"
                                 ),
                                 plan.dateTime,
@@ -225,7 +226,8 @@ public class UserQueryDslImpl implements UserQueryDsl {
                                         queryFactory.select(image.fileUrl)
                                                 .from(image)
                                                 .where(image.entityId.eq(review.id),
-                                                        image.entityType.eq(Image.EntityType.REVIEW)),
+                                                        image.entityType.eq(Image.EntityType.REVIEW),
+                                                        image.main.eq(true)),
                                         "reviewImagePath"
                                 ),
                                 review.createdAt,
@@ -278,7 +280,8 @@ public class UserQueryDslImpl implements UserQueryDsl {
                                         queryFactory.select(image.fileUrl)
                                                 .from(image)
                                                 .where(image.entityId.eq(plan.id),
-                                                        image.entityType.eq(Image.EntityType.PLAN)),
+                                                        image.entityType.eq(Image.EntityType.PLAN),
+                                                        image.main.eq(true)),
                                         "planImagePath"
                                 ),
                                 plan.capacity,

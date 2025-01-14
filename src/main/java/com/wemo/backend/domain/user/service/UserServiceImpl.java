@@ -136,6 +136,7 @@ public class UserServiceImpl implements UserService {
      * @return 유저가 참여한 일정 목록
      */
     @Override
+    @Transactional
     public UserPlanPagingResponse getMyPlanList(String email, Pageable pageable) {
 
         return new UserPlanPagingResponse(userRepository.getUserPlanList(email, pageable));
@@ -162,6 +163,7 @@ public class UserServiceImpl implements UserService {
      * @return 후기 작성 가능한 일정 목록
      */
     @Override
+    @Transactional
     public UserPlanPagingResponse getPlanListReviewAvailable(String email, Pageable pageable) {
 
         return new UserPlanPagingResponse(userRepository.getUserPlanListReviewAvailable(email, pageable));
