@@ -1,5 +1,6 @@
 package com.wemo.backend.domain.plan.controller;
 
+import com.amazonaws.Response;
 import com.wemo.backend.domain.auth.UserDetailsImpl;
 import com.wemo.backend.domain.plan.dto.PlanCreateRequest;
 import com.wemo.backend.domain.plan.dto.PlanCreateResponse;
@@ -83,6 +84,19 @@ public class PlanController {
                                                                              @PathVariable Long planId) {
 
         return ResponseEntity.ok(SuccessResponse.successWithData(planService.getPlanDetail(userDetails, planId)));
+    }
+
+    @Operation(summary = "일정 모집 취소", description = "일정이 취소되었습니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "일정이 취소되었습니다."),
+            @ApiResponse(responseCode = "404", description = "존재하지 않는 일정입니다.",
+                    content = @Content(mediaType = "application/json"))
+    })
+    @RequestMapping(value = "/{planId}/cancel", method = RequestMethod.PATCH)
+    public ResponseEntity<SuccessResponse<String>> cancelPlan(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                              @PathVariable Long planId) {
+
+        return ResponseEntity.ok(SuccessResponse.successWithNoData(planService.cancelPlan(userDetails.getUsername(), planId)));
     }
 
 }

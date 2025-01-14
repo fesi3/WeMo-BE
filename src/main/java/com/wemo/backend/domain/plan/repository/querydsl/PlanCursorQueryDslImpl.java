@@ -38,7 +38,6 @@ public class PlanCursorQueryDslImpl implements PlanCursorQueryDsl {
         this.queryFactory = new JPAQueryFactory(em);
     }
 
-
     @Override
     public PlanCursorPagingResponse getPlanListByUser(String email, Long cursor, int size, String query, String province, String district, String startDate, String endDate, Long categoryId, String sort) {
 
@@ -75,6 +74,7 @@ public class PlanCursorQueryDslImpl implements PlanCursorQueryDsl {
                 .from(plan)
                 .leftJoin(plan.user, user)
                 .where(listConditions)
+                .where(plan.canceled.eq(false))
                 .orderBy(sortField.equals("closeDate") ? plan.registrationEnd.asc() : plan.createdAt.desc())
                 .limit(size)
                 .fetch();
