@@ -33,4 +33,16 @@ public class Attendance extends Timestamped {
     @Comment("일정 id")
     private Plan plan;
 
+    @Column(name = "is_reviewed", nullable = false)
+    @Comment("후기 작성 여부")
+    @Builder.Default
+    private boolean reviewed = false;
+
+
+    public void updateStatus() {
+
+        this.reviewed = true;
+
+    }
+
 }
