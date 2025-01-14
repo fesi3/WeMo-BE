@@ -14,6 +14,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ImageStoreImpl implements ImageStore {
 
+    private final ImageReader imageReader;
     private final ImageRepository imageRepository;
 
     @Override
@@ -35,6 +36,7 @@ public class ImageStoreImpl implements ImageStore {
     @Override
     @Transactional
     public List<String> storeImageList(User user, Long entityId, List<String> fileUrls, Image.EntityType entityType) {
+
         List<String> imageList = new ArrayList<>();
 
         for (int i = 0; i < fileUrls.size(); i++) {
@@ -61,6 +63,16 @@ public class ImageStoreImpl implements ImageStore {
         }
 
         return imageList;
+    }
+
+    @Override
+    public void updateImage(User user, Long entityId, List<String> fileUrls, Image.EntityType entityType) {
+        // 기존 이미지 삭제
+        List<Image> allByEntityIdAndEntityType = imageRepository.findAllByEntityIdAndEntityType(entityId, entityType);
+        imageRepository.deleteAll(allByEntityIdAndEntityType);
+
+        // 다시 저장
+        storeImageList(user, entityId, fileUrls, entityType);
     }
 
 }

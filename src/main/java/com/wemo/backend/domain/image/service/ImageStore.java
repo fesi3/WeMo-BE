@@ -11,4 +11,6 @@ public interface ImageStore {
 
     List<String> storeImageList(User user, Long entityId, List<String> fileUrls, Image.EntityType entityType);
 
+    void updateImage(User user, Long entityId, List<String> fileUrls, Image.EntityType entityType);
+
 }
