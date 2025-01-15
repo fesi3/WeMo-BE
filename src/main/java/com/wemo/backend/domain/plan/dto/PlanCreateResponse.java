@@ -20,6 +20,8 @@ public class PlanCreateResponse {
 
     private String address;
 
+    private String addressDetail;
+
     private double longitude;
 
     private double latitude;
@@ -50,6 +52,7 @@ public class PlanCreateResponse {
                 .planName(plan.getPlanName())
                 .category(meeting.getCategory().getCategoryName())
                 .address(plan.getAddress())
+                .addressDetail(plan.getAddressDetail())
                 .longitude(plan.getLongitude())
                 .latitude(plan.getLatitude())
                 .planImagePath(planImagePath)
@@ -72,6 +75,7 @@ public class PlanCreateResponse {
                 .planName(plan.getPlanName())
                 .category(meeting.getCategory().getCategoryName())
                 .address(plan.getAddress())
+                .addressDetail(plan.getAddressDetail())
                 .longitude(plan.getLongitude())
                 .latitude(plan.getLatitude())
                 .content(plan.getContent())
