@@ -4,10 +4,7 @@ import com.wemo.backend.domain.attendance.service.AttendanceReader;
 import com.wemo.backend.domain.image.entity.Image;
 import com.wemo.backend.domain.image.service.ImageReader;
 import com.wemo.backend.domain.image.service.ImageStore;
-import com.wemo.backend.domain.meeting.dto.MeetingCreateRequest;
-import com.wemo.backend.domain.meeting.dto.MeetingDetailResponse;
-import com.wemo.backend.domain.meeting.dto.MeetingMemberPagingResponse;
-import com.wemo.backend.domain.meeting.dto.MeetingUpdateRequest;
+import com.wemo.backend.domain.meeting.dto.*;
 import com.wemo.backend.domain.meeting.entity.Meeting;
 import com.wemo.backend.domain.meeting.repository.MeetingRepository;
 import com.wemo.backend.domain.meetingMember.service.MeetingMemberReader;
@@ -222,6 +219,22 @@ public class MeetingServiceImpl implements MeetingService {
         Meeting meeting = meetingReader.getMeeting(meetingId);
 
         return new MeetingMemberPagingResponse(meeting, meetingRepository.getMemberListByMeeting(meeting, pageable));
+    }
+
+    /**
+     * 모임 일정 목록 조회
+     *
+     * @param meetingId 모임 id
+     * @param pageable 페이징 처리 데이터
+     * @return 모임에 등록된 전체 일정 목록
+     */
+    @Override
+    public MeetingPlanPagingResponse getPlanListByMeeting(Long meetingId, Pageable pageable) {
+
+        // 모임 유효성 검사
+        Meeting meeting = meetingReader.getMeeting(meetingId);
+
+        return new MeetingPlanPagingResponse(meeting, meetingRepository.getPlanListByMeeting(meeting, pageable));
     }
 
     private List<UserListInfo> getUserListInfo(Meeting meeting) {

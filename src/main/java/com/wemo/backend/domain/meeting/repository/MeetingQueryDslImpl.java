@@ -1,9 +1,13 @@
 package com.wemo.backend.domain.meeting.repository;
 
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.wemo.backend.domain.image.entity.Image;
+import com.wemo.backend.domain.meeting.dto.MeetingPlanListResponse;
 import com.wemo.backend.domain.meeting.entity.Meeting;
+import com.wemo.backend.domain.plan.entity.QPlan;
 import com.wemo.backend.domain.user.dto.UserListInfo;
 import jakarta.persistence.EntityManager;
 import org.springframework.data.domain.Page;
@@ -13,7 +17,10 @@ import org.springframework.data.domain.Pageable;
 import java.util.List;
 import java.util.Optional;
 
+import static com.wemo.backend.domain.attendance.entity.QAttendance.attendance;
+import static com.wemo.backend.domain.image.entity.QImage.image;
 import static com.wemo.backend.domain.meetingMember.entity.QMeetingMember.meetingMember;
+import static com.wemo.backend.domain.plan.entity.QPlan.plan;
 import static com.wemo.backend.domain.user.entity.QUser.user;
 
 public class MeetingQueryDslImpl implements MeetingQueryDsl {
@@ -56,6 +63,60 @@ public class MeetingQueryDslImpl implements MeetingQueryDsl {
         ).orElse(0L);
 
         return new PageImpl<>(userListInfos, pageable, total);
+    }
+
+    @Override
+    public Page<MeetingPlanListResponse> getPlanListByMeeting(Meeting meeting, Pageable pageable) {
+
+        JPAQuery<MeetingPlanListResponse> queryBuilder = queryFactory
+                .select(
+                        Projections.constructor(
+                                MeetingPlanListResponse.class,
+                                plan.id,
+                                plan.planName,
+                                plan.dateTime,
+                                Expressions.as(
+                                        queryFactory.select(attendance.count())
+                                                .from(attendance)
+                                                .where(attendance.plan.id.eq(plan.id)
+                                                        .and(attendance.deletedAt.isNull())),
+                                        "participants"
+                                ),
+                                plan.capacity,
+                                Expressions.as(
+                                        queryFactory.select(image.fileUrl)
+                                                .from(image)
+                                                .where(image.entityId.eq(plan.id),
+                                                        image.entityType.eq(Image.EntityType.PLAN),
+                                                        image.main.eq(true)),
+                                        "planImagePath"
+                                ),
+                                plan.opened,
+                                plan.fulled
+                        )
+                )
+                .from(plan)
+                .leftJoin(plan.user, user)
+                .leftJoin(attendance).on(attendance.plan.eq(plan))
+                .where(plan.meeting.eq(meeting))
+                .orderBy(plan.dateTime.desc());
+
+        List<MeetingPlanListResponse> planListResponses = queryBuilder
+                .limit(pageable.getPageSize())
+                .offset(pageable.getOffset())
+                .fetch();
+
+        // 전체 멤버 수를 구하는 쿼리 (count)
+        long total = Optional.ofNullable(queryFactory
+                .select(plan.count())
+                .from(plan)
+                .leftJoin(plan.user, user)
+                .leftJoin(attendance).on(attendance.plan.eq(plan))
+                .where(plan.meeting.eq(meeting))
+                .fetchOne()
+        ).orElse(0L);
+
+        return new PageImpl<>(planListResponses, pageable, total);
     }
 
 }

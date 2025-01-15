@@ -1,9 +1,6 @@
 package com.wemo.backend.domain.meeting.service;
 
-import com.wemo.backend.domain.meeting.dto.MeetingCreateRequest;
-import com.wemo.backend.domain.meeting.dto.MeetingDetailResponse;
-import com.wemo.backend.domain.meeting.dto.MeetingMemberPagingResponse;
-import com.wemo.backend.domain.meeting.dto.MeetingUpdateRequest;
+import com.wemo.backend.domain.meeting.dto.*;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -21,5 +18,7 @@ public interface MeetingService {
     String deleteMeeting(String email, Long meetingId);
 
     MeetingMemberPagingResponse getMemberListByMeeting(Long meetingId, Pageable pageable);
+
+    MeetingPlanPagingResponse getPlanListByMeeting(Long meetingId, Pageable pageable);
 
 }

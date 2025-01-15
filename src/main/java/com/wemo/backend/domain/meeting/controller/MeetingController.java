@@ -1,10 +1,7 @@
 package com.wemo.backend.domain.meeting.controller;
 
 import com.wemo.backend.domain.auth.UserDetailsImpl;
-import com.wemo.backend.domain.meeting.dto.MeetingCreateRequest;
-import com.wemo.backend.domain.meeting.dto.MeetingDetailResponse;
-import com.wemo.backend.domain.meeting.dto.MeetingMemberPagingResponse;
-import com.wemo.backend.domain.meeting.dto.MeetingUpdateRequest;
+import com.wemo.backend.domain.meeting.dto.*;
 import com.wemo.backend.domain.meeting.service.MeetingService;
 import com.wemo.backend.global.response.SuccessResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -103,6 +100,22 @@ public class MeetingController {
 
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
         return ResponseEntity.ok(SuccessResponse.successWithData(meetingService.getMemberListByMeeting(meetingId, pageable)));
+    }
+
+
+    @Operation(summary = "모임 일정 목록 조회", description = "모임의 전체 일정 목록입니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "모임의 전체 일정 목록입니다."),
+            @ApiResponse(responseCode = "404", description = "존재하지 않는 모임입니다.",
+                    content = @Content(mediaType = "application/json"))
+    })
+    @RequestMapping(value = "/{meetingId}/plans", method = RequestMethod.GET)
+    public ResponseEntity<SuccessResponse<MeetingPlanPagingResponse>> getPlanListByMeeting(@PathVariable Long meetingId,
+                                                                                               @RequestParam(defaultValue = "1") int page,
+                                                                                               @RequestParam(defaultValue = "10") int size) {
+
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
+        return ResponseEntity.ok(SuccessResponse.successWithData(meetingService.getPlanListByMeeting(meetingId, pageable)));
     }
 
 
