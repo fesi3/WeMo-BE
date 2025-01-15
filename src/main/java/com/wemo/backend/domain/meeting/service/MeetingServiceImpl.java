@@ -52,7 +52,7 @@ public class MeetingServiceImpl implements MeetingService {
     /**
      * 0. 모임 생성
      *
-     * @param email 이메일
+     * @param email   이메일
      * @param request 모임 생성 데이터 (모임명, 모임 설명, 카테고리, 모임 이미지)
      */
     @Override
@@ -71,12 +71,14 @@ public class MeetingServiceImpl implements MeetingService {
         // 모임 생성자는 자동으로 가입
         meetingMemberStore.storeMemberToMeeting(user, meeting);
 
+        log.info("사용자 {}의 모임 id {}가 생성되었습니다.", user.getEmail(), meeting.getId());
+
     }
 
     /**
      * 모임 가입
      *
-     * @param email 이메일
+     * @param email     이메일
      * @param meetingId 모임 id
      * @return 성공 응답 메세지
      */
@@ -88,6 +90,7 @@ public class MeetingServiceImpl implements MeetingService {
         Meeting meeting = meetingReader.getMeeting(meetingId);
 
         meetingMemberStore.storeMemberToMeeting(user, meeting);
+        log.info("사용자 {}가 모임 id {}에 가입했습니다.", user.getEmail(), meeting.getId());
 
         return "모임 가입 성공";
     }
@@ -100,6 +103,8 @@ public class MeetingServiceImpl implements MeetingService {
      */
     @Override
     public MeetingDetailResponse getMeetingDetail(Long meetingId) {
+
+        log.info("모임 id {}의 상세 조회 요청", meetingId);
 
         // 모임 유효성 검사
         Meeting meeting = meetingReader.getMeeting(meetingId);
@@ -143,9 +148,9 @@ public class MeetingServiceImpl implements MeetingService {
     /**
      * 모임 정보 수정
      *
-     * @param email 이메일
+     * @param email     이메일
      * @param meetingId 모임 id
-     * @param request 수정 요청 데이터 (모임 설명)
+     * @param request   수정 요청 데이터 (모임 설명)
      * @return 성공 메세지
      */
     @Override
@@ -160,12 +165,23 @@ public class MeetingServiceImpl implements MeetingService {
 
         meeting.updateDescription(request.getDescription());
 
+        log.info("모임 id {}가 수정되었습니다.", meeting.getId());
+
         return "모임 내용이 수정되었습니다.";
     }
 
+    /**
+     * 모임 삭제
+     *
+     * @param email     이메일
+     * @param meetingId 모임 id
+     * @return
+     */
     @Override
     @Transactional
     public String deleteMeeting(String email, Long meetingId) {
+
+        log.info("모임 id {}의 삭제 요청", meetingId);
 
         User user = userReader.getUserByEmail(email);
 
@@ -202,6 +218,8 @@ public class MeetingServiceImpl implements MeetingService {
         // 모임에 속한 이미지 삭제
         imageReader.deleteImage(meetingId, Image.EntityType.MEETING);
 
+        log.info("사용자 {}가 모임 id {}를 정상적으로 삭제했습니다.", user.getEmail(), meeting.getId());
+
         return "모임이 삭제되었습니다.";
     }
 
@@ -209,7 +227,7 @@ public class MeetingServiceImpl implements MeetingService {
      * 모임 멤버 목록 조회
      *
      * @param meetingId 모임 id
-     * @param pageable 페이징 처리 데이터
+     * @param pageable  페이징 처리 데이터
      * @return 모임에 가입된 전체 멤버 목록
      */
     @Override
@@ -225,7 +243,7 @@ public class MeetingServiceImpl implements MeetingService {
      * 모임 일정 목록 조회
      *
      * @param meetingId 모임 id
-     * @param pageable 페이징 처리 데이터
+     * @param pageable  페이징 처리 데이터
      * @return 모임에 등록된 전체 일정 목록
      */
     @Override
@@ -241,7 +259,7 @@ public class MeetingServiceImpl implements MeetingService {
      * 모임 후기 목록 조회
      *
      * @param meetingId 모임 id
-     * @param pageable 페이징 처리 데이터
+     * @param pageable  페이징 처리 데이터
      * @return 모임 내의 일정에 등록된 전체 후기 목록
      */
     @Override
@@ -254,12 +272,14 @@ public class MeetingServiceImpl implements MeetingService {
     }
 
     private List<UserListInfo> getUserListInfo(Meeting meeting) {
+
         return meetingMemberReader.getMemberListByMeeting(meeting).stream()
                 .map(UserListInfo::fromEntity)
                 .collect(Collectors.toList());
     }
 
     private List<PlanListInfo> getPlanListInfo(Meeting meeting) {
+
         List<Plan> planList = planReader.getPlanByMeeting(meeting);
 
         return planList.stream().map(plan -> {
@@ -270,6 +290,7 @@ public class MeetingServiceImpl implements MeetingService {
     }
 
     private List<ReviewListInfo> getReviewListInfo(List<PlanListInfo> planListInfoList) {
+
         List<ReviewListInfo> reviewListInfoList = new ArrayList<>();
 
         for (PlanListInfo planListInfo : planListInfoList) {

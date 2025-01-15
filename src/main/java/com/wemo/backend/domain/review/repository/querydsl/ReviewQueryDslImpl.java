@@ -6,7 +6,6 @@ import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.wemo.backend.domain.image.entity.Image;
-import com.wemo.backend.domain.meeting.entity.QMeeting;
 import com.wemo.backend.domain.review.dto.ReviewListResponse;
 import jakarta.persistence.EntityManager;
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +19,6 @@ import java.util.Optional;
 
 import static com.querydsl.jpa.JPAExpressions.select;
 import static com.wemo.backend.domain.image.entity.QImage.image;
-import static com.wemo.backend.domain.meeting.entity.QMeeting.meeting;
 import static com.wemo.backend.domain.plan.entity.QPlan.plan;
 import static com.wemo.backend.domain.review.entity.QReview.review;
 import static com.wemo.backend.domain.user.entity.QUser.user;
@@ -37,6 +35,8 @@ public class ReviewQueryDslImpl implements ReviewQueryDsl {
 
     @Override
     public Page<ReviewListResponse> getReviewList(Pageable pageable, String province, String district, String startDate, String endDate, Long categoryId, String sort) {
+
+        log.info("전체 후기 목록 조회 요청");
 
         JPAQuery<ReviewListResponse> queryBuilder = queryFactory
                 .select(
@@ -118,7 +118,11 @@ public class ReviewQueryDslImpl implements ReviewQueryDsl {
         }
 
         if (categoryId != null) {
-            queryBuilder.where(plan.meeting.category.id.eq(categoryId));
+            if (categoryId == 1) {
+                queryBuilder.where(plan.meeting.category.parentId.eq(categoryId)); // parentId가 1인 경우
+            } else {
+                queryBuilder.where(plan.meeting.category.id.eq(categoryId)); // categoryId가 1이 아닌 경우는 id로만 필터링
+            }
         }
 
         // 정렬 조건 적용

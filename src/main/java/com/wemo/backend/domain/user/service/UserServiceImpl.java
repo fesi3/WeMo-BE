@@ -10,8 +10,6 @@ import com.wemo.backend.domain.auth.token.service.RefreshTokenManager;
 import com.wemo.backend.domain.auth.token.service.TokenBlacklistService;
 import com.wemo.backend.domain.like.entity.Likes;
 import com.wemo.backend.domain.like.service.LikeReader;
-import com.wemo.backend.domain.plan.entity.Plan;
-import com.wemo.backend.domain.plan.service.PlanReader;
 import com.wemo.backend.domain.review.entity.Review;
 import com.wemo.backend.domain.review.service.ReviewReader;
 import com.wemo.backend.domain.user.dto.*;
@@ -84,13 +82,15 @@ public class UserServiceImpl implements UserService {
         // 유저 검증 및 객체 조회
         User user = userReader.getUser(signinRequest.getEmail(), signinRequest.getPassword());
         // 헤더에 accessToken 및 refreshToken 생성 후 전달
+
+        log.info("사용자 {} 로그인 성공", user.getEmail());
         return userAuth.generateHeaderTokens(user);
     }
 
     /**
      * 3. 로그아웃
      *
-     * @param accessToken accessToken
+     * @param accessToken  accessToken
      * @param refreshToken refreshToken
      * @return 응답 메세지
      */
@@ -128,13 +128,15 @@ public class UserServiceImpl implements UserService {
         List<Attendance> joinedPlanList = attendanceReader.getAttendanceByUser(user);
         List<Likes> likedPlanList = likeReader.getLikeCountByUser(user);
         List<Review> reviewList = reviewReader.getReviewByUser(user);
+
+        log.info("사용자 {}의 회원 정보가 반환되었습니다.", user.getEmail());
         return UserInfoResponse.fromEntity(user, joinedPlanList.size(), likedPlanList.size(), reviewList.size());
     }
 
     /**
      * 내가 속한 모임 목록 조회
      *
-     * @param email 이메일
+     * @param email    이메일
      * @param pageable 페이징 처리 데이터
      * @return 유저가 속한 모임 목록
      */
@@ -147,7 +149,7 @@ public class UserServiceImpl implements UserService {
     /**
      * 내가 참여한 일정 목록 조회
      *
-     * @param email 이메일
+     * @param email    이메일
      * @param pageable 페이징 처리 데이터
      * @return 유저가 참여한 일정 목록
      */
@@ -161,7 +163,7 @@ public class UserServiceImpl implements UserService {
     /**
      * 내가 쓴 후기 목록 조회
      *
-     * @param email 이메일
+     * @param email    이메일
      * @param pageable 페이징 처리 데이터
      * @return 유저가 작성한 후기 목록
      */
@@ -174,7 +176,7 @@ public class UserServiceImpl implements UserService {
     /**
      * 후기 작성 가능한 일정 목록 조회
      *
-     * @param email 이메일
+     * @param email    이메일
      * @param pageable 페이징 처리 데이터
      * @return 후기 작성 가능한 일정 목록
      */
@@ -188,7 +190,7 @@ public class UserServiceImpl implements UserService {
     /**
      * 회원 정보 수정
      *
-     * @param email 이메일
+     * @param email   이메일
      * @param request 수정 요청 데이터 (닉네임, 프로필 이미지)
      * @return 수정된 회원 정보
      */
