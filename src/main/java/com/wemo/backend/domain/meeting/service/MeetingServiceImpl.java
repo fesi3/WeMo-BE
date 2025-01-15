@@ -4,10 +4,9 @@ import com.wemo.backend.domain.attendance.service.AttendanceReader;
 import com.wemo.backend.domain.image.entity.Image;
 import com.wemo.backend.domain.image.service.ImageReader;
 import com.wemo.backend.domain.image.service.ImageStore;
-import com.wemo.backend.domain.meeting.dto.MeetingCreateRequest;
-import com.wemo.backend.domain.meeting.dto.MeetingDetailResponse;
-import com.wemo.backend.domain.meeting.dto.MeetingUpdateRequest;
+import com.wemo.backend.domain.meeting.dto.*;
 import com.wemo.backend.domain.meeting.entity.Meeting;
+import com.wemo.backend.domain.meeting.repository.MeetingRepository;
 import com.wemo.backend.domain.meetingMember.service.MeetingMemberReader;
 import com.wemo.backend.domain.meetingMember.service.MeetingMemberStore;
 import com.wemo.backend.domain.plan.dto.PlanListInfo;
@@ -23,9 +22,11 @@ import com.wemo.backend.global.exception.CustomException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -46,6 +47,7 @@ public class MeetingServiceImpl implements MeetingService {
     private final ReviewReader reviewReader;
     private final ImageReader imageReader;
     private final AttendanceReader attendanceReader;
+    private final MeetingRepository meetingRepository;
 
     /**
      * 0. 모임 생성
@@ -105,14 +107,26 @@ public class MeetingServiceImpl implements MeetingService {
         // 모임 이미지 가져오기
         String meetingImage = imageReader.getImage(meeting.getId(), Image.EntityType.MEETING);
 
-        // 모임 멤버 정보 가져오기
-        List<UserListInfo> userListInfoList = getUserListInfo(meeting);
+        // 모임 멤버 정보 가져오기 (최근 가입한 6명까지)
+        List<UserListInfo> userListInfoList = getUserListInfo(meeting)
+                .stream()
+                .sorted(Comparator.comparing(UserListInfo::getCreatedAt).reversed()) // 가입일 기준 내림차순 정렬
+                .limit(6) // 상위 6명만 가져오기
+                .collect(Collectors.toList());
 
-        // 일정 정보 가져오기
-        List<PlanListInfo> planListInfoList = getPlanListInfo(meeting);
+        // 일정 정보 가져오기 (최근 3개까지)
+        List<PlanListInfo> planListInfoList = getPlanListInfo(meeting)
+                .stream()
+                .sorted(Comparator.comparing(PlanListInfo::getDateTime).reversed()) // 일정 날짜 기준 내림차순 정렬
+                .limit(3) // 상위 3개만 가져오기
+                .collect(Collectors.toList());
 
-        // 리뷰 정보 가져오기
-        List<ReviewListInfo> reviewListInfoList = getReviewListInfo(planListInfoList);
+        // 리뷰 정보 가져오기 (최근 2개까지)
+        List<ReviewListInfo> reviewListInfoList = getReviewListInfo(planListInfoList)
+                .stream()
+                .sorted(Comparator.comparing(ReviewListInfo::getCreatedAt).reversed()) // 작성일 기준 내림차순 정렬
+                .limit(2) // 상위 2개만 가져오기
+                .collect(Collectors.toList());
 
         return MeetingDetailResponse.fromEntity(
                 meeting,
@@ -189,6 +203,54 @@ public class MeetingServiceImpl implements MeetingService {
         imageReader.deleteImage(meetingId, Image.EntityType.MEETING);
 
         return "모임이 삭제되었습니다.";
+    }
+
+    /**
+     * 모임 멤버 목록 조회
+     *
+     * @param meetingId 모임 id
+     * @param pageable 페이징 처리 데이터
+     * @return 모임에 가입된 전체 멤버 목록
+     */
+    @Override
+    public MeetingMemberPagingResponse getMemberListByMeeting(Long meetingId, Pageable pageable) {
+
+        // 모임 유효성 검사
+        Meeting meeting = meetingReader.getMeeting(meetingId);
+
+        return new MeetingMemberPagingResponse(meeting, meetingRepository.getMemberListByMeeting(meeting, pageable));
+    }
+
+    /**
+     * 모임 일정 목록 조회
+     *
+     * @param meetingId 모임 id
+     * @param pageable 페이징 처리 데이터
+     * @return 모임에 등록된 전체 일정 목록
+     */
+    @Override
+    public MeetingPlanPagingResponse getPlanListByMeeting(Long meetingId, Pageable pageable) {
+
+        // 모임 유효성 검사
+        Meeting meeting = meetingReader.getMeeting(meetingId);
+
+        return new MeetingPlanPagingResponse(meeting, meetingRepository.getPlanListByMeeting(meeting, pageable));
+    }
+
+    /**
+     * 모임 후기 목록 조회
+     *
+     * @param meetingId 모임 id
+     * @param pageable 페이징 처리 데이터
+     * @return 모임 내의 일정에 등록된 전체 후기 목록
+     */
+    @Override
+    public MeetingReviewPagingResponse getReviewListByMeeting(Long meetingId, Pageable pageable) {
+
+        // 모임 유효성 검사
+        Meeting meeting = meetingReader.getMeeting(meetingId);
+
+        return new MeetingReviewPagingResponse(meeting, meetingRepository.getReviewListByMeeting(meeting, pageable));
     }
 
     private List<UserListInfo> getUserListInfo(Meeting meeting) {
