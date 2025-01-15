@@ -27,6 +27,8 @@ public class PlanDetailResponse {
 
     private String address;
 
+    private String addressDetail;
+
     private double longitude;
 
     private double latitude;
@@ -52,7 +54,7 @@ public class PlanDetailResponse {
     private LocalDateTime updatedAt;
 
     private List<UserListInfo> userList;
-    
+
     private MeetingInfoResponse meetingInfo;
 
     @JsonProperty("isCanceled")
@@ -69,21 +71,25 @@ public class PlanDetailResponse {
 
     @JsonProperty("isCanceled")
     public boolean getIsCanceled() {
+
         return isCanceled;
     }
 
     @JsonProperty("isLiked")
     public boolean getIsLiked() {
+
         return isLiked;
     }
 
     @JsonProperty("isOpened")
     public boolean getIsOpened() {
+
         return isOpened;
     }
 
     @JsonProperty("isFulled")
     public boolean getIsFulled() {
+
         return isFulled;
     }
 
@@ -96,6 +102,7 @@ public class PlanDetailResponse {
                 .planName(plan.getPlanName())
                 .category(meeting.getCategory().getCategoryName())
                 .address(plan.getAddress())
+                .addressDetail(plan.getAddressDetail())
                 .longitude(plan.getLongitude())
                 .latitude(plan.getLatitude())
                 .planImagePath(planImagePath)
