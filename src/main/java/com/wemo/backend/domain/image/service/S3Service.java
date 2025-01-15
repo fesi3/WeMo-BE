@@ -5,6 +5,7 @@ import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
 import com.wemo.backend.domain.image.dto.PresignedUrlResponse;
 import com.wemo.backend.global.exception.CustomException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -17,12 +18,13 @@ import java.util.stream.IntStream;
 
 import static com.wemo.backend.global.exception.ErrorCode.ILLEGAL_IMAGE_COUNT;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class S3Service {
 
     @Value("${cloud.aws.s3.bucket}")
-    private  String bucket;
+    private String bucket;
 
     @Value("${presigned.url.expiration.time}")
     private long presignedUrlExpirationTime;
@@ -36,6 +38,8 @@ public class S3Service {
      * @return 생성된 presignedUrl 리스트
      */
     public PresignedUrlResponse generatePresignedUrl(int count) {
+
+        log.info("이미지 업로드를 위한 presignedUrl 요청 메서드 호출");
 
         if (count > 10) throw new CustomException(ILLEGAL_IMAGE_COUNT);
 
@@ -54,6 +58,8 @@ public class S3Service {
                 })
                 .collect(Collectors.toList());
 
+        log.info("{}개의 presignedUrl List 생성", count);
+
         // presignedUrl을 PresignedUrlResponse에 담아서 반환
         return PresignedUrlResponse.builder()
                 .presignedUrl(presignedUrls)  // List<String> 반환
@@ -62,6 +68,7 @@ public class S3Service {
 
     // 랜덤한 고유 키값 생성
     private String generateUniqueKey() {
+
         return UUID.randomUUID() + "-" + System.currentTimeMillis();
     }
 

@@ -38,7 +38,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static com.wemo.backend.global.exception.ErrorCode.*;
+import static com.wemo.backend.global.exception.ErrorCode.ILLEGAL_MEETING_GRANTED;
 
 @Slf4j
 @Service
@@ -74,8 +74,8 @@ public class PlanServiceImpl implements PlanService {
     /**
      * 0. 일정 생성
      *
-     * @param email 이메일
-     * @param request 일정 생성 요청 데이터
+     * @param email     이메일
+     * @param request   일정 생성 요청 데이터
      * @param meetingId 모임 id
      * @return 생성된 일정 정보 반환
      */
@@ -95,6 +95,7 @@ public class PlanServiceImpl implements PlanService {
         Map<String, String> parsedAddress = RegionServiceImpl.parseAddress(request.getAddress());
         String provinceName = parsedAddress.get("province");
         String districtName = parsedAddress.get("district");
+        log.info("일정 생성 중 주소 파싱 완료: {}", provinceName + " " + districtName);
 
         // Step 2: 시/도 저장 또는 조회
         Province province = provinceRepository.findByProvinceName(provinceName)
@@ -105,6 +106,7 @@ public class PlanServiceImpl implements PlanService {
                 .orElseGet(() -> districtRepository.save(new District(districtName, province)));
 
         Plan plan = planStore.storePlan(request, district, user, meeting);
+        log.info("일정 id {} 저장 완료", plan.getId());
 
         // 주최자는 일정에 자동으로 참여
         attendanceStore.attendPlan(user, plan);
@@ -115,6 +117,7 @@ public class PlanServiceImpl implements PlanService {
             List<String> imageList = imageStore.storeImageList(user, plan.getId(), request.getFileUrls(), Image.EntityType.PLAN);
             return PlanCreateResponse.fromEntityWithImage(plan, meeting, imageList);
         }
+        log.info("일정 생성 후 이미지 저장 완료");
 
         return PlanCreateResponse.fromEntity(plan, meeting);
     }
@@ -122,7 +125,7 @@ public class PlanServiceImpl implements PlanService {
     /**
      * 일정 참여
      *
-     * @param email 이메일
+     * @param email  이메일
      * @param planId 일정 id
      * @return 성공 응답 메세지
      */
@@ -134,9 +137,11 @@ public class PlanServiceImpl implements PlanService {
         Plan plan = planReader.getPlan(planId);
 
         attendanceStore.attendPlan(user, plan);
+        log.info("사용자 {}가 일정 id {}에 참여하였습니다.", user.getEmail(), plan.getId());
 
         // 일정 참여 시 모임에도 자동으로 가입
         meetingMemberStore.forceJoinMeeting(user, plan.getMeeting());
+        log.info("사용자 {}가 모임 id {}에 자동 가입되었습니다.", user.getEmail(), plan.getMeeting().getId());
 
         return "일정 참여 신청 완료되었습니다.";
     }
@@ -176,12 +181,14 @@ public class PlanServiceImpl implements PlanService {
      * 일정 상세 조회
      *
      * @param userDetails 유저 정보 객체
-     * @param planId 일정 id
+     * @param planId      일정 id
      * @return 요청한 일정의 상세 정보
      */
     @Override
     @Transactional
     public PlanDetailResponse getPlanDetail(UserDetailsImpl userDetails, Long planId) {
+
+        log.info("일정 id {}의 상세 정보 조회 메서드 호출", planId);
 
         // 일정 유효성 검사
         Plan plan = planReader.getPlan(planId);
@@ -208,7 +215,7 @@ public class PlanServiceImpl implements PlanService {
     /**
      * 일정 모집 취소
      *
-     * @param email 이메일
+     * @param email  이메일
      * @param planId 일정 id
      * @return 성공 메세지
      */
@@ -223,6 +230,7 @@ public class PlanServiceImpl implements PlanService {
         if (!plan.getUser().getEmail().equals(user.getEmail())) throw new CustomException(ILLEGAL_MEETING_GRANTED);
 
         plan.cancel();
+        log.info("일정 id {}이 모집 취소되었습니다.", plan.getId());
 
         return "일정이 정상적으로 취소되었습니다.";
     }
@@ -230,7 +238,7 @@ public class PlanServiceImpl implements PlanService {
     /**
      * 일정 참여 취소
      *
-     * @param email 이메일
+     * @param email  이메일
      * @param planId 일정 id
      * @return 성공 메세지
      */
@@ -244,6 +252,7 @@ public class PlanServiceImpl implements PlanService {
         Plan plan = planReader.getPlan(planId);
 
         attendanceStore.quitPlan(user, plan);
+        log.info("사용자 {}가 일정 id {}에서 나갔습니다.", user.getEmail(), plan.getId());
 
         return "일정 참여가 취소되었습니다.";
     }
@@ -251,15 +260,15 @@ public class PlanServiceImpl implements PlanService {
     /**
      * 좋아요한 일정 목록 조회
      *
-     * @param email       이메일
-     * @param pageable    페이징 처리 데이터
-     * @param query       검색어
-     * @param province    시/도 데이터
-     * @param district    군/구 데이터
-     * @param startDate   시작 날짜
-     * @param endDate     끝 날짜
-     * @param categoryId  카테고리 id
-     * @param sort        정렬 기준
+     * @param email      이메일
+     * @param pageable   페이징 처리 데이터
+     * @param query      검색어
+     * @param province   시/도 데이터
+     * @param district   군/구 데이터
+     * @param startDate  시작 날짜
+     * @param endDate    끝 날짜
+     * @param categoryId 카테고리 id
+     * @param sort       정렬 기준
      * @return 조건에 해당하는 좋아요한 일정 목록
      */
     @Override
@@ -268,7 +277,7 @@ public class PlanServiceImpl implements PlanService {
 
         // 유저 검증
         userReader.getUserByEmail(email);
-        return new UserPlanPagingResponse(planRepository.getLikedPlanList(email, pageable, query, province, district, startDate, endDate,categoryId, sort));
+        return new UserPlanPagingResponse(planRepository.getLikedPlanList(email, pageable, query, province, district, startDate, endDate, categoryId, sort));
     }
 
     private List<UserListInfo> getUserListFromAttendance(Plan plan) {

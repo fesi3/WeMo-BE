@@ -1,12 +1,11 @@
 package com.wemo.backend.domain.plan.controller;
 
-import com.amazonaws.Response;
 import com.wemo.backend.domain.auth.UserDetailsImpl;
 import com.wemo.backend.domain.plan.dto.PlanCreateRequest;
 import com.wemo.backend.domain.plan.dto.PlanCreateResponse;
 import com.wemo.backend.domain.plan.dto.PlanCursorPagingResponse;
-import com.wemo.backend.domain.plan.service.PlanService;
 import com.wemo.backend.domain.plan.dto.PlanDetailResponse;
+import com.wemo.backend.domain.plan.service.PlanService;
 import com.wemo.backend.domain.user.dto.UserPlanPagingResponse;
 import com.wemo.backend.global.response.SuccessResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -54,6 +53,7 @@ public class PlanController {
     @RequestMapping(value = "/{planId}/attendance", method = RequestMethod.POST)
     public ResponseEntity<SuccessResponse<String>> joinPlan(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                                             @PathVariable Long planId) {
+
         return ResponseEntity.status(201).body(SuccessResponse.successWithNoData(planService.joinPlan(userDetails.getUsername(), planId)));
     }
 
@@ -64,7 +64,7 @@ public class PlanController {
     @RequestMapping(value = "", method = RequestMethod.GET)
     public ResponseEntity<SuccessResponse<PlanCursorPagingResponse>> getGatherings(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                                                                    @RequestParam(required = false) Long cursor, // 커서 파라미터 추가
-                                                                                   @RequestParam int size,
+                                                                                   @RequestParam(required = false, defaultValue = "10") int size,
                                                                                    @RequestParam(required = false) String query,
                                                                                    @RequestParam(required = false) String province,
                                                                                    @RequestParam(required = false) String district,
@@ -111,7 +111,8 @@ public class PlanController {
     })
     @RequestMapping(value = "/{planId}/attendance", method = RequestMethod.DELETE)
     public ResponseEntity<SuccessResponse<String>> cancelAttendance(@AuthenticationPrincipal UserDetailsImpl userDetails,
-                                                            @PathVariable Long planId) {
+                                                                    @PathVariable Long planId) {
+
         return ResponseEntity.status(201).body(SuccessResponse.successWithNoData(planService.cancelAttendance(userDetails.getUsername(), planId)));
     }
 
@@ -121,15 +122,15 @@ public class PlanController {
     })
     @RequestMapping(value = "/like", method = RequestMethod.GET)
     public ResponseEntity<SuccessResponse<UserPlanPagingResponse>> getLikedPlanList(@AuthenticationPrincipal UserDetailsImpl userDetails,
-                                                                                 @RequestParam(defaultValue = "1") int page,
-                                                                                 @RequestParam(defaultValue = "10") int size,
-                                                                                 @RequestParam(required = false) String query,
-                                                                                 @RequestParam(required = false) String province,
-                                                                                 @RequestParam(required = false) String district,
-                                                                                 @RequestParam(required = false) String startDate,
-                                                                                 @RequestParam(required = false) String endDate,
-                                                                                 @RequestParam(required = false) Long categoryId,
-                                                                                 @RequestParam(required = false) String sort) {
+                                                                                    @RequestParam(defaultValue = "1") int page,
+                                                                                    @RequestParam(defaultValue = "10") int size,
+                                                                                    @RequestParam(required = false) String query,
+                                                                                    @RequestParam(required = false) String province,
+                                                                                    @RequestParam(required = false) String district,
+                                                                                    @RequestParam(required = false) String startDate,
+                                                                                    @RequestParam(required = false) String endDate,
+                                                                                    @RequestParam(required = false) Long categoryId,
+                                                                                    @RequestParam(required = false) String sort) {
 
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
 

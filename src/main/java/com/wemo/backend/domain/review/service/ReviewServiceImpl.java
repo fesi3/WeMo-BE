@@ -16,6 +16,7 @@ import com.wemo.backend.domain.user.service.UserReader;
 import com.wemo.backend.global.exception.CustomException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +26,7 @@ import java.util.List;
 import static com.wemo.backend.global.exception.ErrorCode.REVIEW_ALREADY_EXISTS;
 import static com.wemo.backend.global.exception.ErrorCode.REVIEW_CREATION_BEFORE_PLAN_END;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ReviewServiceImpl implements ReviewService {
@@ -46,8 +48,8 @@ public class ReviewServiceImpl implements ReviewService {
     /**
      * 후기 등록
      *
-     * @param email 이메일
-     * @param planId 일정 id
+     * @param email   이메일
+     * @param planId  일정 id
      * @param request 후기 생성 데이터 (평점, 내용, 이미지)
      * @return 생성된 후기 정보
      */
@@ -83,6 +85,9 @@ public class ReviewServiceImpl implements ReviewService {
             List<String> imageList = imageStore.storeImageList(user, review.getId(), request.getFileUrls(), Image.EntityType.REVIEW);
             return ReviewCreateResponse.fromEntityWithImage(plan, review, imageList);
         }
+
+        log.info("사용자 {}가 일정 id {}에 후기를 등록했습니다.", user.getEmail(), plan.getId());
+
         return ReviewCreateResponse.fromEntity(plan, review);
 
     }
@@ -90,13 +95,13 @@ public class ReviewServiceImpl implements ReviewService {
     /**
      * 전체 후기 목록 조회 (페이지 기반 페이징처리)
      *
-     * @param pageable 페이징 관련 데이터
-     * @param province 시/도
-     * @param district 군/구
-     * @param startDate 필터링 시작날짜
-     * @param endDate 필터링 끝날짜
+     * @param pageable   페이징 관련 데이터
+     * @param province   시/도
+     * @param district   군/구
+     * @param startDate  필터링 시작날짜
+     * @param endDate    필터링 끝날짜
      * @param categoryId 카테고리 id
-     * @param sort 정렬 기준
+     * @param sort       정렬 기준
      * @return 페이징 처리된 후기 목록
      */
     @Override
@@ -108,9 +113,9 @@ public class ReviewServiceImpl implements ReviewService {
     /**
      * 후기 수정
      *
-     * @param email 이메일
+     * @param email    이메일
      * @param reviewId 후기 id
-     * @param request 후기 수정 데이터 (평점, 내용, 이미지)
+     * @param request  후기 수정 데이터 (평점, 내용, 이미지)
      * @return 수정된 후기 정보
      */
     @Override
@@ -130,13 +135,15 @@ public class ReviewServiceImpl implements ReviewService {
             imageStore.updateImage(user, reviewId, request.getFileUrls(), Image.EntityType.REVIEW);
             return ReviewCreateResponse.fromEntityWithImage(plan, updatedReview, request.getFileUrls());
         }
+
+        log.info("사용자 {}가 일정 id {}의 후기 id {}를 수정했습니다.", user.getEmail(), plan.getId(), review.getId());
         return ReviewCreateResponse.fromEntity(plan, updatedReview);
     }
 
     /**
      * 후기 삭제
      *
-     * @param email 이메일
+     * @param email    이메일
      * @param reviewId 후기 id
      * @return 성공 메세지
      */
@@ -151,6 +158,7 @@ public class ReviewServiceImpl implements ReviewService {
 
         reviewStore.deleteReview(review);
         imageStore.deleteImage(reviewId, Image.EntityType.REVIEW);
+        log.info("사용자 {}가 일정 id {}의 후기 id {}를 삭제했습니다.", user.getEmail(), review.getPlan().getId(), review.getId());
 
         return "후기가 정상적으로 삭제되었습니다.";
     }
