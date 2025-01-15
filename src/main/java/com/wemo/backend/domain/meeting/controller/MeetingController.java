@@ -118,5 +118,19 @@ public class MeetingController {
         return ResponseEntity.ok(SuccessResponse.successWithData(meetingService.getPlanListByMeeting(meetingId, pageable)));
     }
 
+    @Operation(summary = "모임 후기 목록 조회", description = "모임의 전체 후기 목록입니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "모임의 전체 후기 목록입니다."),
+            @ApiResponse(responseCode = "404", description = "존재하지 않는 모임입니다.",
+                    content = @Content(mediaType = "application/json"))
+    })
+    @RequestMapping(value = "/{meetingId}/reviews", method = RequestMethod.GET)
+    public ResponseEntity<SuccessResponse<MeetingReviewPagingResponse>> getReviewListByMeeting(@PathVariable Long meetingId,
+                                                                                           @RequestParam(defaultValue = "1") int page,
+                                                                                           @RequestParam(defaultValue = "10") int size) {
+
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
+        return ResponseEntity.ok(SuccessResponse.successWithData(meetingService.getReviewListByMeeting(meetingId, pageable)));
+    }
 
 }

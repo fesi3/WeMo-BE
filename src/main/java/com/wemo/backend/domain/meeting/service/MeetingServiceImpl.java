@@ -237,6 +237,22 @@ public class MeetingServiceImpl implements MeetingService {
         return new MeetingPlanPagingResponse(meeting, meetingRepository.getPlanListByMeeting(meeting, pageable));
     }
 
+    /**
+     * 모임 후기 목록 조회
+     *
+     * @param meetingId 모임 id
+     * @param pageable 페이징 처리 데이터
+     * @return 모임 내의 일정에 등록된 전체 후기 목록
+     */
+    @Override
+    public MeetingReviewPagingResponse getReviewListByMeeting(Long meetingId, Pageable pageable) {
+
+        // 모임 유효성 검사
+        Meeting meeting = meetingReader.getMeeting(meetingId);
+
+        return new MeetingReviewPagingResponse(meeting, meetingRepository.getReviewListByMeeting(meeting, pageable));
+    }
+
     private List<UserListInfo> getUserListInfo(Meeting meeting) {
         return meetingMemberReader.getMemberListByMeeting(meeting).stream()
                 .map(UserListInfo::fromEntity)

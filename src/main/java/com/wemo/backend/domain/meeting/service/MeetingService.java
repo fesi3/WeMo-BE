@@ -21,4 +21,6 @@ public interface MeetingService {
 
     MeetingPlanPagingResponse getPlanListByMeeting(Long meetingId, Pageable pageable);
 
+    MeetingReviewPagingResponse getReviewListByMeeting(Long meetingId, Pageable pageable);
+
 }

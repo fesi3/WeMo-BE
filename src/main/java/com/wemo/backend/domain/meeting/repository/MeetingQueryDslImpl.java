@@ -6,8 +6,10 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.wemo.backend.domain.image.entity.Image;
 import com.wemo.backend.domain.meeting.dto.MeetingPlanListResponse;
+import com.wemo.backend.domain.meeting.dto.MeetingReviewListResponse;
+import com.wemo.backend.domain.meeting.dto.MeetingReviewPagingResponse;
 import com.wemo.backend.domain.meeting.entity.Meeting;
-import com.wemo.backend.domain.plan.entity.QPlan;
+import com.wemo.backend.domain.review.entity.QReview;
 import com.wemo.backend.domain.user.dto.UserListInfo;
 import jakarta.persistence.EntityManager;
 import org.springframework.data.domain.Page;
@@ -21,6 +23,7 @@ import static com.wemo.backend.domain.attendance.entity.QAttendance.attendance;
 import static com.wemo.backend.domain.image.entity.QImage.image;
 import static com.wemo.backend.domain.meetingMember.entity.QMeetingMember.meetingMember;
 import static com.wemo.backend.domain.plan.entity.QPlan.plan;
+import static com.wemo.backend.domain.review.entity.QReview.review;
 import static com.wemo.backend.domain.user.entity.QUser.user;
 
 public class MeetingQueryDslImpl implements MeetingQueryDsl {
@@ -117,6 +120,50 @@ public class MeetingQueryDslImpl implements MeetingQueryDsl {
         ).orElse(0L);
 
         return new PageImpl<>(planListResponses, pageable, total);
+    }
+
+    @Override
+    public Page<MeetingReviewListResponse> getReviewListByMeeting(Meeting meeting, Pageable pageable) {
+
+        JPAQuery<MeetingReviewListResponse> queryBuilder = queryFactory
+                .select(
+                        Projections.constructor(
+                                MeetingReviewListResponse.class,
+                                user.nickname,
+                                user.profileImagePath,
+                                review.score,
+                                review.comment,
+                                Expressions.as(
+                                        queryFactory.select(image.fileUrl)
+                                                .from(image)
+                                                .where(image.entityId.eq(review.id),
+                                                        image.entityType.eq(Image.EntityType.REVIEW),
+                                                        image.main.eq(true)),
+                                        "reviewImagePath"
+                                ),
+                                review.createdAt,
+                                review.updatedAt
+                        )
+                )
+                .from(review)
+                .leftJoin(review.user, user)
+                .where(review.plan.meeting.eq(meeting))
+                .orderBy(review.createdAt.desc());
+
+        List<MeetingReviewListResponse> reviewListResponses = queryBuilder
+                .limit(pageable.getPageSize())
+                .offset(pageable.getOffset())
+                .fetch();
+
+        long total = Optional.ofNullable(queryFactory
+                .select(review.count())
+                .from(review)
+                .leftJoin(review.user, user)
+                .where(review.plan.meeting.eq(meeting))
+                .fetchOne()
+        ).orElse(0L);
+
+        return new PageImpl<>(reviewListResponses, pageable, total);
     }
 
 }
