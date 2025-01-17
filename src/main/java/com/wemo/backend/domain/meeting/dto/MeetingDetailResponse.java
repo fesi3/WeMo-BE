@@ -18,7 +18,7 @@ public class MeetingDetailResponse {
 
     private String meetingName;
 
-    private String meetingImagePath;
+    private List<String> meetingImagePath;
 
     private int memberCount;
 
@@ -42,9 +42,11 @@ public class MeetingDetailResponse {
 
     private int reviewCounts;
 
+    private double reviewAverage;
+
     private List<ReviewListInfo> reviewList;
 
-    public static MeetingDetailResponse fromEntity(Meeting meeting, String meetingImage, int memberCount, List<UserListInfo> userListInfoList, int planCounts, List<PlanListInfo> planListInfoList, int reviewCounts, List<ReviewListInfo> reviewListInfoList) {
+    public static MeetingDetailResponse fromEntity(Meeting meeting, List<String> meetingImage, int memberCount, List<UserListInfo> userListInfoList, int planCounts, List<PlanListInfo> planListInfoList, int reviewCounts, double reviewAverage, List<ReviewListInfo> reviewListInfoList) {
 
         return MeetingDetailResponse.builder()
                 .meetingId(meeting.getId())
@@ -59,6 +61,7 @@ public class MeetingDetailResponse {
                 .updatedAt(meeting.getUpdatedAt())
                 .memberList(userListInfoList)
                 .planCounts(planCounts)
+                .reviewAverage(reviewAverage)
                 .planList(planListInfoList)
                 .reviewCounts(reviewCounts)
                 .reviewList(reviewListInfoList)
