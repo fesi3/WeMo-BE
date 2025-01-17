@@ -33,8 +33,8 @@ public enum ErrorCode {
     USER_ATTENDANCE_NECESSARY(HttpStatus.BAD_REQUEST, "주최자는 필수 참여입니다."),
 
     // review
-    REVIEW_ALREADY_EXISTS(HttpStatus.BAD_REQUEST ,"이미 후기를 등록한 일정입니다."),
-    REVIEW_CREATION_BEFORE_PLAN_END(HttpStatus.BAD_REQUEST,"일정이 완료되지 않아 후기를 작성할 수 없습니다."),
+    REVIEW_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "이미 후기를 등록한 일정입니다."),
+    REVIEW_CREATION_BEFORE_PLAN_END(HttpStatus.BAD_REQUEST, "일정이 완료되지 않아 후기를 작성할 수 없습니다."),
     REVIEW_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 후기입니다."),
     ILLEGAL_REVIEW_GRANTED(HttpStatus.UNAUTHORIZED, "본인이 작성한 후기만 수정/삭제가 가능합니다."),
 
