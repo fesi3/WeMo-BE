@@ -57,39 +57,18 @@ public class ReviewServiceImpl implements ReviewService {
     @Transactional
     public ReviewCreateResponse createReview(String email, Long planId, ReviewCreateRequest request) {
 
-        // 유저 유효성 검사
         User user = userReader.getUserByEmail(email);
-        // 일정 유효성 검사
         Plan plan = planReader.getPlan(planId);
 
-        // 기존 후기 작성 여부 확인
-        boolean hasExistingReview = reviewRepository.existsByUserAndPlan(user, plan);
-        if (hasExistingReview) {
-            throw new CustomException(REVIEW_ALREADY_EXISTS);
-        }
+        checkExistingReview(user, plan);
+        checkPlanEndTime(plan);
 
-        // 일정이 완료되었는지 확인
-        if (plan.getDateTime().isAfter(LocalDateTime.now())) {
-            throw new CustomException(REVIEW_CREATION_BEFORE_PLAN_END);
-        }
-
-        // 참여 내역 검사 후 상태값 변경
         Attendance attendance = attendanceReader.validateAttendance(user, plan);
         attendance.updateStatus();
 
-        // 후기 저장
         Review review = reviewStore.storeReview(request, user, plan);
 
-        // 이미지 저장 (선택)
-        if (request.getFileUrls() != null || !request.getFileUrls().isEmpty()) {
-            List<String> imageList = imageStore.storeImageList(user, review.getId(), request.getFileUrls(), Image.EntityType.REVIEW);
-            return ReviewCreateResponse.fromEntityWithImage(plan, review, imageList);
-        }
-
-        log.info("사용자 {}가 일정 id {}에 후기를 등록했습니다.", user.getEmail(), plan.getId());
-
-        return ReviewCreateResponse.fromEntity(plan, review);
-
+        return storeReviewAndImages(user, plan, request, review);
     }
 
     /**
@@ -113,7 +92,7 @@ public class ReviewServiceImpl implements ReviewService {
     /**
      * 후기 수정
      *
-     * @param email    이메일
+     * @param email    사용자 이메일
      * @param reviewId 후기 id
      * @param request  후기 수정 데이터 (평점, 내용, 이미지)
      * @return 수정된 후기 정보
@@ -143,7 +122,7 @@ public class ReviewServiceImpl implements ReviewService {
     /**
      * 후기 삭제
      *
-     * @param email    이메일
+     * @param email    사용자 이메일
      * @param reviewId 후기 id
      * @return 성공 메세지
      */
@@ -161,6 +140,30 @@ public class ReviewServiceImpl implements ReviewService {
         log.info("사용자 {}가 일정 id {}의 후기 id {}를 삭제했습니다.", user.getEmail(), review.getPlan().getId(), review.getId());
 
         return "후기가 정상적으로 삭제되었습니다.";
+    }
+
+    private void checkExistingReview(User user, Plan plan) {
+
+        boolean hasExistingReview = reviewRepository.existsByUserAndPlan(user, plan);
+        if (hasExistingReview) {
+            throw new CustomException(REVIEW_ALREADY_EXISTS);
+        }
+    }
+
+    private void checkPlanEndTime(Plan plan) {
+
+        if (plan.getDateTime().isAfter(LocalDateTime.now())) {
+            throw new CustomException(REVIEW_CREATION_BEFORE_PLAN_END);
+        }
+    }
+
+    private ReviewCreateResponse storeReviewAndImages(User user, Plan plan, ReviewCreateRequest request, Review review) {
+
+        if (request.getFileUrls() != null && !request.getFileUrls().isEmpty()) {
+            List<String> imageList = imageStore.storeImageList(user, review.getId(), request.getFileUrls(), Image.EntityType.REVIEW);
+            return ReviewCreateResponse.fromEntityWithImage(plan, review, imageList);
+        }
+        return ReviewCreateResponse.fromEntity(plan, review);
     }
 
 }
