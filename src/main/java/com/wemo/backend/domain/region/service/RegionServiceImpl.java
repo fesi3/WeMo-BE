@@ -1,22 +1,15 @@
 package com.wemo.backend.domain.region.service;
 
-import com.wemo.backend.domain.region.dto.DistrictListInfo;
-import com.wemo.backend.domain.region.dto.DistrictListResponse;
-import com.wemo.backend.domain.region.dto.ProvinceListInfo;
-import com.wemo.backend.domain.region.dto.ProvinceListResponse;
-import com.wemo.backend.domain.region.entity.District;
-import com.wemo.backend.domain.region.entity.Province;
+import com.wemo.backend.domain.region.dto.*;
 import com.wemo.backend.global.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
-import static com.wemo.backend.global.exception.ErrorCode.*;
+import static com.wemo.backend.global.exception.ErrorCode.ILLEGAL_ADDRESS_NOT_VALID;
 
 @Service
 @RequiredArgsConstructor
@@ -72,5 +65,31 @@ public class RegionServiceImpl implements RegionService {
         return new DistrictListResponse(districtListInfos);
     }
 
+    @Override
+    public RegionListResponse getRegionList() {
+
+        // 전체 시/도 목록을 가져옵니다.
+        List<RegionProvinceListInfo> provinceList = regionReader.getAllProvinceList().stream()
+                .map(province -> {
+                    // 각 시/도에 대해 군/구 목록을 가져옵니다.
+                    List<RegionDistrictListInfo> districtList = regionReader.getAllDistrictList(province.getId()).stream()
+                            .map(district -> RegionDistrictListInfo.builder()
+                                    .id(district.getId())
+                                    .name(district.getDistrictName())
+                                    .build())
+                            .toList();
+
+                    // 시/도와 해당 군/구 목록을 포함한 객체 생성
+                    return RegionProvinceListInfo.builder()
+                            .id(province.getId())
+                            .name(province.getProvinceName())
+                            .districtList(districtList)
+                            .build();
+                })
+                .toList();
+
+        // 변환된 리스트로 RegionListResponse 생성
+        return new RegionListResponse(provinceList);
+    }
 
 }
