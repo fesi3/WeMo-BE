@@ -1,36 +1,25 @@
 package com.wemo.backend.domain.meeting.service;
 
-import com.wemo.backend.domain.attendance.service.AttendanceReader;
+import com.wemo.backend.domain.comm.CommUtilService;
 import com.wemo.backend.domain.image.entity.Image;
 import com.wemo.backend.domain.image.service.ImageReader;
 import com.wemo.backend.domain.image.service.ImageStore;
 import com.wemo.backend.domain.meeting.dto.*;
 import com.wemo.backend.domain.meeting.entity.Meeting;
 import com.wemo.backend.domain.meeting.repository.MeetingRepository;
-import com.wemo.backend.domain.meetingMember.service.MeetingMemberReader;
 import com.wemo.backend.domain.meetingMember.service.MeetingMemberStore;
 import com.wemo.backend.domain.plan.dto.PlanListInfo;
-import com.wemo.backend.domain.plan.entity.Plan;
-import com.wemo.backend.domain.plan.service.PlanReader;
 import com.wemo.backend.domain.review.dto.ReviewListInfo;
-import com.wemo.backend.domain.review.entity.Review;
-import com.wemo.backend.domain.review.service.ReviewReader;
 import com.wemo.backend.domain.user.dto.UserListInfo;
 import com.wemo.backend.domain.user.entity.User;
 import com.wemo.backend.domain.user.service.UserReader;
-import com.wemo.backend.global.exception.CustomException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
-
-import static com.wemo.backend.global.exception.ErrorCode.ILLEGAL_MEETING_GRANTED;
 
 @Slf4j
 @Service
@@ -42,96 +31,70 @@ public class MeetingServiceImpl implements MeetingService {
     private final MeetingMemberStore meetingMemberStore;
     private final ImageStore imageStore;
     private final MeetingReader meetingReader;
-    private final MeetingMemberReader meetingMemberReader;
-    private final PlanReader planReader;
-    private final ReviewReader reviewReader;
     private final ImageReader imageReader;
-    private final AttendanceReader attendanceReader;
     private final MeetingRepository meetingRepository;
+    private final CommUtilService commUtilService;
+    private final MeetingUtilService meetingUtilService;
 
     /**
-     * 0. 모임 생성
+     * 모임 생성
+     * - 사용자 인증을 통해 요청한 사용자가 유효한지 확인하고, 모임 저장
+     * - 모임에 대한 이미지 파일 저장
+     * - 모임 주최자는 자동으로 가입되도록 설정
      *
-     * @param email   이메일
-     * @param request 모임 생성 데이터 (모임명, 모임 설명, 카테고리, 모임 이미지)
+     * @param email   사용자의 이메일
+     * @param request 모임 생성 요청 객체
      */
     @Override
     @Transactional
     public void createMeeting(String email, MeetingCreateRequest request) {
 
-        // 유저 객체 검증
-        User user = userReader.getUserByEmail(email);
-
-        // 모임 객체 저장
+        User user = validateUser(email);
         Meeting meeting = meetingStore.storeMeeting(request, user);
-
-        // 모임 대표 이미지 저장
-        Image image = imageStore.storeImage(user, meeting.getId(), request.getFileUrl(), Image.EntityType.MEETING);
-
-        // 모임 생성자는 자동으로 가입
+        imageStore.storeImageList(user, meeting.getId(), request.getFileUrls(), Image.EntityType.MEETING);
         meetingMemberStore.storeMemberToMeeting(user, meeting);
-
         log.info("사용자 {}의 모임 id {}가 생성되었습니다.", user.getEmail(), meeting.getId());
-
     }
 
     /**
      * 모임 가입
+     * - 사용자 인증 후 모임에 참여할 수 있도록 설정
      *
-     * @param email     이메일
+     * @param email     사용자의 이메일
      * @param meetingId 모임 id
-     * @return 성공 응답 메세지
+     * @return 모임 가입 성공 메시지
      */
     @Override
     @Transactional
     public String joinMeeting(String email, Long meetingId) {
 
-        User user = userReader.getUserByEmail(email);
-        Meeting meeting = meetingReader.getMeeting(meetingId);
-
+        User user = validateUser(email);
+        Meeting meeting = validateMeeting(meetingId);
         meetingMemberStore.storeMemberToMeeting(user, meeting);
         log.info("사용자 {}가 모임 id {}에 가입했습니다.", user.getEmail(), meeting.getId());
-
         return "모임 가입 성공";
     }
 
     /**
-     * 모임 상세 조회
+     * 모임 상세 정보 조회
+     * - 모임에 대한 이미지, 멤버, 일정, 후기 정보를 포함하여 반환
+     * - 후기는 전체 일정의 평균 평점을 포함
      *
      * @param meetingId 모임 id
-     * @return 모임에 관련된 모든 정보 반환 (모임 정보, 멤버 리스트, 일정 리스트, 후기 리스트)
+     * @return 모임 상세 정보 응답 객체
      */
     @Override
     public MeetingDetailResponse getMeetingDetail(Long meetingId) {
 
-        log.info("모임 id {}의 상세 조회 요청", meetingId);
+        log.info("모임 id {} 상세 조회 요청", meetingId);
+        Meeting meeting = validateMeeting(meetingId);
 
-        // 모임 유효성 검사
-        Meeting meeting = meetingReader.getMeeting(meetingId);
+        List<String> meetingImage = imageReader.getImageList(meeting.getId(), Image.EntityType.MEETING);
+        List<UserListInfo> userListInfoList = meetingUtilService.getTopUsers(meeting);
+        List<PlanListInfo> planListInfoList = meetingUtilService.getTopPlans(meeting);
+        List<ReviewListInfo> reviewListInfoList = meetingUtilService.getTopReviews(planListInfoList);
 
-        // 모임 이미지 가져오기
-        String meetingImage = imageReader.getImage(meeting.getId(), Image.EntityType.MEETING);
-
-        // 모임 멤버 정보 가져오기 (최근 가입한 6명까지)
-        List<UserListInfo> userListInfoList = getUserListInfo(meeting)
-                .stream()
-                .sorted(Comparator.comparing(UserListInfo::getCreatedAt).reversed()) // 가입일 기준 내림차순 정렬
-                .limit(6) // 상위 6명만 가져오기
-                .collect(Collectors.toList());
-
-        // 일정 정보 가져오기 (최근 3개까지)
-        List<PlanListInfo> planListInfoList = getPlanListInfo(meeting)
-                .stream()
-                .sorted(Comparator.comparing(PlanListInfo::getDateTime).reversed()) // 일정 날짜 기준 내림차순 정렬
-                .limit(3) // 상위 3개만 가져오기
-                .collect(Collectors.toList());
-
-        // 리뷰 정보 가져오기 (최근 2개까지)
-        List<ReviewListInfo> reviewListInfoList = getReviewListInfo(planListInfoList)
-                .stream()
-                .sorted(Comparator.comparing(ReviewListInfo::getCreatedAt).reversed()) // 작성일 기준 내림차순 정렬
-                .limit(2) // 상위 2개만 가져오기
-                .collect(Collectors.toList());
+        double reviewAverage = commUtilService.calculateReviewAverage(meeting);
 
         return MeetingDetailResponse.fromEntity(
                 meeting,
@@ -141,41 +104,39 @@ public class MeetingServiceImpl implements MeetingService {
                 planListInfoList.size(),
                 planListInfoList,
                 reviewListInfoList.size(),
+                reviewAverage,
                 reviewListInfoList
         );
     }
 
     /**
-     * 모임 정보 수정
+     * 모임 수정
+     * - 모임의 설명을 수정할 수 있으며, 모임의 소유자만 수정 가능
      *
-     * @param email     이메일
+     * @param email     사용자의 이메일
      * @param meetingId 모임 id
-     * @param request   수정 요청 데이터 (모임 설명)
-     * @return 성공 메세지
+     * @param request   모임 수정 요청 객체
+     * @return 모임 수정 성공 메시지
      */
     @Override
     @Transactional
     public String updateMeeting(String email, Long meetingId, MeetingUpdateRequest request) {
 
-        User user = userReader.getUserByEmail(email);
-
-        Meeting meeting = meetingReader.getMeeting(meetingId);
-
-        if (!meeting.getUser().getEmail().equals(user.getEmail())) throw new CustomException(ILLEGAL_MEETING_GRANTED);
-
+        User user = validateUser(email);
+        Meeting meeting = validateMeeting(meetingId);
+        commUtilService.validateMeetingOwner(user, meeting);
         meeting.updateDescription(request.getDescription());
-
-        log.info("모임 id {}가 수정되었습니다.", meeting.getId());
-
+        log.info("사용자 {}의 모임 id {}가 수정되었습니다.", user.getEmail(), meeting.getId());
         return "모임 내용이 수정되었습니다.";
     }
 
     /**
      * 모임 삭제
+     * - 모임과 관련된 모든 데이터(일정, 후기, 멤버 등) 삭제
      *
-     * @param email     이메일
+     * @param email     사용자의 이메일
      * @param meetingId 모임 id
-     * @return
+     * @return 모임 삭제 성공 메시지
      */
     @Override
     @Transactional
@@ -183,127 +144,100 @@ public class MeetingServiceImpl implements MeetingService {
 
         log.info("모임 id {}의 삭제 요청", meetingId);
 
-        User user = userReader.getUserByEmail(email);
+        User user = validateUser(email);
+        Meeting meeting = validateMeeting(meetingId);
+        commUtilService.validateMeetingOwner(user, meeting);
 
-        Meeting meeting = meetingReader.getMeeting(meetingId);
-
-        if (!meeting.getUser().getEmail().equals(user.getEmail())) {
-            log.warn("사용자 {}가 권한 없이 모임 id {}를 삭제하려 했습니다.", user.getEmail(), meetingId);
-            throw new CustomException(ILLEGAL_MEETING_GRANTED);
-        }
-
-        // 모임 삭제 처리
+        // 모임 소프트 삭제
         meeting.softDelete();
 
-        // 모임과 연관된 계획 정보 조회
-        List<Plan> plans = planReader.getPlanByMeeting(meeting);
-        plans.forEach(plan -> {
-            // 계획에 속한 참석자 정보 삭제
-            attendanceReader.getAttendanceList(plan).forEach(attendanceReader::delete);
-            // 후기 정보 삭제
-            reviewReader.getReviewByPlan(plan).forEach(review -> {
-                // 후기와 관련된 이미지 삭제
-                imageReader.deleteImage(review.getId(), Image.EntityType.REVIEW);
-                reviewReader.delete(review);
-            });
-            // 계획에 속한 이미지 삭제
-            imageReader.deleteImage(plan.getId(), Image.EntityType.PLAN);
-            // 계획 정보 삭제
-            planReader.delete(plan);
-        });
-
-        // 모임과 연관된 멤버 정보 삭제
-        meetingMemberReader.getMemberListByMeeting(meeting).forEach(meetingMemberReader::delete);
-
-        // 모임에 속한 이미지 삭제
-        imageReader.deleteImage(meetingId, Image.EntityType.MEETING);
+        // 관련 데이터 삭제
+        deleteAssociatedData(meeting);
 
         log.info("사용자 {}가 모임 id {}를 정상적으로 삭제했습니다.", user.getEmail(), meeting.getId());
-
         return "모임이 삭제되었습니다.";
     }
 
     /**
      * 모임 멤버 목록 조회
+     * - 페이징 처리된 멤버 목록 반환
      *
      * @param meetingId 모임 id
-     * @param pageable  페이징 처리 데이터
-     * @return 모임에 가입된 전체 멤버 목록
+     * @param pageable  페이지네이션 정보
+     * @return 모임 멤버 페이징 응답 객체
      */
     @Override
     public MeetingMemberPagingResponse getMemberListByMeeting(Long meetingId, Pageable pageable) {
 
-        // 모임 유효성 검사
-        Meeting meeting = meetingReader.getMeeting(meetingId);
-
+        Meeting meeting = validateMeeting(meetingId);
         return new MeetingMemberPagingResponse(meeting, meetingRepository.getMemberListByMeeting(meeting, pageable));
     }
 
     /**
      * 모임 일정 목록 조회
+     * - 페이징 처리된 일정 목록 반환
      *
      * @param meetingId 모임 id
-     * @param pageable  페이징 처리 데이터
-     * @return 모임에 등록된 전체 일정 목록
+     * @param pageable  페이지네이션 정보
+     * @return 모임 일정 페이징 응답 객체
      */
     @Override
     public MeetingPlanPagingResponse getPlanListByMeeting(Long meetingId, Pageable pageable) {
 
-        // 모임 유효성 검사
-        Meeting meeting = meetingReader.getMeeting(meetingId);
-
+        Meeting meeting = validateMeeting(meetingId);
         return new MeetingPlanPagingResponse(meeting, meetingRepository.getPlanListByMeeting(meeting, pageable));
     }
 
     /**
      * 모임 후기 목록 조회
+     * - 페이징 처리된 후기 목록 반환
      *
      * @param meetingId 모임 id
-     * @param pageable  페이징 처리 데이터
-     * @return 모임 내의 일정에 등록된 전체 후기 목록
+     * @param pageable  페이지네이션 정보
+     * @return 모임 후기 페이징 응답 객체
      */
     @Override
     public MeetingReviewPagingResponse getReviewListByMeeting(Long meetingId, Pageable pageable) {
 
-        // 모임 유효성 검사
-        Meeting meeting = meetingReader.getMeeting(meetingId);
-
+        Meeting meeting = validateMeeting(meetingId);
         return new MeetingReviewPagingResponse(meeting, meetingRepository.getReviewListByMeeting(meeting, pageable));
     }
 
-    private List<UserListInfo> getUserListInfo(Meeting meeting) {
+    // 유틸리티 메서드들
 
-        return meetingMemberReader.getMemberListByMeeting(meeting).stream()
-                .map(UserListInfo::fromEntity)
-                .collect(Collectors.toList());
+    /**
+     * 사용자 이메일을 통해 사용자를 검증
+     *
+     * @param email 사용자 이메일
+     * @return 검증된 사용자 객체
+     */
+    private User validateUser(String email) {
+
+        return userReader.getUserByEmail(email);
     }
 
-    private List<PlanListInfo> getPlanListInfo(Meeting meeting) {
+    /**
+     * 모임 id를 통해 모임을 검증
+     *
+     * @param meetingId 모임 id
+     * @return 검증된 모임 객체
+     */
+    private Meeting validateMeeting(Long meetingId) {
 
-        List<Plan> planList = planReader.getPlanByMeeting(meeting);
-
-        return planList.stream().map(plan -> {
-            List<String> planImageList = imageReader.getImageList(plan.getId(), Image.EntityType.PLAN);
-
-            return PlanListInfo.fromEntity(plan, attendanceReader.getParticipantsCount(plan), planImageList);
-        }).collect(Collectors.toList());
+        return meetingReader.getMeeting(meetingId);
     }
 
-    private List<ReviewListInfo> getReviewListInfo(List<PlanListInfo> planListInfoList) {
+    /**
+     * 모임에 대한 모든 연관 데이터를 삭제
+     * - 일정, 후기, 이미지, 멤버 데이터 삭제
+     *
+     * @param meeting 모임 객체
+     */
+    private void deleteAssociatedData(Meeting meeting) {
 
-        List<ReviewListInfo> reviewListInfoList = new ArrayList<>();
-
-        for (PlanListInfo planListInfo : planListInfoList) {
-            Plan plan = planReader.getPlan(planListInfo.getPlanId());
-            List<Review> reviews = reviewReader.getReviewByPlan(plan);
-
-            reviews.forEach(review -> {
-                ReviewListInfo reviewListInfo = ReviewListInfo.fromEntity(review);
-                reviewListInfoList.add(reviewListInfo);
-            });
-        }
-
-        return reviewListInfoList;
+        meetingUtilService.deletePlansAndReviews(meeting);
+        meetingUtilService.deleteMembers(meeting);
+        meetingUtilService.deleteMeetingImages(meeting);
     }
 
 }

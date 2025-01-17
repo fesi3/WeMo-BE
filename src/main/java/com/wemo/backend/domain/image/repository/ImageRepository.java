@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface ImageRepository extends JpaRepository<Image, Long> {
 
-    Image findByEntityIdAndEntityType(Long entityId, Image.EntityType entityType);
+    Image findByEntityIdAndEntityTypeAndMainIsTrue(Long entityId, Image.EntityType entityType);
 
     List<Image> findAllByEntityIdAndEntityType(Long entityId, Image.EntityType entityType);
 

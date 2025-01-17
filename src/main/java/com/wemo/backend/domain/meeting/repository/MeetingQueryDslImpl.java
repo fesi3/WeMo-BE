@@ -7,9 +7,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.wemo.backend.domain.image.entity.Image;
 import com.wemo.backend.domain.meeting.dto.MeetingPlanListResponse;
 import com.wemo.backend.domain.meeting.dto.MeetingReviewListResponse;
-import com.wemo.backend.domain.meeting.dto.MeetingReviewPagingResponse;
 import com.wemo.backend.domain.meeting.entity.Meeting;
-import com.wemo.backend.domain.review.entity.QReview;
 import com.wemo.backend.domain.user.dto.UserListInfo;
 import jakarta.persistence.EntityManager;
 import org.springframework.data.domain.Page;
@@ -102,7 +100,8 @@ public class MeetingQueryDslImpl implements MeetingQueryDsl {
                 .leftJoin(plan.user, user)
                 .leftJoin(attendance).on(attendance.plan.eq(plan))
                 .where(plan.meeting.eq(meeting))
-                .orderBy(plan.dateTime.desc());
+                .orderBy(plan.dateTime.desc())
+                .groupBy(plan.id);
 
         List<MeetingPlanListResponse> planListResponses = queryBuilder
                 .limit(pageable.getPageSize())

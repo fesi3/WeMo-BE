@@ -15,9 +15,9 @@ public class MeetingReviewPagingResponse {
 
     private String meetingName;
 
-    private int planCount;
+    private int reviewCount;
 
-    private List<MeetingReviewListResponse> planList;
+    private List<MeetingReviewListResponse> reviewList;
 
     private int pageSize;
 
@@ -29,11 +29,12 @@ public class MeetingReviewPagingResponse {
 
         this.meetingId = meeting.getId();
         this.meetingName = meeting.getMeetingName();
-        this.planCount = reviewListByMeeting.getContent().size();
-        this.planList = reviewListByMeeting.getContent();
+        this.reviewCount = reviewListByMeeting.getContent().size();
+        this.reviewList = reviewListByMeeting.getContent();
         this.pageSize = reviewListByMeeting.getSize();
         this.page = reviewListByMeeting.getPageable().getPageNumber() + 1;
         this.totalPage = reviewListByMeeting.getTotalPages();
 
     }
+
 }

@@ -16,9 +16,9 @@ public class ImageReaderImpl implements ImageReader {
     private final ImageRepository imageRepository;
 
     @Override
-    public String getImage(Long entityId, Image.EntityType entityType) {
+    public String getMainImage(Long entityId, Image.EntityType entityType) {
 
-        return imageRepository.findByEntityIdAndEntityType(entityId, entityType).getFileUrl();
+        return imageRepository.findByEntityIdAndEntityTypeAndMainIsTrue(entityId, entityType).getFileUrl();
     }
 
     @Override
@@ -38,6 +38,7 @@ public class ImageReaderImpl implements ImageReader {
     @Override
     @Transactional
     public void deleteImage(Long entityId, Image.EntityType entityType) {
+
         List<Image> imageList = imageRepository.findAllByEntityIdAndEntityType(entityId, entityType);
         imageRepository.deleteAll(imageList); // 이미지 삭제
     }
