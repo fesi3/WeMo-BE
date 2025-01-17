@@ -1,6 +1,5 @@
 package com.wemo.backend.domain.meeting.dto;
 
-import com.wemo.backend.domain.image.entity.Image;
 import com.wemo.backend.domain.meeting.entity.Meeting;
 import lombok.Builder;
 import lombok.Getter;
