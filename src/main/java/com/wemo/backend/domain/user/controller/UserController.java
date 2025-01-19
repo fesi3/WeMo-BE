@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +35,7 @@ public class UserController {
     })
     @RequestMapping(value = "/check-email", method = RequestMethod.POST)
     public ResponseEntity<SuccessResponse<String>> checkEmail(@RequestBody EmailCheckRequest request) {
+
         userService.checkEmail(request.getEmail());
         return ResponseEntity.ok(SuccessResponse.successWithNoData("사용 가능한 이메일입니다."));
     }
@@ -44,7 +46,7 @@ public class UserController {
             @ApiResponse(responseCode = "400", description = "입력값을 확인해주세요.",
                     content = @Content(mediaType = "application/json"))
     })
-    @RequestMapping(value = "/signup",method = RequestMethod.POST)
+    @RequestMapping(value = "/signup", method = RequestMethod.POST)
     public ResponseEntity<SuccessResponse<String>> signup(@Valid @RequestBody UserCreateRequest request) {
 
         userService.signup(request);
@@ -58,9 +60,9 @@ public class UserController {
                     content = @Content(mediaType = "application/json"))
     })
     @RequestMapping(value = "/signin", method = RequestMethod.POST)
-    public ResponseEntity<SuccessResponse<String>> signin(@Valid @RequestBody SigninRequest request) {
+    public ResponseEntity<SuccessResponse<String>> signin(@Valid @RequestBody SigninRequest request, HttpServletResponse response) {
 
-        HttpHeaders httpHeaders = userService.signin(request);
+        HttpHeaders httpHeaders = userService.signin(request, response);
         return ResponseEntity.status(200).headers(httpHeaders).body(SuccessResponse.successWithNoData("로그인 성공"));
     }
 
@@ -72,12 +74,14 @@ public class UserController {
     })
     @RequestMapping(value = "/signout", method = RequestMethod.POST)
     public ResponseEntity<SuccessResponse<String>> signout(
-                                          @RequestHeader("Authorization") String accessToken,
-                                          @RequestHeader("Refresh-Token") String refreshToken) {
+            @RequestHeader("Authorization") String accessToken,
+            @RequestHeader("Refresh-Token") String refreshToken,
+            HttpServletResponse response) {
+
         log.info("accessToken : {}", accessToken);
         log.info("refreshToken : {}", refreshToken);
 
-        return ResponseEntity.ok().body(SuccessResponse.successWithNoData(userService.signout(accessToken, refreshToken)));
+        return ResponseEntity.ok().body(SuccessResponse.successWithNoData(userService.signout(accessToken, refreshToken, response)));
     }
 
     @Operation(summary = "회원 정보 조회", description = "사용자가 회원 정보를 조회합니다.")
@@ -86,6 +90,7 @@ public class UserController {
     })
     @RequestMapping(value = "/users", method = RequestMethod.GET)
     public ResponseEntity<SuccessResponse<UserInfoResponse>> getUserInfo(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+
         return ResponseEntity.ok(SuccessResponse.successWithData(userService.getUserInfo(userDetails.getUsername())));
     }
 
@@ -98,6 +103,15 @@ public class UserController {
                                                                              @Valid @RequestBody UserUpdateRequest request) {
 
         return ResponseEntity.ok(SuccessResponse.successWithData(userService.updateProfile(userDetails.getUsername(), request)));
+    }
+
+    @PostMapping("/additional-data")
+    public ResponseEntity<SuccessResponse<String>> saveAdditionalData(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                                      @RequestBody AdditionalDataRequest request) {
+        // 추가 데이터 저장
+        userService.saveAdditionalUserData(userDetails.getUsername(), request);
+
+        return ResponseEntity.ok(SuccessResponse.successWithNoData("추가 데이터 저장 완료"));
     }
 
 }

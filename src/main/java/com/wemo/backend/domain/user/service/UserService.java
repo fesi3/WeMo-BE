@@ -1,6 +1,7 @@
 package com.wemo.backend.domain.user.service;
 
 import com.wemo.backend.domain.user.dto.*;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
@@ -12,9 +13,9 @@ public interface UserService {
 
     void signup(UserCreateRequest request);
 
-    HttpHeaders signin(SigninRequest request);
+    HttpHeaders signin(SigninRequest request, HttpServletResponse response);
 
-     String signout(String accessToken, String refreshToken);
+    String signout(String accessToken, String refreshToken, HttpServletResponse response);
 
     UserInfoResponse getUserInfo(String email);
 
@@ -27,5 +28,7 @@ public interface UserService {
     UserPlanPagingResponse getPlanListReviewAvailable(String email, Pageable pageable);
 
     UserUpdateResponse updateProfile(String email, UserUpdateRequest request);
+
+    void saveAdditionalUserData(String email, AdditionalDataRequest request);
 
 }
