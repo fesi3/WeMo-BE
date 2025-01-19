@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Comment;
 
 @Entity
-@Table(name = "TB_ATTENDANE")
+@Table(name = "TB_ATTENDACNE")
 @Getter
 @Builder
 @NoArgsConstructor
