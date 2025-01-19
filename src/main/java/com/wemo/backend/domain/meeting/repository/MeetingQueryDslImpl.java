@@ -147,7 +147,8 @@ public class MeetingQueryDslImpl implements MeetingQueryDsl {
                 .from(review)
                 .leftJoin(review.user, user)
                 .where(review.plan.meeting.eq(meeting))
-                .orderBy(review.createdAt.desc());
+                .orderBy(review.createdAt.desc())
+                .groupBy(review.id);
 
         List<MeetingReviewListResponse> reviewListResponses = queryBuilder
                 .limit(pageable.getPageSize())
