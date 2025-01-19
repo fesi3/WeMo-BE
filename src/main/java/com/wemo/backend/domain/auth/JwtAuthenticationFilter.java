@@ -26,15 +26,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws IOException {
+
         try {
+
+            String userAgent = request.getHeader("User-Agent");
+            log.info("User-Agent: " + userAgent);
+
+            String clientIp = request.getRemoteAddr();
             String requestURI = request.getRequestURI();
             String method = request.getMethod(); // HTTP 메서드 가져오기
+            log.info("요청 IP: {}, 요청 URI: {}", clientIp, requestURI);
 
             String accessToken = jwtTokenProvider.resolveToken(request);
             String refreshToken = jwtTokenProvider.resolveRefreshToken(request);
 
-            log.info("요청 URI: {}, accessToken: {}", requestURI, accessToken);
-            log.info("refreshToken: {}", refreshToken);
+            log.info("accessToken: {}, refreshToken : {}", accessToken, refreshToken);
 
             // 예외 경로 설정 (로그인, 회원가입 등)
             if (isExcludedPath(requestURI)) {
@@ -42,7 +48,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 return;
             }
 
-            if (requestURI.startsWith("/api/meetings") && "GET".equalsIgnoreCase(method)) {
+            if (requestURI.startsWith("/api/meetings") && "GET" .equalsIgnoreCase(method)) {
                 // 토큰이 없는 경우 비회원으로 처리
                 if (accessToken == null) {
                     filterChain.doFilter(request, response);
@@ -50,7 +56,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
             }
 
-            if (requestURI.startsWith("/api/plans") && "GET".equalsIgnoreCase(method)) {
+            if (requestURI.startsWith("/api/plans") && "GET" .equalsIgnoreCase(method)) {
                 // 토큰이 없는 경우 비회원으로 처리
                 if (accessToken == null) {
                     filterChain.doFilter(request, response);
@@ -58,7 +64,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
             }
 
-            if (requestURI.startsWith("/api/reviews") && "GET".equalsIgnoreCase(method)) {
+            if (requestURI.startsWith("/api/reviews") && "GET" .equalsIgnoreCase(method)) {
                 // 토큰이 없는 경우 비회원으로 처리
                 if (accessToken == null) {
                     filterChain.doFilter(request, response);
@@ -67,7 +73,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
 
             // 로그아웃 요청 처리
-            if ("/api/auths/signout".equals(requestURI)) {
+            if ("/api/auths/signout" .equals(requestURI)) {
                 if (!validateLogoutRequest(accessToken, refreshToken, response)) {
                     // 유효성 검증 실패 시 요청 중단
                     return;
@@ -80,9 +86,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 log.warn("accessToken이 존재하지 않습니다.");
                 sendErrorResponse(response, "accessToken이 요청에 포함되지 않았습니다.", HttpStatus.BAD_REQUEST);
                 return;
-            }
-
-            else {
+            } else {
                 // 1. accessToken이 블랙리스트에 포함되어 있는지 확인
                 if (tokenBlacklistService.isBlacklisted(accessToken)) {
                     sendErrorResponse(response, "이미 로그아웃된 토큰입니다. 로그인 후 다시 시도해주세요.", HttpStatus.UNAUTHORIZED);
@@ -118,6 +122,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private boolean validateLogoutRequest(String accessToken, String refreshToken, HttpServletResponse response)
             throws IOException {
+
         boolean isAccessTokenValid = jwtTokenProvider.validateAccessToken(accessToken);
         boolean isRefreshTokenValid = jwtTokenProvider.validateRefreshToken(refreshToken);
 
@@ -145,6 +150,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     // 공통적인 에러 응답을 보내는 메서드
     private void sendErrorResponse(HttpServletResponse response, String message, HttpStatus httpStatus) throws IOException {
+
         response.setStatus(httpStatus.value());
         response.setContentType("application/json;charset=UTF-8");
 
@@ -161,7 +167,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 requestURI.startsWith("/swagger-ui.html") ||
                 requestURI.startsWith("/v3/api-docs") ||
                 requestURI.startsWith("/api/regions") ||
-                requestURI.equals("/api/auths/reissue");
+                requestURI.equals("/api/auths/reissue") ||
+                requestURI.startsWith("/login/oauth2/callback/kakao") ||
+                requestURI.startsWith("/login/oauth2/callback/google") ||
+                requestURI.startsWith("/login/oauth2/callback/naver");
     }
 
 }

@@ -43,7 +43,6 @@ public class JwtTokenProvider {
     public String resolveToken(HttpServletRequest request) {
 
         String bearerToken = request.getHeader("Authorization");
-        log.info("token : {}", bearerToken);
 
         // Authorization 헤더가 존재하고, "Bearer "로 시작하는 경우 토큰 추출
         if (bearerToken != null && bearerToken.startsWith(TOKEN_PREFIX)) {
@@ -102,6 +101,7 @@ public class JwtTokenProvider {
      * @param token JWT 토큰
      */
     public void parseToken(String token) {
+
         JWTVerifier verifier = JWT.require(generateAlgorithm(JWT_SECRET)).build();
         verifier.verify(token);
     }
@@ -201,6 +201,7 @@ public class JwtTokenProvider {
      * JWT 형식 검증 로직
      */
     private boolean isJwtFormatValid(String token) {
+
         try {
             String[] parts = token.split("\\.");
             return parts.length == 3; // 헤더, 페이로드, 서명
