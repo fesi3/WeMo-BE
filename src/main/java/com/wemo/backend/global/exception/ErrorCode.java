@@ -42,8 +42,12 @@ public enum ErrorCode {
     ILLEGAL_IMAGE_COUNT(HttpStatus.BAD_REQUEST, "이미지는 한 번에 최대 10개까지 요청 가능합니다."),
 
     // region
-    PROVINCE_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 시/도 데이터입니다.");
+    PROVINCE_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 시/도 데이터입니다."),
 
+    // Oauth2
+    REST_REQUEST_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "REST 요청 처리에 실패했습니다."),
+    INVALID_LOGIN_TYPE(HttpStatus.BAD_REQUEST, "유효하지 않은 로그인 타입입니다."),
+    INVALID_RESPONSE(HttpStatus.BAD_REQUEST, "유효하지 않은 응답입니다.");
 
     private final HttpStatus httpStatus;
     private final String message;

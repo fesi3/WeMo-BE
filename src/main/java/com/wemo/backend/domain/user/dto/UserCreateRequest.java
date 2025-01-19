@@ -1,7 +1,6 @@
 package com.wemo.backend.domain.user.dto;
 
 import com.wemo.backend.domain.user.entity.User;
-import com.wemo.backend.domain.user.service.validation.ValidPassword;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -20,18 +19,14 @@ public class UserCreateRequest {
     @Size(min = 2, max = 20, message = "닉네임은 최소 2자, 최대 20자여야 합니다.")
     private String nickname;
 
-    @NotBlank(message = "회사명은 필수 입력 값입니다.")
     private String companyName;
 
-    @NotBlank(message = "비밀번호는 필수 입력 값입니다.")
-    @ValidPassword
     private String password;
 
-    @NotBlank(message = "비밀번호 확인은 필수 입력 값입니다.")
-    @ValidPassword
     private String passwordCheck;
 
     public User createUser() {
+
         return User.builder()
                 .email(email)
                 .nickname(nickname)

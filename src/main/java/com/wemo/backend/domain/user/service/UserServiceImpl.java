@@ -15,6 +15,7 @@ import com.wemo.backend.domain.review.service.ReviewReader;
 import com.wemo.backend.domain.user.dto.*;
 import com.wemo.backend.domain.user.entity.User;
 import com.wemo.backend.domain.user.repository.UserRepository;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -42,7 +43,7 @@ public class UserServiceImpl implements UserService {
     private final ReviewReader reviewReader;
 
     /**
-     * 0. 이메일 중복 검사
+     * 이메일 중복 검사
      *
      * @param email 이메일
      */
@@ -54,7 +55,7 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * 1. 회원가입
+     * 회원가입
      *
      * @param request 이메일, 닉네임, 회사명, 비밀번호로 회원가입
      */
@@ -71,24 +72,24 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * 2. 로그인
+     * 로그인
      *
      * @param signinRequest 아이디, 비밀번호로 로그인
      * @return 생성된 accessToken, refreshToken 담은 HttpHeaders
      */
     @Override
-    public HttpHeaders signin(SigninRequest signinRequest) {
+    public HttpHeaders signin(SigninRequest signinRequest, HttpServletResponse response) {
 
         // 유저 검증 및 객체 조회
-        User user = userReader.getUser(signinRequest.getEmail(), signinRequest.getPassword());
-        // 헤더에 accessToken 및 refreshToken 생성 후 전달
-
+        User user = userReader.getUserByEmail(signinRequest.getEmail());
         log.info("사용자 {} 로그인 성공", user.getEmail());
-        return userAuth.generateHeaderTokens(user);
+
+        // accessToken 및 refreshToken 생성 후 전달
+        return userAuth.generateHeaderTokens(user, response);
     }
 
     /**
-     * 3. 로그아웃
+     * 로그아웃
      *
      * @param accessToken  accessToken
      * @param refreshToken refreshToken
@@ -96,7 +97,7 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     @Transactional
-    public String signout(String accessToken, String refreshToken) {
+    public String signout(String accessToken, String refreshToken, HttpServletResponse response) {
 
         // Bearer 제거
         String cleanToken = accessToken.replace("Bearer ", "");
@@ -108,6 +109,7 @@ public class UserServiceImpl implements UserService {
 
         // refreshToken 삭제
         RefreshToken findRefreshToken = refreshTokenManager.getRefreshToken(refreshToken);
+        refreshTokenManager.deleteRefreshTokenInCookie(response);
         refreshTokenRepository.delete(findRefreshToken);
         log.info("refreshToken 삭제 완료");
 
@@ -115,9 +117,9 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * 4. 회원 정보 조회
+     * 회원 정보 조회
      *
-     * @param email 이메일
+     * @param email 사용자 이메일
      * @return 해당 유저의 회원 정보 (이메일, 닉네임, 회사명, 프로필이미지, 가입일자) 반환
      */
     @Override
@@ -136,7 +138,7 @@ public class UserServiceImpl implements UserService {
     /**
      * 내가 속한 모임 목록 조회
      *
-     * @param email    이메일
+     * @param email    사용자 이메일
      * @param pageable 페이징 처리 데이터
      * @return 유저가 속한 모임 목록
      */
@@ -149,7 +151,7 @@ public class UserServiceImpl implements UserService {
     /**
      * 내가 참여한 일정 목록 조회
      *
-     * @param email    이메일
+     * @param email    사용자 이메일
      * @param pageable 페이징 처리 데이터
      * @return 유저가 참여한 일정 목록
      */
@@ -163,7 +165,7 @@ public class UserServiceImpl implements UserService {
     /**
      * 내가 쓴 후기 목록 조회
      *
-     * @param email    이메일
+     * @param email    사용자 이메일
      * @param pageable 페이징 처리 데이터
      * @return 유저가 작성한 후기 목록
      */
@@ -176,7 +178,7 @@ public class UserServiceImpl implements UserService {
     /**
      * 후기 작성 가능한 일정 목록 조회
      *
-     * @param email    이메일
+     * @param email    사용자 이메일
      * @param pageable 페이징 처리 데이터
      * @return 후기 작성 가능한 일정 목록
      */
@@ -190,7 +192,7 @@ public class UserServiceImpl implements UserService {
     /**
      * 회원 정보 수정
      *
-     * @param email   이메일
+     * @param email   사용자 이메일
      * @param request 수정 요청 데이터 (닉네임, 프로필 이미지)
      * @return 수정된 회원 정보
      */
@@ -202,6 +204,21 @@ public class UserServiceImpl implements UserService {
         User updateUser = user.update(request);
 
         return UserUpdateResponse.fromEntity(updateUser);
+    }
+
+    /**
+     * 추가 데이터 저장
+     *
+     * @param email   사용자 이메일
+     * @param request 추가 데이터 (회사명)
+     */
+    @Override
+    @Transactional
+    public void saveAdditionalUserData(String email, AdditionalDataRequest request) {
+
+        User user = userReader.getUserByEmail(email);
+
+        user.saveAdditionalData(request);
     }
 
 }

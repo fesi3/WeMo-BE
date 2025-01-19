@@ -40,6 +40,7 @@ public class ReviewController {
     public ResponseEntity<SuccessResponse<ReviewCreateResponse>> createReview(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                                                               @PathVariable Long planId,
                                                                               @Valid @RequestBody ReviewCreateRequest request) {
+
         return ResponseEntity.status(201).body(SuccessResponse.successWithData(reviewService.createReview(userDetails.getUsername(), planId, request)));
     }
 
@@ -49,13 +50,13 @@ public class ReviewController {
     })
     @RequestMapping(value = "", method = RequestMethod.GET)
     public ResponseEntity<SuccessResponse<ReviewPagingResponse>> getReviewList(@RequestParam(defaultValue = "1") int page,
-                                                                              @RequestParam int size,
-                                                                              @RequestParam(required = false) String province,
-                                                                              @RequestParam(required = false) String district,
-                                                                              @RequestParam(required = false) String startDate,
-                                                                              @RequestParam(required = false) String endDate,
-                                                                              @RequestParam(required = false) Long categoryId,
-                                                                              @RequestParam(required = false) String sort) {
+                                                                               @RequestParam(required = false, defaultValue = "10") int size,
+                                                                               @RequestParam(required = false) String province,
+                                                                               @RequestParam(required = false) String district,
+                                                                               @RequestParam(required = false) String startDate,
+                                                                               @RequestParam(required = false) String endDate,
+                                                                               @RequestParam(required = false) Long categoryId,
+                                                                               @RequestParam(required = false) String sort) {
 
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
         return ResponseEntity.ok(SuccessResponse.successWithData(reviewService.getReviewList(pageable, province, district, startDate, endDate, categoryId, sort)));
@@ -73,6 +74,7 @@ public class ReviewController {
     public ResponseEntity<SuccessResponse<ReviewCreateResponse>> updateReview(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                                                               @PathVariable Long reviewId,
                                                                               @Valid @RequestBody ReviewCreateRequest request) {
+
         return ResponseEntity.ok(SuccessResponse.successWithData(reviewService.updateReview(userDetails.getUsername(), reviewId, request)));
     }
 
@@ -84,7 +86,8 @@ public class ReviewController {
     })
     @RequestMapping(value = "/{reviewId}", method = RequestMethod.DELETE)
     public ResponseEntity<SuccessResponse<String>> deleteReview(@AuthenticationPrincipal UserDetailsImpl userDetails,
-                                                                              @PathVariable Long reviewId) {
+                                                                @PathVariable Long reviewId) {
+
         return ResponseEntity.ok(SuccessResponse.successWithNoData(reviewService.deleteReview(userDetails.getUsername(), reviewId)));
     }
 

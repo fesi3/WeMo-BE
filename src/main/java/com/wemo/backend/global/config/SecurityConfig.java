@@ -6,7 +6,6 @@ import com.wemo.backend.domain.auth.token.service.TokenBlacklistService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -86,18 +85,23 @@ public class SecurityConfig {
                                 // 토큰 재발급 API 경로
                                 "/api/auths/reissue",
 
+                                // OAuth2 로그인 관련
+                                "/login/oauth2/callback/kakao",
+                                "/login/oauth2/callback/google",
+                                "/login/oauth2/callback/naver",
+
                                 // swagger 관련 API 문서 경로
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
                                 "/v3/api-docs/**"
-                                ).permitAll()
-                                // 비회원 허용 경로
-                                .requestMatchers(GET, "/api/meetings/**").permitAll()
-                                .requestMatchers(GET, "/api/plans/**").permitAll()
-                                .requestMatchers(GET, "/api/reviews/**").permitAll()
-                                .requestMatchers(GET, "/api/regions/**").permitAll()
+                        ).permitAll()
+                        // 비회원 허용 경로
+                        .requestMatchers(GET, "/api/meetings/**").permitAll()
+                        .requestMatchers(GET, "/api/plans/**").permitAll()
+                        .requestMatchers(GET, "/api/reviews/**").permitAll()
+                        .requestMatchers(GET, "/api/regions/**").permitAll()
 
-                                .anyRequest().authenticated()
+                        .anyRequest().authenticated()
 
                 )
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, tokenBlacklistService), UsernamePasswordAuthenticationFilter.class);

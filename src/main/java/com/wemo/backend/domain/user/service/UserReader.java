@@ -8,8 +8,6 @@ public interface UserReader {
 
     void checkPasswordValid(String password, String passwordCheck);
 
-    User getUser(String email, String password);
-
     User getUserByEmail(String email);
 
 }

@@ -3,9 +3,11 @@ package com.wemo.backend.domain.auth.token.service;
 import com.wemo.backend.domain.auth.token.entity.RefreshToken;
 import com.wemo.backend.domain.auth.token.repository.RefreshTokenRepository;
 import com.wemo.backend.global.exception.CustomException;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,9 +16,9 @@ import java.util.Optional;
 import static com.wemo.backend.global.exception.ErrorCode.ILLEGAL_REFRESH_TOKEN_NOT_VALID;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
-@Slf4j
 public class RefreshTokenManager {
 
     private final RefreshTokenRepository refreshTokenRepository;
@@ -29,7 +31,7 @@ public class RefreshTokenManager {
      * @return 저장된 refreshToken
      */
     @Transactional
-    public String saveJwtRefreshToken(final String email) {
+    public String saveRefreshToken(final String email) {
 
         String refreshToken = jwtTokenUtils.generateRefreshToken(email);
 
@@ -77,7 +79,7 @@ public class RefreshTokenManager {
      * @param refreshToken 검증할 refreshToken
      * @return 새로 생성된 accessToken, refreshToken 담은 HttpHeaders
      */
-    public HttpHeaders reissueToken(String refreshToken) {
+    public HttpHeaders reissueToken(String refreshToken, HttpServletResponse response) {
 
         log.info("accessToken 재발급 요청 메서드 호출");
 
@@ -93,10 +95,43 @@ public class RefreshTokenManager {
 
         HttpHeaders headers = new HttpHeaders();
         headers.set(AUTHORIZATION, "Bearer " + newAccessToken);
-        headers.set("Refresh-Token", newRefreshToken);
+        setRefreshTokenInCookie(newRefreshToken, response);
 
         log.info("토큰 생성 후 헤더에 담기 완료!");
         return headers;
+    }
+
+    /**
+     * refreshToken 을 쿠키에 저장
+     *
+     * @param refreshToken refreshToken 값
+     */
+    public void setRefreshTokenInCookie(String refreshToken, HttpServletResponse response) {
+
+        ResponseCookie cookie = ResponseCookie.from("Refresh-Token", refreshToken)
+                .maxAge(24 * 60 * 60)
+                .sameSite("None")
+                .secure(true)
+                .httpOnly(true)
+                .path("/")
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+    }
+
+    public void deleteRefreshTokenInCookie(HttpServletResponse response) {
+
+        ResponseCookie cookie = ResponseCookie.from("Refresh-Token", null)
+                .maxAge(0) // 쿠키 즉시 만료
+                .sameSite("None") // 쿠키 SameSite 설정
+                .secure(true) // HTTPS 환경에서만 전송
+                .httpOnly(true) // JavaScript에서 접근 불가
+                .path("/") // 모든 경로에서 유효
+                .build();
+
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString()); // 헤더에 쿠키 추가
+
+        log.info("Refresh-Token 쿠키 삭제 완료");
+
     }
 
 }

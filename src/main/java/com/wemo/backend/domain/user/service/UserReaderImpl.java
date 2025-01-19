@@ -4,8 +4,9 @@ import com.wemo.backend.domain.user.entity.User;
 import com.wemo.backend.domain.user.repository.UserRepository;
 import com.wemo.backend.global.exception.CustomException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+
+import java.util.Optional;
 
 import static com.wemo.backend.global.exception.ErrorCode.*;
 
@@ -15,63 +16,55 @@ public class UserReaderImpl implements UserReader {
 
     private final UserRepository userRepository;
 
-    private final PasswordEncoder passwordEncoder;
-
-    @Override
-    public void checkEmailValid(String email) {
-        userRepository.findByEmail(email).ifPresent(
-                user -> {
-                    throw new CustomException(ILLEGAL_EMAIL_DUPLICATION);
-                }
-        );
-    }
-
-    @Override
-    public void checkPasswordValid(String password, String passwordCheck) {
-        if (!password.equals(passwordCheck)) throw new CustomException(ILLEGAL_PASSWORD_NOT_VALID);
-    }
-
     /**
-     * 유저 객체 검증
+     * 이메일 중복 검사
      *
-     * @param email 사용자 아이디
-     * @param password 사용자 비밀번호
-     * @return 해당 유저 객체 반환
+     * @param email 사용자 이메일
      */
     @Override
-    public User getUser(String email, String password) {
+    public void checkEmailValid(String email) {
 
-        User user = userRepository.findByEmail(email).orElseThrow(
-                () -> new CustomException(ILLEGAL_USER_NOT_EXIST)
-        );
-        // 입력된 비밀번호, 기존 비밀번호 순서대로 입력해야 비교가 가능
-        isValidPassword(password, user.getPassword());
-        return user;
+        findUserByEmail(email).ifPresent(user -> {
+            throw new CustomException(ILLEGAL_EMAIL_DUPLICATION);
+        });
     }
 
     /**
-     * 이메일로 유저 객체 조회
+     * 비밀번호 일치 검사
      *
-     * @param email 이메일
-     * @return 해당하는 유저 객체
+     * @param password      새 비밀번호
+     * @param passwordCheck 확인용 비밀번호
+     */
+    @Override
+    public void checkPasswordValid(String password, String passwordCheck) {
+
+        if (!password.equals(passwordCheck)) {
+            throw new CustomException(ILLEGAL_PASSWORD_NOT_VALID);
+        }
+    }
+
+    /**
+     * 이메일로 유저 조회
+     *
+     * @param email 사용자 이메일
+     * @return 해당 유저 객체
      */
     @Override
     public User getUserByEmail(String email) {
 
-        return userRepository.findByEmail(email).orElseThrow(
-                () -> new CustomException(ILLEGAL_USER_NOT_EXIST)
-        );
+        return findUserByEmail(email)
+                .orElseThrow(() -> new CustomException(ILLEGAL_USER_NOT_EXIST));
     }
 
     /**
-     * 비밀번호 확인
+     * 이메일로 유저 조회
      *
-     * @param comparePassword 새로 입력한 비밀번호
-     * @param originPassword  기존 비밀번호
+     * @param email 사용자 이메일
+     * @return Optional<User>
      */
-    private void isValidPassword(String comparePassword, String originPassword) {
+    private Optional<User> findUserByEmail(String email) {
 
-        if (!passwordEncoder.matches(comparePassword, originPassword))
-            throw new CustomException(ILLEGAL_PASSWORD_NOT_VALID);
+        return userRepository.findByEmail(email);
     }
+
 }

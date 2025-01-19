@@ -22,7 +22,8 @@ public class SwaggerConfig {
                 .addTagsItem(new Tag().name("Plans").description("일정 관련 API"))
                 .addTagsItem(new Tag().name("Reviews").description("후기 관련 API"))
                 .addTagsItem(new Tag().name("Regions").description("지역 관련 API"))
-                .addTagsItem(new Tag().name("Token").description("토큰 관련 API"));
+                .addTagsItem(new Tag().name("Tokens").description("토큰 관련 API"))
+                .addTagsItem(new Tag().name("Oauth2").description("Oauth2 관련 API"));
 
     }
 
@@ -30,7 +31,7 @@ public class SwaggerConfig {
 
         return new Info()
                 .title("WeMo의 백엔드 서버")
-                .description("WeMo의 백엔드 API 서버입니다.")
+                .description("WeMo의 백엔드 서버입니다.")
                 .version("1.0");
     }
 

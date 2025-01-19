@@ -1,5 +1,6 @@
 package com.wemo.backend.domain.user.entity;
 
+import com.wemo.backend.domain.user.dto.AdditionalDataRequest;
 import com.wemo.backend.domain.user.dto.UserUpdateRequest;
 import com.wemo.backend.global.entity.Timestamped;
 import jakarta.persistence.*;
@@ -29,7 +30,7 @@ public class User extends Timestamped {
     @Comment("이메일")
     private String email;
 
-    @Column(name = "company_name", nullable = false)
+    @Column(name = "company_name")
     @Comment("회사명")
     private String companyName;
 
@@ -37,7 +38,7 @@ public class User extends Timestamped {
     @Comment("닉네임")
     private String nickname;
 
-    @Column(name = "password", nullable = false)
+    @Column(name = "password")
     @Comment("비밀번호")
     private String password;
 
@@ -47,13 +48,30 @@ public class User extends Timestamped {
 
     @Enumerated(value = EnumType.STRING)
     @Column(name = "login_type")
-    private LoginType loginType;
+    private LoginType loginType = LoginType.GENERAL;
+
+    public User(String email, String nickname, String profileImageUrl, LoginType loginType, String companyName, String password) {
+
+        this.email = email;
+        this.nickname = nickname;
+        this.profileImagePath = profileImageUrl;
+        this.loginType = loginType;
+        this.companyName = companyName;
+        this.password = password;
+
+    }
 
     public User update(UserUpdateRequest request) {
 
         this.nickname = request.getNickname();
         this.profileImagePath = request.getFileUrl();
         return this;
+    }
+
+    public void saveAdditionalData(AdditionalDataRequest request) {
+
+        this.companyName = request.getCompanyName();
+
     }
 
 }
