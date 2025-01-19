@@ -1,9 +1,6 @@
 package com.wemo.backend.domain.meeting.dto;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.PositiveOrZero;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -25,7 +22,7 @@ public class MeetingCreateRequest {
     @PositiveOrZero(message = "카테고리 id는 양수 값이어야 합니다.")
     private Long categoryId;
 
-    @NotBlank(message = "모임 대표 이미지는 필수 입력 값입니다.")
+    @NotEmpty(message = "모임 대표 이미지는 필수 입력 값입니다.")
     private List<String> fileUrls;
 
 }
