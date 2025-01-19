@@ -83,13 +83,13 @@ public class UserQueryDslImpl implements UserQueryDsl {
         // 총 개수 조회
         long total = Optional.ofNullable(
                 queryFactory
-                .select(meeting.count())
-                .from(meeting)
-                .leftJoin(meetingMember).on(meetingMember.meeting.eq(meeting))
-                .where(meeting.user.email.eq(email)
-                    .or(meetingMember.user.email.eq(email)))
-                .where(meeting.deletedAt.isNull())
-                .fetchOne()
+                        .select(meeting.count())
+                        .from(meeting)
+                        .leftJoin(meetingMember).on(meetingMember.meeting.eq(meeting))
+                        .where(meeting.user.email.eq(email)
+                                .or(meetingMember.user.email.eq(email)))
+                        .where(meeting.deletedAt.isNull())
+                        .fetchOne()
         ).orElse(0L);
 
         return new PageImpl<>(userMeetingListResponses, pageable, total);
@@ -302,16 +302,18 @@ public class UserQueryDslImpl implements UserQueryDsl {
                         )
                 )
                 .from(attendance) // attendance 테이블을 from 절에서 시작
-                .leftJoin(attendance.plan, plan) // plan과 조인
+                .leftJoin(attendance.plan, plan)
                 .leftJoin(plan.meeting, meeting)
                 .leftJoin(meeting.category, category)
-                .leftJoin(attendance.user, user) // user와 조인
+                .leftJoin(attendance.user, user)
+                .leftJoin(review).on(review.plan.id.eq(plan.id)) // review와 plan을 조인
                 .where(
                         attendance.user.email.eq(email) // 이메일 조건
                                 .and(attendance.reviewed.eq(false)) // 후기 미작성
                                 .and(plan.dateTime.before(LocalDateTime.now())) // 일정이 지남
                 )
-                .where(review.plan.meeting.deletedAt.isNull())
+                .where(review.plan.meeting.deletedAt.isNull()) // 삭제된 모임의 필터링
+                .groupBy(plan.id)
                 .orderBy(plan.createdAt.desc());
 
         List<UserPlanReviewableListResponse> reviewListResponses = queryBuilder
@@ -324,16 +326,17 @@ public class UserQueryDslImpl implements UserQueryDsl {
                 queryFactory
                         .select(plan.count())
                         .from(attendance) // attendance 테이블을 from 절에서 시작
-                        .leftJoin(attendance.plan, plan) // plan과 조인
+                        .leftJoin(attendance.plan, plan)
                         .leftJoin(plan.meeting, meeting)
                         .leftJoin(meeting.category, category)
-                        .leftJoin(attendance.user, user) // user와 조인
+                        .leftJoin(attendance.user, user)
+                        .leftJoin(review).on(review.plan.id.eq(plan.id)) // review와 plan을 조인
                         .where(
                                 attendance.user.email.eq(email) // 이메일 조건
                                         .and(attendance.reviewed.eq(false)) // 후기 미작성
                                         .and(plan.dateTime.before(LocalDateTime.now())) // 일정이 지남
                         )
-                        .where(review.plan.meeting.deletedAt.isNull())
+                        .where(review.plan.meeting.deletedAt.isNull()) // 삭제된 모임의 필터링
                         .fetchOne()
         ).orElse(0L);
 
