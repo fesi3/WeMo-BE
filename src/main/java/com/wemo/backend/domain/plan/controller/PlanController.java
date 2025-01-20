@@ -113,7 +113,7 @@ public class PlanController {
     public ResponseEntity<SuccessResponse<String>> cancelAttendance(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                                                     @PathVariable Long planId) {
 
-        return ResponseEntity.status(201).body(SuccessResponse.successWithNoData(planService.cancelAttendance(userDetails.getUsername(), planId)));
+        return ResponseEntity.ok(SuccessResponse.successWithNoData(planService.cancelAttendance(userDetails.getUsername(), planId)));
     }
 
     @Operation(summary = "좋아요한 일정 목록 조회", description = "유저가 좋아요한 일정의 목록을 반환합니다.")
