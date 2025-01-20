@@ -14,15 +14,14 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
-    show-sql: true
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.MySQLDialect
-        format_sql: true
       # 테이블명 설정
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
-
+    show-sql: true
+    # SQL 문 포맷 설정
+    properties:
+      hibernate:
+        format_sql: true
   sql:
     init:
       data-locations: classpath:category.sql
