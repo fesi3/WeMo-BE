@@ -31,17 +31,17 @@ jobs:
     - name: Build with Gradle
       run: ./gradlew build
 
-    # Docker 이미지 빌드 및 푸시
-    - name: Build Docker image
-      run: |
-        docker build --platform linux/amd64 -t ${{ secrets.DOCKERHUB_USERNAME }}/wemo --push .
-
     # Docker 로그인
     - name: Docker login
       uses: docker/login-action@v2
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+    # Docker 이미지 빌드 및 푸시
+    - name: Build Docker image
+      run: |
+        docker build --platform linux/amd64 -t ${{ secrets.DOCKERHUB_USERNAME }}/wemo --push .
 
     # Docker Hub에 이미지 푸시
     - name: Docker Hub push
