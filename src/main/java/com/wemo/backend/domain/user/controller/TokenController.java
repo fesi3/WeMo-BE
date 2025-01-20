@@ -6,11 +6,11 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -27,10 +27,10 @@ public class TokenController {
             @ApiResponse(responseCode = "200", description = "토큰이 재발급되었습니다.")
     })
     @RequestMapping(value = "/api/auths/reissue", method = RequestMethod.POST)
-    public ResponseEntity<SuccessResponse<String>> reissueToken(@RequestHeader("Refresh-Token") String refreshToken,
+    public ResponseEntity<SuccessResponse<String>> reissueToken(HttpServletRequest request,
                                                                 HttpServletResponse response) {
 
-        HttpHeaders httpHeaders = refreshTokenManager.reissueToken(refreshToken, response);
+        HttpHeaders httpHeaders = refreshTokenManager.reissueToken(request, response);
         return ResponseEntity.status(200).headers(httpHeaders).body(SuccessResponse.successWithNoData("accessToken 재발급 성공"));
     }
 

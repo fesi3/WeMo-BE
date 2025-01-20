@@ -163,6 +163,14 @@ public class PlanServiceImpl implements PlanService {
 
         log.info("일정 id {}의 상세 정보 조회", planId);
         Plan plan = planReader.getPlan(planId);
+        boolean existAttendance = false;
+
+        // 회원인 경우 참여 여부 판단
+        if (userDetails != null && !userDetails.isGuest()) {
+            String email = userDetails.getUsername();
+            User user = userReader.getUserByEmail(email);
+            existAttendance = attendanceReader.existAttendance(user, plan);
+        }
 
         List<String> planImageUrl = imageReader.getImageList(planId, Image.EntityType.PLAN);
         List<UserListInfo> userList = getUserListFromAttendance(plan);
@@ -172,7 +180,7 @@ public class PlanServiceImpl implements PlanService {
 
         plan.updateViewCount();
 
-        return PlanDetailResponse.fromEntity(plan, planImageUrl, plan.getMeeting(), userList.size(), likeCount, userList, meetingInfoResponse, isLiked);
+        return PlanDetailResponse.fromEntity(existAttendance, plan, planImageUrl, plan.getMeeting(), userList.size(), likeCount, userList, meetingInfoResponse, isLiked);
     }
 
     /**

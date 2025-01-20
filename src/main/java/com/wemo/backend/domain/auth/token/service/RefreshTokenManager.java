@@ -3,6 +3,9 @@ package com.wemo.backend.domain.auth.token.service;
 import com.wemo.backend.domain.auth.token.entity.RefreshToken;
 import com.wemo.backend.domain.auth.token.repository.RefreshTokenRepository;
 import com.wemo.backend.global.exception.CustomException;
+import com.wemo.backend.global.exception.ErrorCode;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -76,12 +79,28 @@ public class RefreshTokenManager {
     /**
      * refreshToken 검증하고 새로운 토큰 생성 및 발급
      *
-     * @param refreshToken 검증할 refreshToken
      * @return 새로 생성된 accessToken, refreshToken 담은 HttpHeaders
      */
-    public HttpHeaders reissueToken(String refreshToken, HttpServletResponse response) {
+    public HttpHeaders reissueToken(HttpServletRequest request, HttpServletResponse response) {
 
         log.info("accessToken 재발급 요청 메서드 호출");
+
+        String refreshToken = null;
+        Cookie[] cookies = request.getCookies();
+
+        if (cookies != null)
+            for (Cookie cookie : cookies) {
+
+                if (cookie.getName().equals("Refresh-Token")) {
+                    refreshToken = cookie.getValue();
+                    log.info("토큰 재발급 요청의 refreshToken : {}", refreshToken);
+                }
+            }
+
+        if (refreshToken == null || refreshToken.isEmpty()) {
+
+            throw new CustomException(ErrorCode.MISSING_AUTHORIZATION_REFRESH_TOKEN);
+        }
 
         String email = validateRefreshToken(refreshToken);
         if (email == null) {

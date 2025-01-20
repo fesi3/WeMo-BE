@@ -48,6 +48,7 @@ public class User extends Timestamped {
 
     @Enumerated(value = EnumType.STRING)
     @Column(name = "login_type")
+    @Builder.Default
     private LoginType loginType = LoginType.GENERAL;
 
     public User(String email, String nickname, String profileImageUrl, LoginType loginType, String companyName, String password) {

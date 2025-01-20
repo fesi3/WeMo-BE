@@ -57,6 +57,9 @@ public class PlanDetailResponse {
 
     private MeetingInfoResponse meetingInfo;
 
+    @JsonProperty("isJoined")
+    private boolean isJoined;
+
     @JsonProperty("isCanceled")
     private boolean isCanceled;
 
@@ -68,6 +71,12 @@ public class PlanDetailResponse {
 
     @JsonProperty("isFulled")
     private boolean isFulled;
+
+    @JsonProperty("isJoined")
+    public boolean getIsJoined() {
+
+        return isJoined;
+    }
 
     @JsonProperty("isCanceled")
     public boolean getIsCanceled() {
@@ -93,12 +102,13 @@ public class PlanDetailResponse {
         return isFulled;
     }
 
-    public static PlanDetailResponse fromEntity(Plan plan, List<String> planImagePath, Meeting meeting, int participants, int likeCount, List<UserListInfo> userList, MeetingInfoResponse meetingInfoResponse, boolean isLiked) {
+    public static PlanDetailResponse fromEntity(boolean isJoined, Plan plan, List<String> planImagePath, Meeting meeting, int participants, int likeCount, List<UserListInfo> userList, MeetingInfoResponse meetingInfoResponse, boolean isLiked) {
 
         return PlanDetailResponse.builder()
                 .planId(plan.getId())
                 .nickname(plan.getUser().getNickname())
                 .profileImagePath(plan.getUser().getProfileImagePath())
+                .isJoined(isJoined)
                 .planName(plan.getPlanName())
                 .category(meeting.getCategory().getCategoryName())
                 .address(plan.getAddress())
