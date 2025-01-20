@@ -13,6 +13,7 @@ public enum ErrorCode {
 
     // token
     ILLEGAL_REFRESH_TOKEN_NOT_VALID(HttpStatus.BAD_REQUEST, "유효하지 않은 refreshToken 입니다."),
+    MISSING_AUTHORIZATION_REFRESH_TOKEN(HttpStatus.BAD_REQUEST, "유효한 Refresh 토큰이 요청에 포함되지 않았습니다."),
 
     // category
     ILLEGAL_CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 카테고리입니다."),
