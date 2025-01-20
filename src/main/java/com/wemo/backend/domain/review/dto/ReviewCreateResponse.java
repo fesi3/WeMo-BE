@@ -13,6 +13,8 @@ public class ReviewCreateResponse {
 
     private Long planId;
 
+    private Long reviewId;
+
     private int score;
 
     private String comment;
@@ -21,8 +23,10 @@ public class ReviewCreateResponse {
 
     // 이미지가 있는 경우
     public static ReviewCreateResponse fromEntityWithImage(Plan plan, Review review, List<String> reviewImageList) {
+
         return ReviewCreateResponse.builder()
                 .planId(plan.getId())
+                .reviewId(review.getId())
                 .score(review.getScore())
                 .comment(review.getComment())
                 .reviewImagePath(reviewImageList)
@@ -32,8 +36,10 @@ public class ReviewCreateResponse {
 
     // 이미지가 없는 경우
     public static ReviewCreateResponse fromEntity(Plan plan, Review review) {
+
         return ReviewCreateResponse.builder()
                 .planId(plan.getId())
+                .reviewId(review.getId())
                 .score(review.getScore())
                 .comment(review.getComment())
                 .build();
