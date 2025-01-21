@@ -17,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Optional;
 
 import static com.wemo.backend.global.exception.ErrorCode.ILLEGAL_REFRESH_TOKEN_NOT_VALID;
-import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 @Slf4j
 @Component
@@ -26,6 +25,7 @@ public class RefreshTokenManager {
 
     private final RefreshTokenRepository refreshTokenRepository;
     private final JwtTokenUtils jwtTokenUtils;
+    private final AccessTokenManager accessTokenManager;
 
     /**
      * JWT refreshToken 생성 및 저장
@@ -78,10 +78,8 @@ public class RefreshTokenManager {
 
     /**
      * refreshToken 검증하고 새로운 토큰 생성 및 발급
-     *
-     * @return 새로 생성된 accessToken, refreshToken 담은 HttpHeaders
      */
-    public HttpHeaders reissueToken(HttpServletRequest request, HttpServletResponse response) {
+    public void reissueToken(HttpServletRequest request, HttpServletResponse response) {
 
         log.info("accessToken 재발급 요청 메서드 호출");
 
@@ -112,12 +110,10 @@ public class RefreshTokenManager {
         String newAccessToken = jwtTokenUtils.generateAccessToken(email);
         String newRefreshToken = jwtTokenUtils.generateRefreshToken(email);
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.set(AUTHORIZATION, "Bearer " + newAccessToken);
+        accessTokenManager.setAccessTokenInCookie(newAccessToken, response);
         setRefreshTokenInCookie(newRefreshToken, response);
 
         log.info("토큰 생성 후 헤더에 담기 완료!");
-        return headers;
     }
 
     /**

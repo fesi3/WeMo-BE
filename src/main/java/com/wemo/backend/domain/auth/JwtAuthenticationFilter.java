@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wemo.backend.domain.auth.token.service.TokenBlacklistService;
 import com.wemo.backend.global.response.ErrorResponse;
 import jakarta.servlet.FilterChain;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -37,8 +38,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String method = request.getMethod(); // HTTP 메서드 가져오기
             log.info("요청 IP: {}, 요청 URI: {}", clientIp, requestURI);
 
-            String accessToken = jwtTokenProvider.resolveToken(request);
-            String refreshToken = jwtTokenProvider.resolveRefreshToken(request);
+            // 쿠키에서 토큰 읽기
+            String accessToken = getAccessTokenFromCookie(request);
+            String refreshToken = getRefreshTokenFromCookie(request);
 
             log.info("accessToken: {}, refreshToken : {}", accessToken, refreshToken);
 
@@ -48,7 +50,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 return;
             }
 
-            if (requestURI.startsWith("/api/meetings") && "GET" .equalsIgnoreCase(method)) {
+            if (requestURI.startsWith("/api/meetings") && "GET".equalsIgnoreCase(method)) {
                 // 토큰이 없는 경우 비회원으로 처리
                 if (accessToken == null) {
                     filterChain.doFilter(request, response);
@@ -56,7 +58,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
             }
 
-            if (requestURI.startsWith("/api/plans") && "GET" .equalsIgnoreCase(method)) {
+            if (requestURI.startsWith("/api/plans") && "GET".equalsIgnoreCase(method) && !requestURI.contains("like")) {
                 // 토큰이 없는 경우 비회원으로 처리
                 if (accessToken == null) {
                     filterChain.doFilter(request, response);
@@ -64,7 +66,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
             }
 
-            if (requestURI.startsWith("/api/reviews") && "GET" .equalsIgnoreCase(method)) {
+            if (requestURI.startsWith("/api/reviews") && "GET".equalsIgnoreCase(method)) {
                 // 토큰이 없는 경우 비회원으로 처리
                 if (accessToken == null) {
                     filterChain.doFilter(request, response);
@@ -73,7 +75,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
 
             // 로그아웃 요청 처리
-            if ("/api/auths/signout" .equals(requestURI)) {
+            if ("/api/auths/signout".equals(requestURI)) {
                 if (!validateLogoutRequest(accessToken, refreshToken, response)) {
                     // 유효성 검증 실패 시 요청 중단
                     return;
@@ -171,6 +173,33 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 requestURI.startsWith("/login/oauth2/callback/kakao") ||
                 requestURI.startsWith("/login/oauth2/callback/google") ||
                 requestURI.startsWith("/login/oauth2/callback/naver");
+    }
+
+    // 쿠키에서 토큰 추출
+    private String getAccessTokenFromCookie(HttpServletRequest request) {
+
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("accessToken".equals(cookie.getName())) {
+                    return cookie.getValue();
+                }
+            }
+        }
+        return null;
+    }
+
+    private String getRefreshTokenFromCookie(HttpServletRequest request) {
+
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("Refresh-Token".equals(cookie.getName())) {
+                    return cookie.getValue();
+                }
+            }
+        }
+        return null;
     }
 
 }

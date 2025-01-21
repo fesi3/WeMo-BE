@@ -10,7 +10,6 @@ import com.wemo.backend.domain.auth.token.entity.RefreshToken;
 import com.wemo.backend.domain.auth.token.service.JwtTokenUtils;
 import com.wemo.backend.domain.auth.token.service.RefreshTokenManager;
 import com.wemo.backend.domain.auth.token.service.TokenBlacklistService;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,37 +29,8 @@ public class JwtTokenProvider {
     private String JWT_SECRET;
 
     private final UserDetailsServiceImpl userDetailsService;
-    private static final String TOKEN_PREFIX = "Bearer "; // JWT 토큰의 접두사
     private final TokenBlacklistService tokenBlacklistService;
     private final RefreshTokenManager refreshTokenManager;
-
-    /**
-     * HTTP 요청에서 JWT accessToken 추출
-     *
-     * @param request HTTP 요청 객체
-     * @return JWT 토큰 문자열 반환
-     */
-    public String resolveToken(HttpServletRequest request) {
-
-        String bearerToken = request.getHeader("Authorization");
-
-        // Authorization 헤더가 존재하고, "Bearer "로 시작하는 경우 토큰 추출
-        if (bearerToken != null && bearerToken.startsWith(TOKEN_PREFIX)) {
-            return bearerToken.substring(TOKEN_PREFIX.length());
-        }
-        return null;
-    }
-
-    /**
-     * HTTP 요청에서 JWT refreshToken 추출
-     *
-     * @param request HTTP 요청 객체
-     * @return JWT 토큰 문자열 반환
-     */
-    public String resolveRefreshToken(HttpServletRequest request) {
-
-        return request.getHeader("Refresh-Token");
-    }
 
     /**
      * JWT accessToken 기반으로 인증 정보 생성
@@ -124,10 +94,6 @@ public class JwtTokenProvider {
      * @return 해당 토큰의 초기화된 만료시간 반환
      */
     public Long getExpiration(String accessToken) {
-        // accessToken이 'Bearer '로 시작하면 이를 제거
-        if (accessToken.startsWith("Bearer ")) {
-            accessToken = accessToken.substring(7);
-        }
 
         DecodedJWT jwt;
         JWTVerifier verifier = JWT

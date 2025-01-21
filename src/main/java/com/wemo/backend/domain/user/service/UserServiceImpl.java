@@ -20,7 +20,6 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -75,17 +74,15 @@ public class UserServiceImpl implements UserService {
      * 로그인
      *
      * @param signinRequest 아이디, 비밀번호로 로그인
-     * @return 생성된 accessToken, refreshToken 담은 HttpHeaders
      */
     @Override
-    public HttpHeaders signin(SigninRequest signinRequest, HttpServletResponse response) {
+    public void signin(SigninRequest signinRequest, HttpServletResponse response) {
 
         // 유저 검증 및 객체 조회
         User user = userReader.getUserByEmail(signinRequest.getEmail());
         log.info("사용자 {} 로그인 성공", user.getEmail());
 
-        // accessToken 및 refreshToken 생성 후 전달
-        return userAuth.generateHeaderTokens(user, response);
+        userAuth.generateHeaderTokens(user, response);
     }
 
     /**

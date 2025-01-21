@@ -3,7 +3,6 @@ package com.wemo.backend.domain.user.service;
 import com.wemo.backend.domain.user.dto.*;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -13,7 +12,7 @@ public interface UserService {
 
     void signup(UserCreateRequest request);
 
-    HttpHeaders signin(SigninRequest request, HttpServletResponse response);
+    void signin(SigninRequest request, HttpServletResponse response);
 
     String signout(String accessToken, String refreshToken, HttpServletResponse response);
 

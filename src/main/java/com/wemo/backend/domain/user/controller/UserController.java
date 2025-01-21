@@ -13,7 +13,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -62,8 +61,8 @@ public class UserController {
     @RequestMapping(value = "/signin", method = RequestMethod.POST)
     public ResponseEntity<SuccessResponse<String>> signin(@Valid @RequestBody SigninRequest request, HttpServletResponse response) {
 
-        HttpHeaders httpHeaders = userService.signin(request, response);
-        return ResponseEntity.status(200).headers(httpHeaders).body(SuccessResponse.successWithNoData("로그인 성공"));
+        userService.signin(request, response);
+        return ResponseEntity.ok(SuccessResponse.successWithNoData("로그인 성공"));
     }
 
     @Operation(summary = "로그아웃", description = "사용자가 로그아웃을 합니다.")
