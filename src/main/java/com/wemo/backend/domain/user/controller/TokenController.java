@@ -9,7 +9,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -30,8 +29,8 @@ public class TokenController {
     public ResponseEntity<SuccessResponse<String>> reissueToken(HttpServletRequest request,
                                                                 HttpServletResponse response) {
 
-        HttpHeaders httpHeaders = refreshTokenManager.reissueToken(request, response);
-        return ResponseEntity.status(200).headers(httpHeaders).body(SuccessResponse.successWithNoData("accessToken 재발급 성공"));
+        refreshTokenManager.reissueToken(request, response);
+        return ResponseEntity.ok(SuccessResponse.successWithNoData("accessToken 재발급 성공"));
     }
 
 }
