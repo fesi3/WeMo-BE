@@ -1,12 +1,12 @@
 package com.wemo.backend.domain.auth;
 
+import com.wemo.backend.domain.auth.token.service.AccessTokenManager;
 import com.wemo.backend.domain.auth.token.service.JwtTokenUtils;
 import com.wemo.backend.domain.auth.token.service.RefreshTokenManager;
 import com.wemo.backend.domain.user.entity.User;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -16,6 +16,7 @@ public class UserAuthImpl implements UserAuth {
 
     private final JwtTokenUtils jwtTokenUtils;
     private final RefreshTokenManager refreshTokenManager;
+    private final AccessTokenManager accessTokenManager;
 
     /**
      * Jwt accessToken 생성
@@ -46,22 +47,21 @@ public class UserAuthImpl implements UserAuth {
     }
 
     /**
-     * 응답 헤더에 accessToken, refreshToken 담아 반환
+     * 응답 쿠키에 accessToken, refreshToken 담아 반환
      *
      * @param user 유저 객체
-     * @return accessToken 담긴 헤더, refreshToken 은 쿠키로 전달
      */
     @Override
-    public HttpHeaders generateHeaderTokens(User user, HttpServletResponse response) {
+    public void generateHeaderTokens(User user, HttpServletResponse response) {
 
-        HttpHeaders headers = new HttpHeaders();
         String accessToken = getAccessToken(user);
         String refreshToken = saveRefreshTokenToRedis(user);
-        headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken);
+
+        accessTokenManager.setAccessTokenInCookie(accessToken, response);
         refreshTokenManager.setRefreshTokenInCookie(refreshToken, response);
         log.info("accessToken 및 refreshToken 생성 완료");
         log.info("refreshToken 쿠키로 전달 완료");
-        return headers;
+
     }
 
 }
