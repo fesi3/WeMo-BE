@@ -2,11 +2,9 @@ name: Deploy to EC2 with Docker
 
 on:
   push:
-    branches:
-      - "dev"  # 배포할 브랜치를 dev로 설정, 원하는 브랜치로 변경 가능
+    branches: [ "dev" ]
   pull_request:
-    branches:
-      - "dev"  # 배포할 브랜치를 dev로 설정
+    branches: [ "dev" ]
 
 jobs:
   deploy:
@@ -23,10 +21,10 @@ jobs:
       - name: EC2 접속 후 Docker Compose 로 배포
         uses: appleboy/ssh-action@v0.1.5
         with:
-          host: ${{ secrets.SERVER_HOST }}  # EC2 서버 IP (Secrets로 설정)
-          username: ${{ secrets.SERVER_USER }}  # EC2 서버 로그인 사용자 (Secrets로 설정)
-          key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}  # EC2 SSH private key (Secrets로 설정)
-          port: 22  # EC2 SSH 포트 (기본적으로 22번)
+          host: ${{ secrets.SERVER_HOST }}  # EC2 서버 IP
+          username: ${{ secrets.SERVER_USER }}  # EC2 서버 로그인 사용자
+          key: ${{ secrets.SSH_PRIVATE_KEY }}  # EC2 SSH private key
+          port: 22  # EC2 SSH 포트
           script: |
             # 3. 기존 Docker Compose 중지 및 제거
             echo "Stopping and removing existing containers..."
