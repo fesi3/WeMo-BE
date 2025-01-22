@@ -33,10 +33,10 @@ public class MeetingController {
                     content = @Content(mediaType = "application/json"))
     })
     @RequestMapping(value = "", method = RequestMethod.POST)
-    public ResponseEntity<SuccessResponse<String>> createMeeting(@AuthenticationPrincipal UserDetailsImpl userDetails,
-                                                                 @Valid @RequestBody MeetingCreateRequest request) {
-        meetingService.createMeeting(userDetails.getUsername(), request);
-        return ResponseEntity.status(201).body(SuccessResponse.successWithNoData("모임 생성 성공"));
+    public ResponseEntity<SuccessResponse<MeetingCreateResponse>> createMeeting(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                                                @Valid @RequestBody MeetingCreateRequest request) {
+
+        return ResponseEntity.status(201).body(SuccessResponse.success(meetingService.createMeeting(userDetails.getUsername(), request), "모임 생성 성공"));
     }
 
     @Operation(summary = "모임 가입", description = "모임에 가입합니다.")
@@ -48,6 +48,7 @@ public class MeetingController {
     @RequestMapping(value = "/{meetingId}", method = RequestMethod.POST)
     public ResponseEntity<SuccessResponse<String>> joinMeeting(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                                                @PathVariable Long meetingId) {
+
         return ResponseEntity.status(201).body(SuccessResponse.successWithNoData(meetingService.joinMeeting(userDetails.getUsername(), meetingId)));
     }
 
@@ -59,6 +60,7 @@ public class MeetingController {
     })
     @RequestMapping(value = "/{meetingId}", method = RequestMethod.GET)
     public ResponseEntity<SuccessResponse<MeetingDetailResponse>> getMeetingDetail(@PathVariable Long meetingId) {
+
         return ResponseEntity.ok(SuccessResponse.successWithData(meetingService.getMeetingDetail(meetingId)));
     }
 
@@ -72,6 +74,7 @@ public class MeetingController {
     public ResponseEntity<SuccessResponse<String>> updateMeeting(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                                                  @PathVariable Long meetingId,
                                                                  @Valid @RequestBody MeetingUpdateRequest request) {
+
         return ResponseEntity.ok(SuccessResponse.successWithNoData(meetingService.updateMeeting(userDetails.getUsername(), meetingId, request)));
     }
 
@@ -84,6 +87,7 @@ public class MeetingController {
     @RequestMapping(value = "/{meetingId}", method = RequestMethod.DELETE)
     public ResponseEntity<SuccessResponse<String>> deleteMeeting(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                                                  @PathVariable Long meetingId) {
+
         return ResponseEntity.ok(SuccessResponse.successWithNoData(meetingService.deleteMeeting(userDetails.getUsername(), meetingId)));
     }
 
@@ -111,8 +115,8 @@ public class MeetingController {
     })
     @RequestMapping(value = "/{meetingId}/plans", method = RequestMethod.GET)
     public ResponseEntity<SuccessResponse<MeetingPlanPagingResponse>> getPlanListByMeeting(@PathVariable Long meetingId,
-                                                                                               @RequestParam(defaultValue = "1") int page,
-                                                                                               @RequestParam(defaultValue = "10") int size) {
+                                                                                           @RequestParam(defaultValue = "1") int page,
+                                                                                           @RequestParam(defaultValue = "10") int size) {
 
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
         return ResponseEntity.ok(SuccessResponse.successWithData(meetingService.getPlanListByMeeting(meetingId, pageable)));
@@ -126,8 +130,8 @@ public class MeetingController {
     })
     @RequestMapping(value = "/{meetingId}/reviews", method = RequestMethod.GET)
     public ResponseEntity<SuccessResponse<MeetingReviewPagingResponse>> getReviewListByMeeting(@PathVariable Long meetingId,
-                                                                                           @RequestParam(defaultValue = "1") int page,
-                                                                                           @RequestParam(defaultValue = "10") int size) {
+                                                                                               @RequestParam(defaultValue = "1") int page,
+                                                                                               @RequestParam(defaultValue = "10") int size) {
 
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
         return ResponseEntity.ok(SuccessResponse.successWithData(meetingService.getReviewListByMeeting(meetingId, pageable)));

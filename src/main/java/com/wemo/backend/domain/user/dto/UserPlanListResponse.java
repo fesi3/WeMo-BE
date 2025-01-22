@@ -12,6 +12,8 @@ public class UserPlanListResponse {
 
     private String nickname;
 
+    private String email;
+
     private String profileImagePath;
 
     private Long planId;
@@ -62,21 +64,25 @@ public class UserPlanListResponse {
 
     @JsonProperty("isCanceled")
     public boolean getIsCanceled() {
+
         return isCanceled;
     }
 
     @JsonProperty("isOpened")
     public boolean getIsOpened() {
+
         return isOpened;
     }
 
     @JsonProperty("isFulled")
     public boolean getIsFulled() {
+
         return isFulled;
     }
 
     @JsonProperty("isLiked")
     public boolean getIsLiked() {
+
         return isLiked;
     }
 

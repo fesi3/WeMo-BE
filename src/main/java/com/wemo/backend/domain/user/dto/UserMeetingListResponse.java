@@ -15,6 +15,8 @@ public class UserMeetingListResponse {
 
     private String meetingName;
 
+    private String meetingImagePath;
+
     private String category;
 
     private Long memberCount;

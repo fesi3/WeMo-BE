@@ -59,14 +59,6 @@ public class ReviewQueryDslImpl implements ReviewQueryDsl {
                                 review.id,
                                 review.score,
                                 review.comment,
-                                Expressions.as(
-                                        select(image.fileUrl)
-                                                .from(image)
-                                                .where(image.entityId.eq(review.id),
-                                                        image.entityType.eq(Image.EntityType.REVIEW),
-                                                        image.main.eq(true)),
-                                        "reviewImagePath"
-                                ),
                                 review.createdAt,
                                 review.updatedAt
                         )
@@ -80,10 +72,22 @@ public class ReviewQueryDslImpl implements ReviewQueryDsl {
         applyFilters(queryBuilder, province, district, startDate, endDate, categoryId, sort);
 
         // 페이징 적용
-        List<ReviewListResponse> reviewDetailInfoList = queryBuilder
+        List<ReviewListResponse> reviewList = queryBuilder
                 .limit(pageable.getPageSize())
                 .offset(pageable.getOffset())
                 .fetch();
+
+        // 각 리뷰별로 이미지 목록을 별도로 처리
+        for (ReviewListResponse review : reviewList) {
+            List<String> reviewImageUrls = queryFactory
+                    .select(image.fileUrl)
+                    .from(image)
+                    .where(image.entityId.eq(review.getReviewId()), // reviewId로 이미지를 필터링
+                            image.entityType.eq(Image.EntityType.REVIEW))
+                    .fetch();
+
+            review.setReviewImages(reviewImageUrls); // 각 리뷰에 해당하는 이미지 목록 설정
+        }
 
         long total = Optional.ofNullable(
                 queryFactory
@@ -96,8 +100,7 @@ public class ReviewQueryDslImpl implements ReviewQueryDsl {
                         .fetchOne()
         ).orElse(0L);
 
-        return new PageImpl<>(reviewDetailInfoList, pageable, total);
-
+        return new PageImpl<>(reviewList, pageable, total);
     }
 
     // 필터링 적용

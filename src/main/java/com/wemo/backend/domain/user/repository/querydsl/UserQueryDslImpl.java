@@ -53,6 +53,14 @@ public class UserQueryDslImpl implements UserQueryDsl {
                                 meeting.user.email,
                                 meeting.id,
                                 meeting.meetingName,
+                                Expressions.as(
+                                        queryFactory.select(image.fileUrl)
+                                                .from(image)
+                                                .where(image.entityId.eq(meeting.id),
+                                                        image.entityType.eq(Image.EntityType.MEETING),
+                                                        image.main.eq(true)),
+                                        "meetingImagePath"
+                                ),
                                 meeting.category.categoryName,
                                 Expressions.as(
                                         JPAExpressions.select(meetingMember.count())
@@ -105,6 +113,7 @@ public class UserQueryDslImpl implements UserQueryDsl {
                         Projections.constructor(
                                 UserPlanListResponse.class,
                                 user.nickname.as("nickname"),
+                                user.email.as("email"),
                                 user.profileImagePath.as("profileImage"),
                                 plan.id.as("planId"),
                                 plan.planName,
