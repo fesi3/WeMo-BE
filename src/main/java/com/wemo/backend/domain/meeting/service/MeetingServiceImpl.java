@@ -47,13 +47,16 @@ public class MeetingServiceImpl implements MeetingService {
      */
     @Override
     @Transactional
-    public void createMeeting(String email, MeetingCreateRequest request) {
+    public MeetingCreateResponse createMeeting(String email, MeetingCreateRequest request) {
 
         User user = validateUser(email);
         Meeting meeting = meetingStore.storeMeeting(request, user);
-        imageStore.storeImageList(user, meeting.getId(), request.getFileUrls(), Image.EntityType.MEETING);
+        List<String> meetingImagePath = imageStore.storeImageList(user, meeting.getId(), request.getFileUrls(), Image.EntityType.MEETING);
         meetingMemberStore.storeMemberToMeeting(user, meeting);
         log.info("사용자 {}의 모임 id {}가 생성되었습니다.", user.getEmail(), meeting.getId());
+
+        return MeetingCreateResponse.fromEntity(meeting, meetingImagePath);
+
     }
 
     /**

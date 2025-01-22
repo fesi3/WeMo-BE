@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 @Service
 public interface MeetingService {
 
-    void createMeeting(String email, MeetingCreateRequest request);
+    MeetingCreateResponse createMeeting(String email, MeetingCreateRequest request);
 
     String joinMeeting(String email, Long meetingId);
 
