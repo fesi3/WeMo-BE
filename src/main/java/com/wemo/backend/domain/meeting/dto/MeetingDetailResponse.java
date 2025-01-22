@@ -25,6 +25,7 @@ public class MeetingDetailResponse {
     private String description;
 
     private String category;
+    private String email;
 
     private String nickname;
 
@@ -55,6 +56,7 @@ public class MeetingDetailResponse {
                 .memberCount(memberCount)
                 .description(meeting.getDescription())
                 .category(meeting.getCategory().getCategoryName())
+                .email(meeting.getUser().getEmail())
                 .nickname(meeting.getUser().getNickname())
                 .profileImagePath(meeting.getUser().getProfileImagePath())
                 .createdAt(meeting.getCreatedAt())
