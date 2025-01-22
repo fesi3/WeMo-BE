@@ -11,7 +11,7 @@ public class SuccessResponse<T> {
     private String message;
     private T data;
 
-    private static <T> SuccessResponse<T> success(T data, String message) {
+    public static <T> SuccessResponse<T> success(T data, String message) {
 
         return SuccessResponse.<T>builder()
                 .success(true)
