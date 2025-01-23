@@ -55,8 +55,7 @@ public class SecurityConfig {
                     configuration.setAllowCredentials(true);
                     configuration.setAllowedHeaders(Collections.singletonList("*"));
                     configuration.setMaxAge(3600L);
-
-                    configuration.setExposedHeaders(Arrays.asList("Authorization", "Content-Type"));
+                    configuration.setExposedHeaders(Arrays.asList("Authorization", "Content-Type", "Set-Cookie"));
 
                     return configuration;
                 }));
