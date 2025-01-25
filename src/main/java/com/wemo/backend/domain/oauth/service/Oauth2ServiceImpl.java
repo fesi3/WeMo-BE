@@ -1,6 +1,7 @@
 package com.wemo.backend.domain.oauth.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.wemo.backend.domain.auth.token.service.AccessTokenManager;
 import com.wemo.backend.domain.auth.token.service.JwtTokenUtils;
 import com.wemo.backend.domain.auth.token.service.RefreshTokenManager;
 import com.wemo.backend.domain.user.entity.LoginType;
@@ -14,7 +15,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -34,6 +34,7 @@ public class Oauth2ServiceImpl implements Oauth2Service {
     private final RefreshTokenManager refreshTokenManager;
     private final UserReader userReader;
     private final UserStore userStore;
+    private final AccessTokenManager accessTokenManager;
 
     @Value("${kakao.client.id}")
     private String kakaoClientId;
@@ -117,22 +118,23 @@ public class Oauth2ServiceImpl implements Oauth2Service {
         JsonNode userInfo = fetchUserInfo(accessToken, userInfoUrl);
         String email = extractUserInfo(userInfo, loginType, "email");
         String name = extractUserInfo(userInfo, loginType, "name");
-        String profileImageUrl = extractUserInfo(userInfo, loginType, "profile_image");
+        String nickname = extractUserInfo(userInfo, loginType, "nickname");
 
         // 유저 조회 또는 신규 등록
-        getUserByEmailOrRegister(email, name, profileImageUrl, loginType);
-
+        if (name.isEmpty() || name.isBlank()) {
+            getUserByEmailOrRegister(email, nickname, loginType);
+        } else if (nickname.isBlank() || nickname.isEmpty()) {
+            getUserByEmailOrRegister(email, name, loginType);
+        }
         // JWT 토큰 생성
         String jwtAccessToken = jwtTokenUtils.generateAccessToken(email);
         String jwtRefreshToken = refreshTokenManager.saveRefreshToken(email);
 
-        // 응답 헤더 설정
-        HttpHeaders responseHeaders = createResponseHeaders(jwtAccessToken);
-
-        // 쿠키에 refreshToken 추가
+        // 쿠키에 refreshToken, accessToken 추가
         refreshTokenManager.setRefreshTokenInCookie(jwtRefreshToken, response);
+        accessTokenManager.setAccessTokenInCookie(jwtAccessToken, response);
 
-        return buildResponseEntity(responseHeaders);
+        return buildResponseEntity();
     }
 
     private JsonNode fetchUserInfo(String accessToken, String userInfoUrl) {
@@ -148,37 +150,43 @@ public class Oauth2ServiceImpl implements Oauth2Service {
     private String extractUserInfo(JsonNode userInfo, LoginType loginType, String field) {
 
         return switch (loginType) {
-            case KAKAO -> userInfo.path("kakao_account").path(field).asText();
+            case KAKAO -> {
+                if (field.equals("nickname")) {
+                    // nickname은 두 가지 위치에서 가져올 수 있음
+                    String nickname = userInfo.path("kakao_account").path("profile").path("nickname").asText();
+                    if (nickname.isEmpty()) {
+                        // `kakao_account.profile.nickname`이 비어있으면 `properties.nickname`으로 대체
+                        nickname = userInfo.path("properties").path("nickname").asText();
+                    }
+                    yield nickname;
+                } else {
+                    yield userInfo.path("kakao_account").path(field).asText();
+                }
+            }
             case GOOGLE -> userInfo.path(field).asText();
             case NAVER -> userInfo.path("response").path(field).asText();
             default -> throw new CustomException(ErrorCode.INVALID_LOGIN_TYPE);
         };
     }
 
-    private void getUserByEmailOrRegister(String email, String name, String profileImageUrl, LoginType loginType) {
+    private void getUserByEmailOrRegister(String email, String name, LoginType loginType) {
 
         User user;
         try {
             user = userReader.getUserByEmail(email);
         } catch (CustomException e) {
             log.info("신규 유저 저장: 추가 데이터 필요, email : {}", email);
-            String dummyPassword = "social_login"; // 기본값 설정
-            user = new User(email, name, profileImageUrl, loginType, "미제공", dummyPassword);
+
+            // 비밀번호는 null로 설정하고, isSocialLogin 플래그 추가
+            user = new User(email, name, loginType, "미제공", null, true);
+
             userStore.store(user);
         }
     }
 
-    private HttpHeaders createResponseHeaders(String accessToken) {
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + accessToken);
-        return headers;
-    }
-
-    private ResponseEntity<SuccessResponse<Void>> buildResponseEntity(HttpHeaders headers) {
+    private ResponseEntity<SuccessResponse<Void>> buildResponseEntity() {
 
         return ResponseEntity.status(HttpStatus.OK)
-                .headers(headers)
                 .body(SuccessResponse.successWithNoData("로그인 성공"));
     }
 
