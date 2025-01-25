@@ -23,9 +23,6 @@ class UserServiceImplTest {
     private UserService userService;
 
     @Autowired
-    private UserReader userReader;
-
-    @Autowired
     private UserRepository userRepository;
 
     @BeforeEach
