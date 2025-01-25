@@ -38,3 +38,6 @@ out/
 
 ### 환경변수 설정 ###
 .env
+
+### 테스트 DB 스키마 생성 파일 ###
+/src/test/resources/schema.sql
