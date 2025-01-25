@@ -41,3 +41,4 @@ out/
 
 ### 테스트 DB 스키마 생성 파일 ###
 /src/test/resources/schema.sql
+/src/test/resources/category.sql
