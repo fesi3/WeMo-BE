@@ -12,6 +12,6 @@ public enum LoginType {
     GOOGLE("구글"),
     NAVER("네이버");
 
-    private final String userType;
+    private final String loginType;
 
 }

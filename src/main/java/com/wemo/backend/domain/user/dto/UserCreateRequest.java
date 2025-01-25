@@ -19,10 +19,13 @@ public class UserCreateRequest {
     @Size(min = 2, max = 20, message = "닉네임은 최소 2자, 최대 20자여야 합니다.")
     private String nickname;
 
+    @NotBlank(message = "회사명은 필수 입력 값입니다.")
     private String companyName;
 
+    @NotBlank(message = "비밀번호는 필수 입력 값입니다.")
     private String password;
 
+    @NotBlank(message = "비밀번호 확인은 필수 입력 값입니다.")
     private String passwordCheck;
 
     public User createUser() {

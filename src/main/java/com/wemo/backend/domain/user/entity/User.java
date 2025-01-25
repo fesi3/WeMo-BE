@@ -30,7 +30,7 @@ public class User extends Timestamped {
     @Comment("이메일")
     private String email;
 
-    @Column(name = "company_name")
+    @Column(name = "company_name", nullable = false)
     @Comment("회사명")
     private String companyName;
 
@@ -47,19 +47,24 @@ public class User extends Timestamped {
     private String profileImagePath;
 
     @Enumerated(value = EnumType.STRING)
-    @Column(name = "login_type")
+    @Column(name = "login_type", nullable = false)
+    @Comment("로그인 타입")
     @Builder.Default
     private LoginType loginType = LoginType.GENERAL;
 
-    public User(String email, String nickname, String profileImageUrl, LoginType loginType, String companyName, String password) {
+    @Column(name = "is_social_login", nullable = false)
+    @Comment("소셜 로그인 여부")
+    @Builder.Default
+    private boolean isSocialLogin = false;
+
+    public User(String email, String nickname, LoginType loginType, String companyName, String password, boolean isSocialLogin) {
 
         this.email = email;
         this.nickname = nickname;
-        this.profileImagePath = profileImageUrl;
         this.loginType = loginType;
         this.companyName = companyName;
         this.password = password;
-
+        this.isSocialLogin = isSocialLogin;
     }
 
     public User update(UserUpdateRequest request) {
