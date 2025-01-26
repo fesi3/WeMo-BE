@@ -5,12 +5,18 @@ on:
     branches: [ "dev" ]
   pull_request:
     branches: [ "dev" ]
-
+    
 jobs:
   build:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: test
+          MYSQL_DATABASE: wemo_test
+        ports:
+          - 3306:3306
 
     steps:
       - uses: actions/checkout@v4
@@ -21,9 +27,15 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: .env 파일 생성
+      - name: 테스트용 .env 파일 생성
+        run: echo "${{ secrets.TEST_ENV }}" > .env
+
+      - name: Wait for MySQL
         run: |
-          echo "${{ secrets.PROD_ENV }}" > .env
+          until mysqladmin ping -h"127.0.0.1" --silent; do
+            echo "Waiting for test database..."
+            sleep 5
+          done
 
       - name: Check environment variables
         run: cat .env && env
@@ -36,24 +48,26 @@ jobs:
 
       - name: Run Tests
         run: ./gradlew test --stacktrace
-        
-      # Docker 로그인
+
+      - name: 배포용 .env 파일 생성
+        if: github.event_name == 'push'
+        run: echo "${{ secrets.PROD_ENV }}" > .env
+
       - name: Docker login
+        if: github.event_name == 'push'
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
-      # Docker 이미지 빌드 및 푸시
       - name: Build Docker image
-        run: |
-          docker build --platform linux/amd64 -t ${{ secrets.DOCKERHUB_USERNAME }}/wemo --push .
+        if: github.event_name == 'push'
+        run: docker build --platform linux/amd64 -t ${{ secrets.DOCKERHUB_USERNAME }}/wemo --push .
 
-      # Docker Hub에 이미지 푸시
       - name: Docker Hub push
+        if: github.event_name == 'push'
         run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/wemo
 
-      # .env 파일 정리
       - name: Cleanup .env file
         run: rm .env
 
