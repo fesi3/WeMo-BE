@@ -21,7 +21,7 @@ services:
     volumes:
       - redis-vl:/data
 
-  testdb:
+  wemo-testdb:
     image: mysql:latest
     container_name: ${TEST_DB_CONTAINER_NAME}  # testDB 컨테이너 이름
     ports:
@@ -38,5 +38,5 @@ volumes:
     driver: local
   redis-vl:
     driver: local
-  testdb-vl:
+  wemo-testdb-vl:
     driver: local  # 테스트 DB 볼륨
