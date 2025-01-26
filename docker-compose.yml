@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   mysql:
     image: mysql:latest
@@ -19,8 +21,22 @@ services:
     volumes:
       - redis-vl:/data
 
+  wemo-testdb:
+    image: mysql:latest
+    container_name: ${TEST_DB_CONTAINER_NAME}  # testDB 컨테이너 이름
+    ports:
+      - ${TEST_DB_PORT}:3306  # 테스트 DB 포트
+    restart: always
+    environment:
+      MYSQL_DATABASE: ${TEST_DB_NAME}  # 테스트 DB 이름
+      MYSQL_ROOT_PASSWORD: ${TEST_DB_PASSWORD}  # 테스트 DB 루트 비밀번호
+    volumes:
+      - testdb-vl:/var/lib/mysql  # 테스트 DB 볼륨
+
 volumes:
   mysql-vl:
     driver: local
   redis-vl:
     driver: local
+  wemo-testdb-vl:
+    driver: local  # 테스트 DB 볼륨
