@@ -19,6 +19,8 @@ public class PlanDetailResponse {
 
     private String nickname;
 
+    private String email;
+
     private String profileImagePath;
 
     private String planName;
@@ -107,6 +109,7 @@ public class PlanDetailResponse {
         return PlanDetailResponse.builder()
                 .planId(plan.getId())
                 .nickname(plan.getUser().getNickname())
+                .email(plan.getUser().getEmail())
                 .profileImagePath(plan.getUser().getProfileImagePath())
                 .isJoined(isJoined)
                 .planName(plan.getPlanName())
