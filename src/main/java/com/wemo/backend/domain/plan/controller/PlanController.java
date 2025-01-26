@@ -62,16 +62,16 @@ public class PlanController {
             @ApiResponse(responseCode = "200", description = "요청한 일정 목록이 반환되었습니다.")
     })
     @RequestMapping(value = "", method = RequestMethod.GET)
-    public ResponseEntity<SuccessResponse<PlanCursorPagingResponse>> getGatherings(@AuthenticationPrincipal UserDetailsImpl userDetails,
-                                                                                   @RequestParam(required = false) Long cursor, // 커서 파라미터 추가
-                                                                                   @RequestParam(required = false, defaultValue = "10") int size,
-                                                                                   @RequestParam(required = false) String query,
-                                                                                   @RequestParam(required = false) String province,
-                                                                                   @RequestParam(required = false) String district,
-                                                                                   @RequestParam(required = false) String startDate,
-                                                                                   @RequestParam(required = false) String endDate,
-                                                                                   @RequestParam(required = false) Long categoryId,
-                                                                                   @RequestParam(required = false) String sort) {
+    public ResponseEntity<SuccessResponse<PlanCursorPagingResponse>> getPlanList(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                                                 @RequestParam(required = false) Long cursor,
+                                                                                 @RequestParam(required = false, defaultValue = "10") int size,
+                                                                                 @RequestParam(required = false) String query,
+                                                                                 @RequestParam(required = false) String province,
+                                                                                 @RequestParam(required = false) String district,
+                                                                                 @RequestParam(required = false) String startDate,
+                                                                                 @RequestParam(required = false) String endDate,
+                                                                                 @RequestParam(required = false) Long categoryId,
+                                                                                 @RequestParam(required = false) String sort) {
 
         PlanCursorPagingResponse response = planService.getPlanList(userDetails, cursor, size, query, province, district, startDate, endDate, categoryId, sort);
         return ResponseEntity.ok(SuccessResponse.successWithData(response));
