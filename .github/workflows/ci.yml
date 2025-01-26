@@ -16,7 +16,7 @@ jobs:
           MYSQL_ROOT_PASSWORD: test
           MYSQL_DATABASE: wemo_test
         ports:
-          - 3306:3306
+          - 3313:3306
 
     steps:
       - uses: actions/checkout@v4
@@ -29,9 +29,6 @@ jobs:
 
       - name: 테스트용 .env 파일 생성
         run: echo "${{ secrets.TEST_ENV }}" > .env
-
-      - name: MySQL 로그 확인
-        run: docker logs mysql
 
       - name: MySQL 대기
         run: timeout 300s bash -c 'until mysqladmin ping -h"mysql" --silent; do echo "Waiting for test database..."; sleep 5; done'
