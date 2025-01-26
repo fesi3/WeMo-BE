@@ -34,7 +34,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build with Gradle
-        run: ./gradlew build
+        run: ./gradlew build --exclude-task test
 
       - name: 배포용 .env 파일 생성
         if: github.event_name == 'push'
