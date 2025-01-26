@@ -30,12 +30,11 @@ jobs:
       - name: 테스트용 .env 파일 생성
         run: echo "${{ secrets.TEST_ENV }}" > .env
 
-      - name: Wait for MySQL
-        run: |
-          until mysqladmin ping -h"mysql" --silent; do
-            echo "Waiting for test database..."
-            sleep 5
-          done
+      - name: MySQL 로그 확인
+        run: docker logs mysql
+
+      - name: MySQL 대기
+        run: timeout 300s bash -c 'until mysqladmin ping -h"mysql" --silent; do echo "Waiting for test database..."; sleep 5; done'
 
       - name: Check environment variables
         run: cat .env && env
