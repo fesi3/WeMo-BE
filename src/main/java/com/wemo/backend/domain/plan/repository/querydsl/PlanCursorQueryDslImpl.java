@@ -171,7 +171,7 @@ public class PlanCursorQueryDslImpl implements PlanCursorQueryDsl {
                                                                 : likes.user.email.isNull()
                                                 )
                                 ).gt(0L),
-                        "islikesd")
+                        "isLiked")
         );
     }
 

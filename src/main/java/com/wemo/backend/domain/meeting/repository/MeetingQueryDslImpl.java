@@ -1,10 +1,15 @@
 package com.wemo.backend.domain.meeting.repository;
 
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.wemo.backend.domain.image.entity.Image;
+import com.wemo.backend.domain.meeting.dto.MeetingCursorPagingResponse;
+import com.wemo.backend.domain.meeting.dto.MeetingListResponse;
 import com.wemo.backend.domain.meeting.dto.MeetingPlanListResponse;
 import com.wemo.backend.domain.meeting.dto.MeetingReviewListResponse;
 import com.wemo.backend.domain.meeting.entity.Meeting;
@@ -19,6 +24,7 @@ import java.util.Optional;
 
 import static com.wemo.backend.domain.attendance.entity.QAttendance.attendance;
 import static com.wemo.backend.domain.image.entity.QImage.image;
+import static com.wemo.backend.domain.meeting.entity.QMeeting.meeting;
 import static com.wemo.backend.domain.meetingMember.entity.QMeetingMember.meetingMember;
 import static com.wemo.backend.domain.plan.entity.QPlan.plan;
 import static com.wemo.backend.domain.review.entity.QReview.review;
@@ -164,6 +170,76 @@ public class MeetingQueryDslImpl implements MeetingQueryDsl {
         ).orElse(0L);
 
         return new PageImpl<>(reviewListResponses, pageable, total);
+    }
+
+    @Override
+    public MeetingCursorPagingResponse getMeetingList(Long cursor, int size, Long categoryId) {
+
+        BooleanBuilder listConditions = new BooleanBuilder();
+        if (cursor != null) {
+            listConditions.and(meeting.id.lt(cursor));
+        }
+
+        List<MeetingListResponse> meetingListResponses = queryFactory
+                .select(
+                        Projections.constructor(
+                                MeetingListResponse.class,
+                                user.email,
+                                meeting.id,
+                                meeting.meetingName,
+                                meeting.description,
+                                Expressions.as(
+                                        queryFactory.select(image.fileUrl)
+                                                .from(image)
+                                                .where(image.entityId.eq(meeting.id),
+                                                        image.entityType.eq(Image.EntityType.MEETING),
+                                                        image.main.eq(true)),
+                                        "meetingImagePath"
+                                ),
+                                Expressions.as(
+                                        JPAExpressions.select(meetingMember.count())
+                                                .from(meetingMember)
+                                                .where(meetingMember.meeting.id.eq(meeting.id)
+                                                        .and(meetingMember.deletedAt.isNull())),
+                                        "memberCount"
+                                ),
+                                meeting.category.categoryName
+                        )
+                )
+                .from(meeting)
+                .leftJoin(meeting.user, user)
+                .where(listConditions)
+                .where(buildFilterConditions(categoryId))
+                .where(meeting.deletedAt.isNull())
+                .orderBy(meeting.createdAt.desc())
+                .limit(size)
+                .stream().toList();
+
+        long meetingCount = Optional.ofNullable(
+                queryFactory
+                        .select(meeting.count())
+                        .from(meeting)
+                        .where(buildFilterConditions(categoryId))
+                        .where(meeting.deletedAt.isNull())
+                        .fetchOne()
+        ).orElse(0L);
+
+        return new MeetingCursorPagingResponse(meetingListResponses, (int) meetingCount);
+    }
+
+    private BooleanExpression buildFilterConditions(Long categoryId) {
+
+        BooleanExpression condition = meeting.deletedAt.isNull();
+
+        if (categoryId != null) {
+            if (categoryId == 1) {
+                condition = condition.and(meeting.category.parentId.eq(categoryId));
+            } else {
+                condition = condition.and(meeting.category.id.eq(categoryId));
+            }
+        }
+
+        return condition;
     }
 
 }

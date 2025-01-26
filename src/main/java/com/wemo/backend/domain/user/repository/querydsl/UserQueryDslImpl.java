@@ -228,10 +228,6 @@ public class UserQueryDslImpl implements UserQueryDsl {
                         Projections.constructor(
                                 UserReviewListResponse.class,
                                 review.id,
-                                review.plan.planName,
-                                review.plan.dateTime,
-                                category.categoryName,
-                                review.plan.address,
                                 review.score,
                                 review.comment,
                                 Expressions.as(
@@ -243,7 +239,12 @@ public class UserQueryDslImpl implements UserQueryDsl {
                                         "reviewImagePath"
                                 ),
                                 review.createdAt,
-                                review.updatedAt
+                                review.updatedAt,
+                                review.plan.id,
+                                review.plan.planName,
+                                review.plan.dateTime,
+                                category.categoryName,
+                                review.plan.address
                         )
                 )
                 .from(review)
@@ -254,6 +255,7 @@ public class UserQueryDslImpl implements UserQueryDsl {
                         .and(image.entityType.eq(Image.EntityType.REVIEW)))
                 .where(review.user.email.eq(email)) // 유저가 작성한 후기만
                 .where(review.plan.meeting.deletedAt.isNull())
+                .groupBy(review.id)
                 .orderBy(review.createdAt.desc());
 
         List<UserReviewListResponse> reviewListResponses = queryBuilder

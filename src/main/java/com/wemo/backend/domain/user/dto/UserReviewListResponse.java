@@ -11,14 +11,6 @@ public class UserReviewListResponse {
 
     private Long reviewId;
 
-    private String planName;
-
-    private LocalDateTime dateTime;
-
-    private String category;
-
-    private String address;
-
     private int score;
 
     private String comment;
@@ -28,5 +20,15 @@ public class UserReviewListResponse {
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
+
+    private Long planId;
+
+    private String planName;
+
+    private LocalDateTime dateTime;
+
+    private String category;
+
+    private String address;
 
 }

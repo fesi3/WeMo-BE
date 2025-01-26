@@ -10,20 +10,6 @@ import java.util.List;
 @AllArgsConstructor
 public class ReviewListResponse {
 
-    private Long planId;
-
-    private String planName;
-
-    private String planImagePath;
-
-    private String category;
-
-    private String address;
-
-    private String nickname;
-
-    private String profileImagePath;
-
     private Long reviewId;
 
     private int score;
@@ -36,23 +22,38 @@ public class ReviewListResponse {
 
     private LocalDateTime updatedAt;
 
-    // ReviewListResponse의 생성자를 추가하여 reviewImages 필드를 처리하도록 수정
-    public ReviewListResponse(Long planId, String planName, String planImagePath, String category, String address,
-                              String nickname, String profileImagePath, Long reviewId, int score, String comment,
-                              LocalDateTime createdAt, LocalDateTime updatedAt) {
+    private String nickname;
 
-        this.planId = planId;
-        this.planName = planName;
-        this.planImagePath = planImagePath;
-        this.category = category;
-        this.address = address;
-        this.nickname = nickname;
-        this.profileImagePath = profileImagePath;
+    private String profileImagePath;
+
+    private Long planId;
+
+    private String planName;
+
+    private String planImagePath;
+
+    private String category;
+
+    private String address;
+
+    // ReviewListResponse의 생성자를 추가하여 reviewImages 필드를 처리하도록 수정
+    public ReviewListResponse(Long reviewId, int score, String comment, LocalDateTime createdAt, LocalDateTime updatedAt,
+                              String nickname, String profileImagePath, Long planId, String planName,
+                              String planImagePath, String category, String address) {
+
         this.reviewId = reviewId;
         this.score = score;
         this.comment = comment;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+        this.nickname = nickname;
+        this.profileImagePath = profileImagePath;
+        this.planId = planId;
+        this.planName = planName;
+        this.planImagePath = planImagePath;
+        this.category = category;
+        this.address = address;
+
     }
 
     // reviewImages는 setter로 설정

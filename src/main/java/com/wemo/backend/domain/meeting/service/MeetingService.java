@@ -23,4 +23,6 @@ public interface MeetingService {
 
     MeetingReviewPagingResponse getReviewListByMeeting(Long meetingId, Pageable pageable);
 
+    MeetingCursorPagingResponse getMeetingList(Long cursor, int size, Long categoryId);
+
 }

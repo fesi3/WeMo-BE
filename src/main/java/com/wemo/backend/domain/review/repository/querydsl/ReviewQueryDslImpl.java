@@ -42,6 +42,13 @@ public class ReviewQueryDslImpl implements ReviewQueryDsl {
                 .select(
                         Projections.constructor(
                                 ReviewListResponse.class,
+                                review.id,
+                                review.score,
+                                review.comment,
+                                review.createdAt,
+                                review.updatedAt,
+                                user.nickname,
+                                user.profileImagePath,
                                 plan.id,
                                 plan.planName,
                                 Expressions.as(
@@ -53,14 +60,7 @@ public class ReviewQueryDslImpl implements ReviewQueryDsl {
                                         "planImagePath"
                                 ),
                                 plan.meeting.category.categoryName,
-                                plan.address,
-                                user.nickname,
-                                user.profileImagePath,
-                                review.id,
-                                review.score,
-                                review.comment,
-                                review.createdAt,
-                                review.updatedAt
+                                plan.address
                         )
                 )
                 .from(review)

@@ -206,6 +206,21 @@ public class MeetingServiceImpl implements MeetingService {
         return new MeetingReviewPagingResponse(meeting, meetingRepository.getReviewListByMeeting(meeting, pageable));
     }
 
+    /**
+     * 모임 목록 조회
+     * - 커서 기반 페이징 처리된 모임 목록 반환
+     *
+     * @param cursor     커서 id
+     * @param size       데이터 개수
+     * @param categoryId 카테고리 id
+     * @return 요청 조건에 알맞은 모임 목록
+     */
+    @Override
+    public MeetingCursorPagingResponse getMeetingList(Long cursor, int size, Long categoryId) {
+
+        return meetingRepository.getMeetingList(cursor, size, categoryId);
+    }
+
     // 유틸리티 메서드들
 
     /**

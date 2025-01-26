@@ -137,4 +137,17 @@ public class MeetingController {
         return ResponseEntity.ok(SuccessResponse.successWithData(meetingService.getReviewListByMeeting(meetingId, pageable)));
     }
 
+    @Operation(summary = "모임 목록 조회", description = "회원 또는 비회원이 요청하는 모임의 목록을 반환합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "요청한 모임 목록이 반환되었습니다.")
+    })
+    @RequestMapping(value = "", method = RequestMethod.GET)
+    public ResponseEntity<SuccessResponse<MeetingCursorPagingResponse>> getMeetingList(@RequestParam(required = false) Long cursor,
+                                                                                       @RequestParam(required = false, defaultValue = "10") int size,
+                                                                                       @RequestParam(required = false) Long categoryId) {
+
+        MeetingCursorPagingResponse response = meetingService.getMeetingList(cursor, size, categoryId);
+        return ResponseEntity.ok(SuccessResponse.successWithData(response));
+    }
+
 }
