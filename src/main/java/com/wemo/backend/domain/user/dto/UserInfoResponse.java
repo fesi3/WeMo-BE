@@ -35,7 +35,7 @@ public class UserInfoResponse {
                 .nickname(user.getNickname())
                 .profileImagePath(user.getProfileImagePath())
                 .companyName(user.getCompanyName())
-                .loginType(user.getLoginType().getUserType())
+                .loginType(user.getLoginType().getLoginType())
                 .createdAt(user.getCreatedAt())
                 .joinedPlanCount(joinedPlanCount)
                 .likedPlanCount(likedPlanCount)
