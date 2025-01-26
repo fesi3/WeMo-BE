@@ -9,14 +9,14 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-#    services:
-#      wemo-testdb:
-#        image: mysql:latest
-#        env:
-#          MYSQL_ROOT_PASSWORD: test
-#          MYSQL_DATABASE: wemo-test
-#        ports:
-#          - 3313:3306
+    services:
+      wemo-testdb:
+        image: mysql:latest
+        env:
+          MYSQL_ROOT_PASSWORD: test
+          MYSQL_DATABASE: wemo-test
+        ports:
+          - 3313:3306
 
     steps:
       - uses: actions/checkout@v4
@@ -30,20 +30,11 @@ jobs:
       - name: 테스트용 .env 파일 생성
         run: echo "${{ secrets.TEST_ENV }}" > .env
 
-     # - name: MySQL 대기
-     #   run: timeout 300s bash -c 'until mysqladmin ping -h"wemo-testDB" --silent; do echo "Waiting for test database..."; sleep 5; done'
-
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-     # - name: Build with Gradle
-     #   run: ./gradlew build
-
       - name: Build with Gradle (without tests)
         run: ./gradlew build -x test
-
-    #  - name: Run Tests
-    #    run: ./gradlew test --stacktrace
 
       - name: 배포용 .env 파일 생성
         if: github.event_name == 'push'
@@ -81,6 +72,5 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      # Gradle 의존성 그래프 생성 및 제출
       - name: Generate and submit dependency graph
         uses: gradle/actions/dependency-submission@af1da67850ed9a4cedd57bfd976089dd991e2582 # v4.0.0
