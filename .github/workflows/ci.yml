@@ -32,10 +32,10 @@ jobs:
 
       - name: Wait for MySQL
         run: |
-          until mysqladmin ping -h"127.0.0.1" --silent; do
+          until mysqladmin ping -h"mysql" --silent; do
             echo "Waiting for test database..."
             sleep 5
-          done
+            done
 
       - name: Check environment variables
         run: cat .env && env
