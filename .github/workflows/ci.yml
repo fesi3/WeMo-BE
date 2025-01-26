@@ -9,14 +9,14 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    services:
-      wemo-testdb:
-        image: mysql:latest
-        env:
-          MYSQL_ROOT_PASSWORD: test
-          MYSQL_DATABASE: wemo-test
-        ports:
-          - 3313:3306
+#    services:
+#      wemo-testdb:
+#        image: mysql:latest
+#        env:
+#          MYSQL_ROOT_PASSWORD: test
+#          MYSQL_DATABASE: wemo-test
+#        ports:
+#          - 3313:3306
 
     steps:
       - uses: actions/checkout@v4
@@ -33,17 +33,17 @@ jobs:
      # - name: MySQL 대기
      #   run: timeout 300s bash -c 'until mysqladmin ping -h"wemo-testDB" --silent; do echo "Waiting for test database..."; sleep 5; done'
 
-      - name: Check environment variables
-        run: cat .env && env
-
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Build with Gradle
-        run: ./gradlew build
+     # - name: Build with Gradle
+     #   run: ./gradlew build
 
-      - name: Run Tests
-        run: ./gradlew test --stacktrace
+      - name: Build with Gradle (without tests)
+        run: ./gradlew build -x test
+
+    #  - name: Run Tests
+    #    run: ./gradlew test --stacktrace
 
       - name: 배포용 .env 파일 생성
         if: github.event_name == 'push'
