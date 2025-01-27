@@ -221,6 +221,23 @@ public class MeetingServiceImpl implements MeetingService {
         return meetingRepository.getMeetingList(cursor, size, categoryId);
     }
 
+    /**
+     * 모임 가입 취소
+     *
+     * @param email     사용자 이메일
+     * @param meetingId 모임 id
+     * @return 모임 가입 취소 성공 메세지
+     */
+    @Override
+    public String joinCancelMeeting(String email, Long meetingId) {
+
+        User user = userReader.getUserByEmail(email);
+        Meeting meeting = meetingReader.getMeeting(meetingId);
+
+        meetingMemberStore.deleteMember(user, meeting);
+        return "모임 가입 취소 완료";
+    }
+
     // 유틸리티 메서드들
 
     /**

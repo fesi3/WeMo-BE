@@ -11,4 +11,6 @@ public interface MeetingMemberStore {
 
     void forceJoinMeeting(User user, Meeting meeting);
 
+    void deleteMember(User user, Meeting meeting);
+
 }

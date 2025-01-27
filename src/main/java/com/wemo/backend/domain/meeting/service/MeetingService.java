@@ -25,4 +25,6 @@ public interface MeetingService {
 
     MeetingCursorPagingResponse getMeetingList(Long cursor, int size, Long categoryId);
 
+    String joinCancelMeeting(String email, Long meetingId);
+
 }
