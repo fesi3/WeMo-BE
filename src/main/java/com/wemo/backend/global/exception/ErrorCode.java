@@ -22,6 +22,8 @@ public enum ErrorCode {
     ILLEGAL_MEETING_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 모임입니다."),
     ALREADY_JOINED_MEETING(HttpStatus.BAD_REQUEST, "이미 가입된 모임입니다."),
     ILLEGAL_MEETING_GRANTED(HttpStatus.UNAUTHORIZED, "모임장만 가능한 기능입니다."),
+    GROUP_LEADER_CANNOT_LEAVE(HttpStatus.BAD_REQUEST, "모임장은 해당 모임에서 나갈 수 없습니다."),
+    MEETING_MEMBER_NOT_FOUND(HttpStatus.BAD_REQUEST, "가입되지 않은 모임입니다."),
 
     // plan
     ILLEGAL_ADDRESS_NOT_VALID(HttpStatus.BAD_REQUEST, "주소 값이 유효하지 않습니다."),
@@ -31,7 +33,7 @@ public enum ErrorCode {
     PLAN_ATTENDANCE_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 일정에 참여 기록이 없습니다."),
     ALREADY_LIKED_PLAN(HttpStatus.BAD_REQUEST, "이미 좋아요한 일정입니다."),
     LIKE_NOT_FOUND(HttpStatus.NOT_FOUND, "좋아요를 누르지 않은 일정입니다."),
-    USER_ATTENDANCE_NECESSARY(HttpStatus.BAD_REQUEST, "주최자는 필수 참여입니다."),
+    HOST_ATTENDANCE_REQUIRED(HttpStatus.BAD_REQUEST, "주최자는 참여가 필수입니다."),
 
     // review
     REVIEW_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "이미 후기를 등록한 일정입니다."),

@@ -23,6 +23,7 @@ public class AttendanceStoreImpl implements AttendanceStore {
     @Override
     @Transactional
     public void storeAttendance(User user, Plan plan) {
+
         Attendance attendance = Attendance.builder()
                 .user(user)
                 .plan(plan)
@@ -58,7 +59,7 @@ public class AttendanceStoreImpl implements AttendanceStore {
     public void quitPlan(User user, Plan plan) {
 
         // 주최자 필수 참여 예외 처리
-        if (plan.getUser().getEmail().equals(user.getEmail())) throw new CustomException(USER_ATTENDANCE_NECESSARY);
+        if (plan.getUser().getEmail().equals(user.getEmail())) throw new CustomException(HOST_ATTENDANCE_REQUIRED);
 
         // 이전 참여 내역 조회 후 존재하면 삭제
         Attendance attendance = attendanceReader.validateAttendance(user, plan);
