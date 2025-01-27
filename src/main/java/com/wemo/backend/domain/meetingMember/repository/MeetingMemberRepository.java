@@ -6,11 +6,14 @@ import com.wemo.backend.domain.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface MeetingMemberRepository extends JpaRepository<MeetingMember, Long> {
 
     boolean existsByUserAndMeeting(User user, Meeting meeting);
 
     List<MeetingMember> findAllByMeeting(Meeting meeting);
+
+    Optional<MeetingMember> findByUserAndMeeting(User user, Meeting meeting);
 
 }
