@@ -2,6 +2,7 @@ package com.wemo.backend.domain.review.service;
 
 import com.wemo.backend.domain.review.dto.ReviewCreateRequest;
 import com.wemo.backend.domain.review.dto.ReviewCreateResponse;
+import com.wemo.backend.domain.review.dto.ReviewDetailResponse;
 import com.wemo.backend.domain.review.dto.ReviewPagingResponse;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -16,5 +17,7 @@ public interface ReviewService {
     ReviewCreateResponse updateReview(String email, Long reviewId, ReviewCreateRequest request);
 
     String deleteReview(String email, Long reviewId);
+
+    ReviewDetailResponse getReviewDetail(Long reviewId);
 
 }
