@@ -3,6 +3,7 @@ package com.wemo.backend.domain.review.controller;
 import com.wemo.backend.domain.auth.UserDetailsImpl;
 import com.wemo.backend.domain.review.dto.ReviewCreateRequest;
 import com.wemo.backend.domain.review.dto.ReviewCreateResponse;
+import com.wemo.backend.domain.review.dto.ReviewDetailResponse;
 import com.wemo.backend.domain.review.dto.ReviewPagingResponse;
 import com.wemo.backend.domain.review.service.ReviewService;
 import com.wemo.backend.global.response.SuccessResponse;
@@ -89,6 +90,18 @@ public class ReviewController {
                                                                 @PathVariable Long reviewId) {
 
         return ResponseEntity.ok(SuccessResponse.successWithNoData(reviewService.deleteReview(userDetails.getUsername(), reviewId)));
+    }
+
+    @Operation(summary = "후기 상세조회", description = "회원 또는 비회원이 요청한 후기의 상세 정보를 조회합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "후기가 삭제되었습니다."),
+            @ApiResponse(responseCode = "404", description = "존재하지 않는 후기입니다.",
+                    content = @Content(mediaType = "application/json"))
+    })
+    @RequestMapping(value = "/{reviewId}", method = RequestMethod.GET)
+    public ResponseEntity<SuccessResponse<ReviewDetailResponse>> getReviewDetail(@PathVariable Long reviewId) {
+
+        return ResponseEntity.ok(SuccessResponse.successWithData(reviewService.getReviewDetail(reviewId)));
     }
 
 }

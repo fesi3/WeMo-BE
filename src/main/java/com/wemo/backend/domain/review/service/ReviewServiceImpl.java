@@ -3,11 +3,13 @@ package com.wemo.backend.domain.review.service;
 import com.wemo.backend.domain.attendance.entity.Attendance;
 import com.wemo.backend.domain.attendance.service.AttendanceReader;
 import com.wemo.backend.domain.image.entity.Image;
+import com.wemo.backend.domain.image.service.ImageReader;
 import com.wemo.backend.domain.image.service.ImageStore;
 import com.wemo.backend.domain.plan.entity.Plan;
 import com.wemo.backend.domain.plan.service.PlanReader;
 import com.wemo.backend.domain.review.dto.ReviewCreateRequest;
 import com.wemo.backend.domain.review.dto.ReviewCreateResponse;
+import com.wemo.backend.domain.review.dto.ReviewDetailResponse;
 import com.wemo.backend.domain.review.dto.ReviewPagingResponse;
 import com.wemo.backend.domain.review.entity.Review;
 import com.wemo.backend.domain.review.repository.ReviewRepository;
@@ -44,6 +46,8 @@ public class ReviewServiceImpl implements ReviewService {
     private final AttendanceReader attendanceReader;
 
     private final ReviewReader reviewReader;
+
+    private final ImageReader imageReader;
 
     /**
      * 후기 등록
@@ -140,6 +144,23 @@ public class ReviewServiceImpl implements ReviewService {
         log.info("사용자 {}가 일정 id {}의 후기 id {}를 삭제했습니다.", user.getEmail(), review.getPlan().getId(), review.getId());
 
         return "후기가 정상적으로 삭제되었습니다.";
+    }
+
+    /**
+     * 후기 상세 조회
+     *
+     * @param reviewId 후기 id
+     * @return 해당 하는 후기의 상세 정보 반환
+     */
+    @Override
+    public ReviewDetailResponse getReviewDetail(Long reviewId) {
+
+        // 후기 유효성 검사
+        Review review = reviewReader.getReview(reviewId);
+        // 이미지 리스트 조회
+        List<String> reviewImageList = imageReader.getImageList(reviewId, Image.EntityType.REVIEW);
+        // 반환 객체 생성 및 반환
+        return ReviewDetailResponse.fromEntity(review, reviewImageList);
     }
 
     private void checkExistingReview(User user, Plan plan) {
