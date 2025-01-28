@@ -79,7 +79,7 @@ public class UserServiceImpl implements UserService {
     public void signin(SigninRequest signinRequest, HttpServletResponse response) {
 
         // 유저 검증 및 객체 조회
-        User user = userReader.getUserByEmail(signinRequest.getEmail());
+        User user = userReader.getUser(signinRequest.getEmail(), signinRequest.getPassword());
         log.info("사용자 {} 로그인 성공", user.getEmail());
 
         userAuth.generateHeaderTokens(user, response);
