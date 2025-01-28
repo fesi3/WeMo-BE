@@ -2,8 +2,6 @@ package com.wemo.backend.domain.auth.token.service;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
-import com.wemo.backend.domain.user.entity.User;
-import com.wemo.backend.domain.user.service.UserReader;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -38,8 +36,6 @@ public class JwtTokenUtils {
     @Value("${JWT_SECRET_KEY}")
     private String JWT_SECRET;
 
-    private final UserReader userReader;
-
     /**
      * accessToken 생성
      *
@@ -48,12 +44,10 @@ public class JwtTokenUtils {
      */
     public String generateAccessToken(String email) {
 
-        User user = userReader.getUserByEmail(email);
         return JWT.create()
                 .withIssuer(JWT_ISSUER)
                 .withClaim("type", "access")
                 .withClaim(CLAIM_NAME, email)
-                .withClaim("nickname", user.getNickname())
                 .withExpiresAt(new Date(System.currentTimeMillis() + ACCESS_TOKEN_EXPIRATION))
                 .sign(generateAlgorithm(JWT_SECRET));
     }

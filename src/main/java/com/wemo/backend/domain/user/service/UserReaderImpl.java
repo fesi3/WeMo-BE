@@ -4,9 +4,8 @@ import com.wemo.backend.domain.user.entity.User;
 import com.wemo.backend.domain.user.repository.UserRepository;
 import com.wemo.backend.global.exception.CustomException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
-
-import java.util.Optional;
 
 import static com.wemo.backend.global.exception.ErrorCode.*;
 
@@ -15,6 +14,7 @@ import static com.wemo.backend.global.exception.ErrorCode.*;
 public class UserReaderImpl implements UserReader {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     /**
      * 이메일 중복 검사
@@ -24,9 +24,9 @@ public class UserReaderImpl implements UserReader {
     @Override
     public void checkEmailValid(String email) {
 
-        findUserByEmail(email).ifPresent(user -> {
+        if (userRepository.existsByEmail(email)) {
             throw new CustomException(ILLEGAL_EMAIL_DUPLICATION);
-        });
+        }
     }
 
     /**
@@ -52,19 +52,36 @@ public class UserReaderImpl implements UserReader {
     @Override
     public User getUserByEmail(String email) {
 
-        return findUserByEmail(email)
+        return userRepository.findByEmail(email)
                 .orElseThrow(() -> new CustomException(ILLEGAL_USER_NOT_EXIST));
     }
 
     /**
-     * 이메일로 유저 조회
+     * 유저 객체 검증
      *
-     * @param email 사용자 이메일
-     * @return Optional<User>
+     * @param email    사용자 아이디
+     * @param password 사용자 비밀번호
+     * @return 해당 유저 객체 반환
      */
-    private Optional<User> findUserByEmail(String email) {
+    @Override
+    public User getUser(String email, String password) {
 
-        return userRepository.findByEmail(email);
+        User user = getUserByEmail(email); // 중복된 조회 로직을 재사용
+        validatePassword(password, user.getPassword());
+        return user;
+    }
+
+    /**
+     * 비밀번호 확인
+     *
+     * @param rawPassword     입력된 비밀번호
+     * @param encodedPassword 저장된 비밀번호
+     */
+    private void validatePassword(String rawPassword, String encodedPassword) {
+
+        if (!passwordEncoder.matches(rawPassword, encodedPassword)) {
+            throw new CustomException(ILLEGAL_PASSWORD_NOT_VALID);
+        }
     }
 
 }
