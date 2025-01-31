@@ -16,6 +16,6 @@ public interface MeetingQueryDsl {
 
     Page<MeetingReviewListResponse> getReviewListByMeeting(Meeting meeting, Pageable pageable);
 
-    MeetingCursorPagingResponse getMeetingList(Long cursor, int size, Long categoryId);
+    MeetingCursorPagingResponse getMeetingList(Long cursor, int size, Long categoryId, String sort);
 
 }

@@ -1,6 +1,7 @@
 package com.wemo.backend.domain.meeting.repository;
 
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
@@ -173,7 +174,7 @@ public class MeetingQueryDslImpl implements MeetingQueryDsl {
     }
 
     @Override
-    public MeetingCursorPagingResponse getMeetingList(Long cursor, int size, Long categoryId) {
+    public MeetingCursorPagingResponse getMeetingList(Long cursor, int size, Long categoryId, String sort) {
 
         BooleanBuilder listConditions = new BooleanBuilder();
         if (cursor != null) {
@@ -211,9 +212,12 @@ public class MeetingQueryDslImpl implements MeetingQueryDsl {
                 .where(listConditions)
                 .where(buildFilterConditions(categoryId))
                 .where(meeting.deletedAt.isNull())
-                .orderBy(meeting.createdAt.desc())
+                .orderBy(
+                        getOrderSpecifier(sort),  // memberCount 정렬 기준
+                        meeting.createdAt.desc()  // createdAt 정렬 기준
+                )
                 .limit(size)
-                .stream().toList();
+                .fetch();  // .stream().toList()를 .fetch()로 수정
 
         long meetingCount = Optional.ofNullable(
                 queryFactory
@@ -240,6 +244,17 @@ public class MeetingQueryDslImpl implements MeetingQueryDsl {
         }
 
         return condition;
+    }
+
+    // 정렬 조건 적용 함수
+    private OrderSpecifier<?> getOrderSpecifier(String sort) {
+
+        if ("memberDesc".equals(sort)) {
+            return Expressions.numberTemplate(Long.class,
+                    "(select count(*) from MeetingMember mm where mm.meeting.id = {0} and mm.deletedAt is null)",
+                    meeting.id).desc();
+        }
+        return meeting.createdAt.desc(); // 기본 최신순 정렬
     }
 
 }

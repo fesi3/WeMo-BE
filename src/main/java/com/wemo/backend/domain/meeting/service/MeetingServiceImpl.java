@@ -213,12 +213,13 @@ public class MeetingServiceImpl implements MeetingService {
      * @param cursor     커서 id
      * @param size       데이터 개수
      * @param categoryId 카테고리 id
+     * @param sort       정렬 기준
      * @return 요청 조건에 알맞은 모임 목록
      */
     @Override
-    public MeetingCursorPagingResponse getMeetingList(Long cursor, int size, Long categoryId) {
+    public MeetingCursorPagingResponse getMeetingList(Long cursor, int size, Long categoryId, String sort) {
 
-        return meetingRepository.getMeetingList(cursor, size, categoryId);
+        return meetingRepository.getMeetingList(cursor, size, categoryId, sort);
     }
 
     /**
