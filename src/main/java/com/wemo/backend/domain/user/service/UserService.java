@@ -18,7 +18,11 @@ public interface UserService {
 
     UserInfoResponse getUserInfo(String email);
 
+    UserMeetingPagingResponse getMeetingList(String email, Pageable pageable);
+
     UserMeetingPagingResponse getMyMeetingList(String email, Pageable pageable);
+
+    UserPlanPagingResponse getPlanList(String email, Pageable pageable);
 
     UserPlanPagingResponse getMyPlanList(String email, Pageable pageable);
 

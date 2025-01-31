@@ -11,7 +11,11 @@ public interface UserQueryDsl {
 
     Page<UserMeetingListResponse> getUserMeetingList(String email, Pageable pageable);
 
+    Page<UserMeetingListResponse> getMyMeetingList(String email, Pageable pageable);
+
     Page<UserPlanListResponse> getUserPlanList(String email, Pageable pageable);
+
+    Page<UserPlanListResponse> getMyPlanList(String email, Pageable pageable);
 
     Page<UserReviewListResponse> getUserReviewList(String email, Pageable pageable);
 
