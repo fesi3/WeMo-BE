@@ -76,8 +76,8 @@ public class UserQueryDslImpl implements UserQueryDsl {
                 .from(meeting)
                 .leftJoin(meeting.user, user)
                 .leftJoin(meetingMember).on(meetingMember.meeting.eq(meeting))
-                .where(meeting.user.email.eq(email) // 유저가 작성한 모임
-                        .or(meetingMember.user.email.eq(email))) // 유저가 가입한 모임
+                .where(meetingMember.user.email.eq(email)) // 유저가 가입한 모임
+                .where(meeting.user.email.ne(email)) // 유저가 만든 모임이 아닌 경우
                 .where(meeting.deletedAt.isNull())
                 .groupBy(meeting.id) // 그룹화
                 .orderBy(meeting.createdAt.desc());
@@ -94,13 +94,73 @@ public class UserQueryDslImpl implements UserQueryDsl {
                         .select(meeting.count())
                         .from(meeting)
                         .leftJoin(meetingMember).on(meetingMember.meeting.eq(meeting))
-                        .where(meeting.user.email.eq(email)
-                                .or(meetingMember.user.email.eq(email)))
+                        .where(meetingMember.user.email.eq(email)) // 유저가 가입한 모임
+                        .where(meeting.user.email.ne(email)) // 유저가 만든 모임이 아닌 경우
                         .where(meeting.deletedAt.isNull())
                         .fetchOne()
         ).orElse(0L);
 
         return new PageImpl<>(userMeetingListResponses, pageable, total);
+    }
+
+    @Override
+    public Page<UserMeetingListResponse> getMyMeetingList(String email, Pageable pageable) {
+
+        // 메인 쿼리
+        JPAQuery<UserMeetingListResponse> queryBuilder = queryFactory
+                .select(
+                        Projections.constructor(
+                                UserMeetingListResponse.class,
+                                meeting.user.email,
+                                meeting.id,
+                                meeting.meetingName,
+                                Expressions.as(
+                                        queryFactory.select(image.fileUrl)
+                                                .from(image)
+                                                .where(image.entityId.eq(meeting.id),
+                                                        image.entityType.eq(Image.EntityType.MEETING),
+                                                        image.main.eq(true)),
+                                        "meetingImagePath"
+                                ),
+                                meeting.category.categoryName,
+                                Expressions.as(
+                                        JPAExpressions.select(meetingMember.count())
+                                                .from(meetingMember)
+                                                .where(meetingMember.meeting.id.eq(meeting.id)
+                                                        .and(meetingMember.deletedAt.isNull())),
+                                        "memberCount"
+                                ),
+                                meeting.createdAt,
+                                meeting.updatedAt
+                        )
+                )
+                .from(meeting)
+                .leftJoin(meeting.user, user)
+                .leftJoin(meetingMember).on(meetingMember.meeting.eq(meeting))
+                .where(meeting.user.email.eq(email)) // 유저가 작성한 모임
+                .where(meeting.deletedAt.isNull())
+                .groupBy(meeting.id) // 그룹화
+                .orderBy(meeting.createdAt.desc());
+
+        // 페이징 처리
+        List<UserMeetingListResponse> userMeetingListResponses = queryBuilder
+                .limit(pageable.getPageSize())
+                .offset(pageable.getOffset())
+                .fetch();
+
+        // 총 개수 조회
+        long total = Optional.ofNullable(
+                queryFactory
+                        .select(meeting.count())
+                        .from(meeting)
+                        .leftJoin(meetingMember).on(meetingMember.meeting.eq(meeting))
+                        .where(meeting.user.email.eq(email)) // 유저가 작성한 모임
+                        .where(meeting.deletedAt.isNull())
+                        .fetchOne()
+        ).orElse(0L);
+
+        return new PageImpl<>(userMeetingListResponses, pageable, total);
+
     }
 
     @Override

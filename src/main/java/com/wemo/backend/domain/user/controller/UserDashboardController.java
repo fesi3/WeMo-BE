@@ -34,6 +34,19 @@ public class UserDashboardController {
             @ApiResponse(responseCode = "200", description = "내가 속한 모임 목록이 반환되었습니다.")
     })
     @RequestMapping(value = "/meetings", method = RequestMethod.GET)
+    public ResponseEntity<SuccessResponse<UserMeetingPagingResponse>> getMeetingList(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                                                     @RequestParam(defaultValue = "1") int page,
+                                                                                     @RequestParam(defaultValue = "10") int size) {
+
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
+        return ResponseEntity.ok(SuccessResponse.successWithData(userService.getMeetingList(userDetails.getUsername(), pageable)));
+    }
+
+    @Operation(summary = "내가 만든 모임 목록 조회", description = "유저가 만든 모임의 목록을 반환합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "내가 만든 모임 목록이 반환되었습니다.")
+    })
+    @RequestMapping(value = "/meetings/me", method = RequestMethod.GET)
     public ResponseEntity<SuccessResponse<UserMeetingPagingResponse>> getMyMeetingList(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                                                                        @RequestParam(defaultValue = "1") int page,
                                                                                        @RequestParam(defaultValue = "10") int size) {
@@ -41,7 +54,6 @@ public class UserDashboardController {
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
         return ResponseEntity.ok(SuccessResponse.successWithData(userService.getMyMeetingList(userDetails.getUsername(), pageable)));
     }
-
 
     @Operation(summary = "내 일정 목록 조회", description = "유저가 참여한 일정의 목록을 반환합니다.")
     @ApiResponses(value = {
@@ -79,8 +91,8 @@ public class UserDashboardController {
     })
     @RequestMapping(value = "/reviews/available", method = RequestMethod.GET)
     public ResponseEntity<SuccessResponse<UserPlanPagingResponse>> getPlanListReviewAvailable(@AuthenticationPrincipal UserDetailsImpl userDetails,
-                                                                                 @RequestParam(defaultValue = "1") int page,
-                                                                                 @RequestParam(defaultValue = "10") int size) {
+                                                                                              @RequestParam(defaultValue = "1") int page,
+                                                                                              @RequestParam(defaultValue = "10") int size) {
 
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
 
