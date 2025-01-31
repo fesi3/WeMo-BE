@@ -15,6 +15,8 @@ public interface UserQueryDsl {
 
     Page<UserPlanListResponse> getUserPlanList(String email, Pageable pageable);
 
+    Page<UserPlanListResponse> getMyPlanList(String email, Pageable pageable);
+
     Page<UserReviewListResponse> getUserReviewList(String email, Pageable pageable);
 
     Page<UserPlanReviewableListResponse> getUserPlanListReviewAvailable(String email, Pageable pageable);

@@ -167,9 +167,23 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     @Transactional
-    public UserPlanPagingResponse getMyPlanList(String email, Pageable pageable) {
+    public UserPlanPagingResponse getPlanList(String email, Pageable pageable) {
 
         return new UserPlanPagingResponse(userRepository.getUserPlanList(email, pageable));
+    }
+
+    /**
+     * 내가 만든 일정 목록 조회
+     *
+     * @param email    사용자 이메일
+     * @param pageable 페이징 처리 데이터
+     * @return 유저가 만든 일정 목록
+     */
+    @Override
+    @Transactional
+    public UserPlanPagingResponse getMyPlanList(String email, Pageable pageable) {
+
+        return new UserPlanPagingResponse(userRepository.getMyPlanList(email, pageable));
     }
 
     /**

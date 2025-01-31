@@ -60,6 +60,21 @@ public class UserDashboardController {
             @ApiResponse(responseCode = "200", description = "내가 참여한 일정의 목록이 반환되었습니다.")
     })
     @RequestMapping(value = "/plans", method = RequestMethod.GET)
+    public ResponseEntity<SuccessResponse<UserPlanPagingResponse>> getPlanList(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                                               @RequestParam(defaultValue = "1") int page,
+                                                                               @RequestParam(defaultValue = "10") int size) {
+
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
+
+        return ResponseEntity.ok(SuccessResponse.successWithData(userService.getPlanList(userDetails.getUsername(), pageable)));
+
+    }
+
+    @Operation(summary = "내가 만든 일정 목록 조회", description = "유저가 만든 일정의 목록을 반환합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "내가 만든 일정의 목록이 반환되었습니다.")
+    })
+    @RequestMapping(value = "/plans/me", method = RequestMethod.GET)
     public ResponseEntity<SuccessResponse<UserPlanPagingResponse>> getMyPlanList(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                                                                  @RequestParam(defaultValue = "1") int page,
                                                                                  @RequestParam(defaultValue = "10") int size) {

@@ -249,7 +249,7 @@ public class UserQueryDslImpl implements UserQueryDsl {
                                                                                 : likes.user.email.isNull()
                                                                 )
                                                 ).gt(0L),
-                                        "islikesd")
+                                        "isLiked")
                         )
                 )
                 .from(plan)
@@ -257,6 +257,7 @@ public class UserQueryDslImpl implements UserQueryDsl {
                 .leftJoin(attendance).on(attendance.plan.eq(plan))
                 .where(attendance.user.email.eq(email)) // 유저가 참여한 일정
                 .where(plan.meeting.deletedAt.isNull())
+                .where(plan.user.email.ne(email)) // 유저가 만들지 않은 일정
                 .orderBy(plan.createdAt.desc());
 
         // 페이징 처리
@@ -273,6 +274,126 @@ public class UserQueryDslImpl implements UserQueryDsl {
                         .leftJoin(attendance).on(attendance.plan.eq(plan))
                         .where(attendance.user.email.eq(email))
                         .where(plan.meeting.deletedAt.isNull())
+                        .where(plan.user.email.ne(email))
+                        .fetchOne()
+        ).orElse(0L);
+
+        return new PageImpl<>(planListResponses, pageable, total);
+
+    }
+
+    @Override
+    public Page<UserPlanListResponse> getMyPlanList(String email, Pageable pageable) {
+
+        updateIsFulledStatus();
+
+        JPAQuery<UserPlanListResponse> queryBuilder = queryFactory
+                .select(
+                        Projections.constructor(
+                                UserPlanListResponse.class,
+                                user.nickname.as("nickname"),
+                                user.email.as("email"),
+                                user.profileImagePath.as("profileImage"),
+                                plan.id.as("planId"),
+                                plan.planName,
+                                Expressions.as(
+                                        queryFactory.select(meeting.category.categoryName)
+                                                .from(meeting)
+                                                .where(meeting.id.eq(plan.meeting.id)),
+                                        "category"
+                                ),
+                                Expressions.as(
+                                        queryFactory.select(meeting.id)
+                                                .from(meeting)
+                                                .where(meeting.id.eq(plan.meeting.id)),
+                                        "meetingId"
+                                ),
+                                Expressions.as(
+                                        queryFactory.select(meeting.meetingName)
+                                                .from(meeting)
+                                                .where(meeting.id.eq(plan.meeting.id)),
+                                        "meetingName"
+                                ),
+                                plan.address,
+                                Expressions.as(
+                                        queryFactory.select(province.provinceName)
+                                                .from(province)
+                                                .where(plan.district.province.id.eq(province.id)),
+                                        "province"
+                                ),
+                                Expressions.as(
+                                        queryFactory.select(district.districtName)
+                                                .from(district)
+                                                .where(plan.district.id.eq(district.id)),
+                                        "district"
+                                ),
+                                Expressions.as(
+                                        queryFactory.select(image.fileUrl)
+                                                .from(image)
+                                                .where(image.entityId.eq(plan.id),
+                                                        image.entityType.eq(Image.EntityType.PLAN),
+                                                        image.main.eq(true)),
+                                        "planImagePath"
+                                ),
+                                plan.dateTime,
+                                plan.registrationEnd,
+                                plan.capacity,
+                                Expressions.as(
+                                        queryFactory.select(attendance.count())
+                                                .from(attendance)
+                                                .where(attendance.plan.id.eq(plan.id)
+                                                        .and(attendance.deletedAt.isNull())),
+                                        "participants"
+                                ),
+                                Expressions.as(
+                                        queryFactory.select(likes.count())
+                                                .from(likes)
+                                                .where(likes.plan.id.eq(plan.id)),
+                                        "likesCount"
+                                ),
+                                plan.viewCount,
+                                plan.createdAt,
+                                plan.updatedAt,
+                                plan.opened,
+                                plan.canceled,
+                                plan.fulled,
+                                Expressions.as(
+                                        queryFactory.select(likes.count())
+                                                .from(likes)
+                                                .where(
+                                                        likes.plan.id.eq(plan.id)
+                                                                .and(
+                                                                        email != null
+                                                                                ? likes.user.email.eq(email)
+                                                                                : likes.user.email.isNull()
+                                                                )
+                                                ).gt(0L),
+                                        "isLiked")
+                        )
+                )
+                .from(plan)
+                .leftJoin(plan.user, user)
+                .leftJoin(attendance).on(attendance.plan.eq(plan))
+                .where(attendance.user.email.eq(email)) // 유저가 참여한 일정
+                .where(plan.meeting.deletedAt.isNull())
+                .where(plan.user.email.eq(email)) // 유저가 만든 일정
+                .orderBy(plan.createdAt.desc());
+
+        // 페이징 처리
+        List<UserPlanListResponse> planListResponses = queryBuilder
+                .limit(pageable.getPageSize())
+                .offset(pageable.getOffset())
+                .fetch();
+
+        // 총 개수 조회
+        long total = Optional.ofNullable(
+                queryFactory
+                        .select(plan.count())
+                        .from(plan)
+                        .leftJoin(attendance).on(attendance.plan.eq(plan))
+                        .where(attendance.user.email.eq(email))
+                        .where(plan.meeting.deletedAt.isNull())
+                        .where(plan.user.email.eq(email))
                         .fetchOne()
         ).orElse(0L);
 
