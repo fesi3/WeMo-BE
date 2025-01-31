@@ -144,9 +144,10 @@ public class MeetingController {
     @RequestMapping(value = "", method = RequestMethod.GET)
     public ResponseEntity<SuccessResponse<MeetingCursorPagingResponse>> getMeetingList(@RequestParam(required = false) Long cursor,
                                                                                        @RequestParam(required = false, defaultValue = "10") int size,
-                                                                                       @RequestParam(required = false) Long categoryId) {
+                                                                                       @RequestParam(required = false) Long categoryId,
+                                                                                       @RequestParam(required = false) String sort) {
 
-        MeetingCursorPagingResponse response = meetingService.getMeetingList(cursor, size, categoryId);
+        MeetingCursorPagingResponse response = meetingService.getMeetingList(cursor, size, categoryId, sort);
         return ResponseEntity.ok(SuccessResponse.successWithData(response));
     }
 
