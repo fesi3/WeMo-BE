@@ -1,5 +1,6 @@
 package com.wemo.backend.domain.meeting.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.wemo.backend.domain.meeting.entity.Meeting;
 import com.wemo.backend.domain.plan.dto.PlanListInfo;
 import com.wemo.backend.domain.review.dto.ReviewListInfo;
@@ -25,6 +26,7 @@ public class MeetingDetailResponse {
     private String description;
 
     private String category;
+
     private String email;
 
     private String nickname;
@@ -34,6 +36,9 @@ public class MeetingDetailResponse {
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
+
+    @JsonProperty("isJoined")
+    private boolean isJoined;
 
     private List<UserListInfo> memberList;
 
@@ -47,7 +52,7 @@ public class MeetingDetailResponse {
 
     private List<ReviewListInfo> reviewList;
 
-    public static MeetingDetailResponse fromEntity(Meeting meeting, List<String> meetingImage, int memberCount, List<UserListInfo> userListInfoList, int planCounts, List<PlanListInfo> planListInfoList, int reviewCounts, double reviewAverage, List<ReviewListInfo> reviewListInfoList) {
+    public static MeetingDetailResponse fromEntity(Meeting meeting, List<String> meetingImage, boolean isJoined, int memberCount, List<UserListInfo> userListInfoList, int planCounts, List<PlanListInfo> planListInfoList, int reviewCounts, double reviewAverage, List<ReviewListInfo> reviewListInfoList) {
 
         return MeetingDetailResponse.builder()
                 .meetingId(meeting.getId())
@@ -61,6 +66,7 @@ public class MeetingDetailResponse {
                 .profileImagePath(meeting.getUser().getProfileImagePath())
                 .createdAt(meeting.getCreatedAt())
                 .updatedAt(meeting.getUpdatedAt())
+                .isJoined(isJoined)
                 .memberList(userListInfoList)
                 .planCounts(planCounts)
                 .reviewAverage(reviewAverage)
