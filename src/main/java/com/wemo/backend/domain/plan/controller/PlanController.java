@@ -71,9 +71,12 @@ public class PlanController {
                                                                                  @RequestParam(required = false) String startDate,
                                                                                  @RequestParam(required = false) String endDate,
                                                                                  @RequestParam(required = false) Long categoryId,
-                                                                                 @RequestParam(required = false) String sort) {
+                                                                                 @RequestParam(required = false) String sort,
+                                                                                 @RequestParam(required = false) Double latitude,
+                                                                                 @RequestParam(required = false) Double longitude,
+                                                                                 @RequestParam(required = false, defaultValue = "1.0") Double radius) {
 
-        PlanCursorPagingResponse response = planService.getPlanList(userDetails, cursor, size, query, province, district, startDate, endDate, categoryId, sort);
+        PlanCursorPagingResponse response = planService.getPlanList(userDetails, cursor, size, query, province, district, startDate, endDate, categoryId, sort, latitude, longitude, radius);
         return ResponseEntity.ok(SuccessResponse.successWithData(response));
     }
 

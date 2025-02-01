@@ -139,15 +139,18 @@ public class PlanServiceImpl implements PlanService {
      * @param endDate     끝 날짜
      * @param categoryId  카테고리 id
      * @param sort        정렬 기준
+     * @param latitude    위도
+     * @param longitude   경도
+     * @param radius      반경
      * @return 조건에 해당하는 일정 목록
      */
     @Override
     @Transactional
-    public PlanCursorPagingResponse getPlanList(UserDetailsImpl userDetails, Long cursor, int size, String query, String province, String district, String startDate, String endDate, Long categoryId, String sort) {
+    public PlanCursorPagingResponse getPlanList(UserDetailsImpl userDetails, Long cursor, int size, String query, String province, String district, String startDate, String endDate, Long categoryId, String sort, Double latitude, Double longitude, Double radius) {
 
         return userDetails != null && !userDetails.isGuest()
-                ? planRepository.getPlanListByUser(userDetails.getUsername(), cursor, size, query, province, district, startDate, endDate, categoryId, sort)
-                : planRepository.getPlanListByGuest(cursor, size, query, province, district, startDate, endDate, categoryId, sort);
+                ? planRepository.getPlanListByUser(userDetails.getUsername(), cursor, size, query, province, district, startDate, endDate, categoryId, sort, latitude, longitude, radius)
+                : planRepository.getPlanListByGuest(cursor, size, query, province, district, startDate, endDate, categoryId, sort, latitude, longitude, radius);
     }
 
     /**
