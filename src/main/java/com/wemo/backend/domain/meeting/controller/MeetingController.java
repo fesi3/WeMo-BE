@@ -59,9 +59,10 @@ public class MeetingController {
                     content = @Content(mediaType = "application/json"))
     })
     @RequestMapping(value = "/{meetingId}", method = RequestMethod.GET)
-    public ResponseEntity<SuccessResponse<MeetingDetailResponse>> getMeetingDetail(@PathVariable Long meetingId) {
+    public ResponseEntity<SuccessResponse<MeetingDetailResponse>> getMeetingDetail(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                                                   @PathVariable Long meetingId) {
 
-        return ResponseEntity.ok(SuccessResponse.successWithData(meetingService.getMeetingDetail(meetingId)));
+        return ResponseEntity.ok(SuccessResponse.successWithData(meetingService.getMeetingDetail(userDetails, meetingId)));
     }
 
     @Operation(summary = "모임 정보 수정", description = "모임 정보를 수정합니다.")

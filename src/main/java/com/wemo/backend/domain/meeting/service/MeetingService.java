@@ -1,5 +1,6 @@
 package com.wemo.backend.domain.meeting.service;
 
+import com.wemo.backend.domain.auth.UserDetailsImpl;
 import com.wemo.backend.domain.meeting.dto.*;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -11,7 +12,7 @@ public interface MeetingService {
 
     String joinMeeting(String email, Long meetingId);
 
-    MeetingDetailResponse getMeetingDetail(Long meetingId);
+    MeetingDetailResponse getMeetingDetail(UserDetailsImpl userDetails, Long meetingId);
 
     String updateMeeting(String email, Long meetingId, MeetingUpdateRequest request);
 

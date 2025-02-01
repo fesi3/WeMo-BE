@@ -13,4 +13,6 @@ public interface MeetingMemberStore {
 
     void deleteMember(User user, Meeting meeting);
 
+    boolean isAlreadyJoined(User user, Meeting meeting);
+
 }
