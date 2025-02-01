@@ -16,7 +16,7 @@ public interface PlanService {
 
     String joinPlan(String email, Long planId);
 
-    PlanCursorPagingResponse getPlanList(UserDetailsImpl userDetails, Long cursor, int size, String query, String province, String district, String startDate, String endDate, Long categoryId, String sort);
+    PlanCursorPagingResponse getPlanList(UserDetailsImpl userDetails, Long cursor, int size, String query, String province, String district, String startDate, String endDate, Long categoryId, String sort, Double latitude, Double longitude, Double radius);
 
     PlanDetailResponse getPlanDetail(UserDetailsImpl userDetails, Long planId);
 

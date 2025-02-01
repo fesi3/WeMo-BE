@@ -16,6 +16,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -25,7 +26,6 @@ import static com.wemo.backend.domain.image.entity.QImage.image;
 import static com.wemo.backend.domain.like.entity.QLikes.likes;
 import static com.wemo.backend.domain.meeting.entity.QMeeting.meeting;
 import static com.wemo.backend.domain.plan.entity.QPlan.plan;
-import static com.wemo.backend.domain.plan.repository.querydsl.PlanCursorQueryDslImpl.getBooleanExpression;
 import static com.wemo.backend.domain.user.entity.QUser.user;
 
 @Slf4j
@@ -175,7 +175,35 @@ public class PlanQueryDslImpl implements PlanQueryDsl {
 
     private BooleanExpression buildFilterConditions(String query, String province, String district, String startDate, String endDate, Long categoryId) {
 
-        return getBooleanExpression(query, province, district, startDate, endDate, categoryId);
+        BooleanExpression condition = plan.canceled.eq(false);
+
+        if (query != null && !query.isEmpty()) {
+            condition = condition.and(plan.planName.contains(query));
+        }
+
+        if (province != null && !province.isEmpty()) {
+            condition = condition.and(plan.district.province.provinceName.eq(province));
+        }
+
+        if (district != null && !district.isEmpty()) {
+            condition = condition.and(plan.district.districtName.eq(district));
+        }
+
+        if (startDate != null && !startDate.isEmpty() && endDate != null && !endDate.isEmpty()) {
+            LocalDate start = LocalDate.parse(startDate);
+            LocalDate end = LocalDate.parse(endDate);
+            condition = condition.and(plan.dateTime.between(start.atStartOfDay(), end.atTime(23, 59, 59)));
+        }
+
+        if (categoryId != null) {
+            if (categoryId == 1) {
+                condition = condition.and(plan.meeting.category.parentId.eq(categoryId)); // parentId가 1인 경우
+            } else {
+                condition = condition.and(plan.meeting.category.id.eq(categoryId)); // categoryId가 1이 아닌 경우는 해당 id 필터링
+            }
+        }
+
+        return condition;
     }
 
 }

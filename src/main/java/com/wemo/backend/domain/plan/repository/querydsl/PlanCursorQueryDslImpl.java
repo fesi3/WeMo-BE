@@ -5,6 +5,7 @@ import com.querydsl.core.types.ConstructorExpression;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.wemo.backend.domain.image.entity.Image;
 import com.wemo.backend.domain.plan.dto.PlanCursorPagingResponse;
@@ -40,18 +41,18 @@ public class PlanCursorQueryDslImpl implements PlanCursorQueryDsl {
     }
 
     @Override
-    public PlanCursorPagingResponse getPlanListByUser(String email, Long cursor, int size, String query, String province, String district, String startDate, String endDate, Long categoryId, String sort) {
+    public PlanCursorPagingResponse getPlanListByUser(String email, Long cursor, int size, String query, String province, String district, String startDate, String endDate, Long categoryId, String sort, Double latitude, Double longitude, Double radius) {
 
-        return getPlanList(email, cursor, size, query, province, district, startDate, endDate, categoryId, sort);
+        return getPlanList(email, cursor, size, query, province, district, startDate, endDate, categoryId, sort, latitude, longitude, radius);
     }
 
     @Override
-    public PlanCursorPagingResponse getPlanListByGuest(Long cursor, int size, String query, String province, String district, String startDate, String endDate, Long categoryId, String sort) {
+    public PlanCursorPagingResponse getPlanListByGuest(Long cursor, int size, String query, String province, String district, String startDate, String endDate, Long categoryId, String sort, Double latitude, Double longitude, Double radius) {
 
-        return getPlanList(null, cursor, size, query, province, district, startDate, endDate, categoryId, sort);
+        return getPlanList(null, cursor, size, query, province, district, startDate, endDate, categoryId, sort, latitude, longitude, radius);
     }
 
-    private PlanCursorPagingResponse getPlanList(String email, Long cursor, int size, String query, String province, String district, String startDate, String endDate, Long categoryId, String sort) {
+    private PlanCursorPagingResponse getPlanList(String email, Long cursor, int size, String query, String province, String district, String startDate, String endDate, Long categoryId, String sort, Double latitude, Double longitude, Double radius) {
 
         updateIsFulledStatus();
 
@@ -61,7 +62,7 @@ public class PlanCursorQueryDslImpl implements PlanCursorQueryDsl {
 
         // 커서 조건을 제외한 기본 조건 빌더
         BooleanBuilder baseConditions = new BooleanBuilder()
-                .and(buildFilterConditions(query, province, district, startDate, endDate, categoryId));
+                .and(buildFilterConditions(query, province, district, startDate, endDate, categoryId, latitude, longitude, radius));
 
         // 1. 목록 조회 쿼리 (커서 조건 포함)
         BooleanBuilder listConditions = new BooleanBuilder(baseConditions);
@@ -156,6 +157,8 @@ public class PlanCursorQueryDslImpl implements PlanCursorQueryDsl {
                                 .where(plan.district.id.eq(district.id)),
                         "district"
                 ),
+                plan.latitude,
+                plan.longitude,
                 Expressions.as(
                         queryFactory.select(image.fileUrl)
                                 .from(image)
@@ -200,12 +203,9 @@ public class PlanCursorQueryDslImpl implements PlanCursorQueryDsl {
         );
     }
 
-    private BooleanExpression buildFilterConditions(String query, String province, String district, String startDate, String endDate, Long categoryId) {
-
-        return getBooleanExpression(query, province, district, startDate, endDate, categoryId);
-    }
-
-    static BooleanExpression getBooleanExpression(String query, String province, String district, String startDate, String endDate, Long categoryId) {
+    private BooleanExpression buildFilterConditions(String query, String province, String district,
+                                                    String startDate, String endDate, Long categoryId,
+                                                    Double latitude, Double longitude, Double radius) {
 
         BooleanExpression condition = plan.canceled.eq(false);
 
@@ -229,9 +229,22 @@ public class PlanCursorQueryDslImpl implements PlanCursorQueryDsl {
 
         if (categoryId != null) {
             if (categoryId == 1) {
-                condition = condition.and(plan.meeting.category.parentId.eq(categoryId)); // parentId가 1인 경우
+                condition = condition.and(plan.meeting.category.parentId.eq(categoryId));
             } else {
-                condition = condition.and(plan.meeting.category.id.eq(categoryId)); // categoryId가 1이 아닌 경우는 해당 id 필터링
+                condition = condition.and(plan.meeting.category.id.eq(categoryId));
+            }
+        }
+
+        // 위치 기반 필터링 추가 (필터가 없는 경우)
+        if ((province == null || province.isEmpty()) && (district == null || district.isEmpty())) {
+            if (latitude != null && longitude != null && radius != null) {
+                double radiusInMeters = radius * 1000; // km → m 변환
+
+                NumberExpression<Double> distance = Expressions.numberTemplate(Double.class,
+                        "ST_Distance_Sphere(point({0}, {1}), point(plan.longitude, plan.latitude))",
+                        longitude, latitude);
+
+                condition = condition.and(distance.loe(radiusInMeters));
             }
         }
 
