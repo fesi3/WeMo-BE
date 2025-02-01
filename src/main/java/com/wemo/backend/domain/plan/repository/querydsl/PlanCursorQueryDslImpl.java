@@ -9,6 +9,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.wemo.backend.domain.image.entity.Image;
 import com.wemo.backend.domain.plan.dto.PlanCursorPagingResponse;
 import com.wemo.backend.domain.plan.dto.PlanListResponse;
+import com.wemo.backend.domain.plan.entity.Plan;
 import jakarta.persistence.EntityManager;
 import lombok.extern.slf4j.Slf4j;
 
@@ -65,8 +66,28 @@ public class PlanCursorQueryDslImpl implements PlanCursorQueryDsl {
         // 1. 목록 조회 쿼리 (커서 조건 포함)
         BooleanBuilder listConditions = new BooleanBuilder(baseConditions);
         if (cursor != null) {
-            listConditions.and(plan.id.lt(cursor));
+            Plan targetPlan = queryFactory
+                    .selectFrom(plan)
+                    .where(plan.id.eq(cursor))
+                    .fetchOne();
+
+            if (targetPlan != null) {
+                LocalDateTime cursorCloseDate = targetPlan.getRegistrationEnd();
+
+                if (sortField.equals("closeDate")) {
+                    listConditions.and(
+                            plan.registrationEnd.gt(cursorCloseDate) // 현재 커서 이후의 마감일 데이터
+                                    .or(
+                                            plan.registrationEnd.eq(cursorCloseDate)
+                                                    .and(plan.id.gt(cursor)) // 마감일자가 같으면 planId 기준 정렬
+                                    )
+                    );
+                } else {
+                    listConditions.and(plan.id.lt(cursor));
+                }
+            }
         }
+
 
         List<PlanListResponse> planListResponses = queryFactory
                 .select(buildPlanListProjection(email))
@@ -75,7 +96,11 @@ public class PlanCursorQueryDslImpl implements PlanCursorQueryDsl {
                 .where(listConditions)
                 .where(plan.canceled.eq(false))
                 .where(plan.meeting.deletedAt.isNull())
-                .orderBy(sortField.equals("closeDate") ? plan.registrationEnd.asc() : plan.createdAt.desc())
+                .orderBy(
+                        sortField.equals("closeDate")
+                                ? plan.registrationEnd.asc().nullsLast()
+                                : plan.createdAt.desc(),
+                        plan.id.asc()) // 마감일자가 같으면 planId 기준 추가 정렬
                 .limit(size)
                 .fetch();
 
@@ -206,7 +231,7 @@ public class PlanCursorQueryDslImpl implements PlanCursorQueryDsl {
             if (categoryId == 1) {
                 condition = condition.and(plan.meeting.category.parentId.eq(categoryId)); // parentId가 1인 경우
             } else {
-                condition = condition.and(plan.meeting.category.id.eq(categoryId)); // categoryId가 1이 아닌 경우는 id로만 필터링
+                condition = condition.and(plan.meeting.category.id.eq(categoryId)); // categoryId가 1이 아닌 경우는 해당 id 필터링
             }
         }
 
