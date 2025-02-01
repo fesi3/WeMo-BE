@@ -56,8 +56,8 @@ public class MeetingMemberStoreImpl implements MeetingMemberStore {
         }
     }
 
-    // 중복 가입 여부 체크
-    private boolean isAlreadyJoined(User user, Meeting meeting) {
+    // 가입 여부 체크
+    public boolean isAlreadyJoined(User user, Meeting meeting) {
 
         return meetingMemberRepository.existsByUserAndMeeting(user, meeting);
     }

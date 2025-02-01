@@ -1,5 +1,6 @@
 package com.wemo.backend.domain.meeting.service;
 
+import com.wemo.backend.domain.auth.UserDetailsImpl;
 import com.wemo.backend.domain.comm.CommUtilService;
 import com.wemo.backend.domain.image.entity.Image;
 import com.wemo.backend.domain.image.service.ImageReader;
@@ -83,11 +84,12 @@ public class MeetingServiceImpl implements MeetingService {
      * - 모임에 대한 이미지, 멤버, 일정, 후기 정보를 포함하여 반환
      * - 후기는 전체 일정의 평균 평점을 포함
      *
-     * @param meetingId 모임 id
+     * @param userDetails 유저 정보 객체
+     * @param meetingId   모임 id
      * @return 모임 상세 정보 응답 객체
      */
     @Override
-    public MeetingDetailResponse getMeetingDetail(Long meetingId) {
+    public MeetingDetailResponse getMeetingDetail(UserDetailsImpl userDetails, Long meetingId) {
 
         log.info("모임 id {} 상세 조회 요청", meetingId);
         Meeting meeting = validateMeeting(meetingId);
@@ -99,9 +101,15 @@ public class MeetingServiceImpl implements MeetingService {
 
         double reviewAverage = commUtilService.calculateReviewAverage(meeting);
 
+        boolean joined = false;
+        if (userDetails != null && !userDetails.isGuest()) {
+            User user = userReader.getUserByEmail(userDetails.getUsername());
+            joined = meetingMemberStore.isAlreadyJoined(user, meeting);
+        }
         return MeetingDetailResponse.fromEntity(
                 meeting,
                 meetingImage,
+                joined,
                 userListInfoList.size(),
                 userListInfoList,
                 planListInfoList.size(),
