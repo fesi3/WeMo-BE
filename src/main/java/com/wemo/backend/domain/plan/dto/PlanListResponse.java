@@ -30,6 +30,10 @@ public class PlanListResponse {
 
     private String district;
 
+    private double latitude;
+
+    private double longitude;
+
     private String planImagePath;
 
     private LocalDateTime dateTime;
@@ -47,7 +51,7 @@ public class PlanListResponse {
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
-    
+
     @JsonProperty("isOpened")
     private boolean isOpened;
 
@@ -59,16 +63,19 @@ public class PlanListResponse {
 
     @JsonProperty("isOpened")
     public boolean getIsOpened() {
+
         return isOpened;
     }
 
     @JsonProperty("isFulled")
     public boolean getIsFulled() {
+
         return isFulled;
     }
 
     @JsonProperty("isLiked")
     public boolean getIsLiked() {
+
         return isLiked;
     }
 

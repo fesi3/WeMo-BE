@@ -156,6 +156,8 @@ public class PlanCursorQueryDslImpl implements PlanCursorQueryDsl {
                                 .where(plan.district.id.eq(district.id)),
                         "district"
                 ),
+                plan.latitude,
+                plan.longitude,
                 Expressions.as(
                         queryFactory.select(image.fileUrl)
                                 .from(image)
