@@ -49,35 +49,43 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
 
             if ("/api/auths/signout".equals(request.getRequestURI()) && !validateLogoutRequest(accessToken, refreshToken, response)) {
-                return;
+                return; // 응답 후 중단
             }
 
-            validateAccessToken(accessToken, response);
-            setAuthentication(accessToken, request.getRequestURI());
+            if (!validateAccessToken(accessToken, response)) {
+                return; // 응답 후 중단
+            }
 
+            setAuthentication(accessToken, request.getRequestURI());
             filterChain.doFilter(request, response);
+
         } catch (Exception e) {
             log.error("필터 처리 중 에러 발생: {}", e.getMessage());
-            sendErrorResponse(response, "서버 에러가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
+            if (!response.isCommitted()) { // 응답이 이미 전송되지 않은 경우에만 에러 응답 전송
+                sendErrorResponse(response, "서버 에러가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
+            }
         }
     }
 
-    private void validateAccessToken(String accessToken, HttpServletResponse response) throws IOException {
+    private boolean validateAccessToken(String accessToken, HttpServletResponse response) throws IOException {
 
         if (accessToken == null || accessToken.isEmpty()) {
             sendErrorResponse(response, "accessToken이 요청에 포함되지 않았습니다.", HttpStatus.BAD_REQUEST);
-            return;
+            return false;
         }
         if (tokenBlacklistService.isBlacklisted(accessToken)) {
             sendErrorResponse(response, "이미 로그아웃된 토큰입니다. 로그인 후 다시 시도해주세요.", HttpStatus.UNAUTHORIZED);
-            return;
+            return false;
         }
         try {
             jwtTokenProvider.parseToken(accessToken);
+            return true;
         } catch (TokenExpiredException e) {
             sendErrorResponse(response, "만료된 토큰입니다.", HttpStatus.UNAUTHORIZED);
+            return false;
         } catch (Exception e) {
             sendErrorResponse(response, "유효하지 않은 토큰입니다.", HttpStatus.UNAUTHORIZED);
+            return false;
         }
     }
 
@@ -115,6 +123,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private void sendErrorResponse(HttpServletResponse response, String message, HttpStatus httpStatus) throws IOException {
+
+        if (response.isCommitted()) return; // 이미 응답이 전송된 경우 중단
 
         response.setStatus(httpStatus.value());
         response.setContentType("application/json;charset=UTF-8");
