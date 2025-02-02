@@ -16,7 +16,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static com.wemo.backend.global.exception.ErrorCode.ILLEGAL_IMAGE_COUNT;
+import static com.wemo.backend.global.exception.ErrorCode.IMAGE_COUNT_EXCEEDED;
 
 @Slf4j
 @Service
@@ -41,7 +41,7 @@ public class S3Service {
 
         log.info("이미지 업로드를 위한 presignedUrl 요청 메서드 호출");
 
-        if (count > 10) throw new CustomException(ILLEGAL_IMAGE_COUNT);
+        if (count > 10) throw new CustomException(IMAGE_COUNT_EXCEEDED);
 
         // presigned URL 목록 생성
         List<String> presignedUrls = IntStream.range(0, count)  // count 만큼 URL 생성

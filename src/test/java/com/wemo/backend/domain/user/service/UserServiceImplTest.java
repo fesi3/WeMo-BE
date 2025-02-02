@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import static com.wemo.backend.global.exception.ErrorCode.ILLEGAL_EMAIL_DUPLICATION;
+import static com.wemo.backend.global.exception.ErrorCode.EMAIL_ALREADY_IN_USE;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
@@ -84,7 +84,7 @@ class UserServiceImplTest {
 
             // When & Then
             CustomException exception = assertThrows(CustomException.class, () -> userService.signup(request));
-            assertEquals(ILLEGAL_EMAIL_DUPLICATION, exception.getErrorCode());
+            assertEquals(EMAIL_ALREADY_IN_USE, exception.getErrorCode());
 
         }
 

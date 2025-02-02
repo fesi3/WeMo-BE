@@ -9,7 +9,6 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.wemo.backend.domain.auth.token.entity.RefreshToken;
 import com.wemo.backend.domain.auth.token.service.JwtTokenUtils;
 import com.wemo.backend.domain.auth.token.service.RefreshTokenManager;
-import com.wemo.backend.domain.auth.token.service.TokenBlacklistService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,7 +31,7 @@ public class JwtTokenProvider {
     private String JWT_SECRET;
 
     private final UserDetailsServiceImpl userDetailsService;
-    private final TokenBlacklistService tokenBlacklistService;
+
     private final RefreshTokenManager refreshTokenManager;
 
     /**
@@ -90,36 +89,10 @@ public class JwtTokenProvider {
         return Algorithm.HMAC256(secretKey.getBytes());
     }
 
-    /**
-     * accessToken 의 만료시간 초기화
-     *
-     * @param accessToken accessToken
-     * @return 해당 토큰의 초기화된 만료시간 반환
-     */
-    public Long getExpiration(String accessToken) {
-
-        DecodedJWT jwt;
-        JWTVerifier verifier = JWT
-                .require(generateAlgorithm(JWT_SECRET))
-                .build();
-        jwt = verifier.verify(accessToken);
-        // accessToken 남은 시간
-        Date expiration = jwt.getExpiresAt();
-        log.info("accessToken 남은 시간 : {}", expiration);
-
-        long now = new Date().getTime();
-        return (expiration.getTime() - now);
-    }
-
     public boolean validateAccessToken(String accessToken) {
 
         if (accessToken == null || accessToken.isEmpty()) {
             log.warn("accessToken이 존재하지 않습니다.");
-            return false;
-        }
-        // 블랙리스트 확인
-        if (tokenBlacklistService.isBlacklisted(accessToken)) {
-            log.warn("블랙리스트에 등록된 토큰입니다.");
             return false;
         }
         try {

@@ -25,7 +25,7 @@ public class UserReaderImpl implements UserReader {
     public void checkEmailValid(String email) {
 
         if (userRepository.existsByEmail(email)) {
-            throw new CustomException(ILLEGAL_EMAIL_DUPLICATION);
+            throw new CustomException(EMAIL_ALREADY_IN_USE);
         }
     }
 
@@ -39,7 +39,7 @@ public class UserReaderImpl implements UserReader {
     public void checkPasswordValid(String password, String passwordCheck) {
 
         if (!password.equals(passwordCheck)) {
-            throw new CustomException(ILLEGAL_PASSWORD_NOT_VALID);
+            throw new CustomException(INVALID_PASSWORD);
         }
     }
 
@@ -53,7 +53,7 @@ public class UserReaderImpl implements UserReader {
     public User getUserByEmail(String email) {
 
         return userRepository.findByEmail(email)
-                .orElseThrow(() -> new CustomException(ILLEGAL_USER_NOT_EXIST));
+                .orElseThrow(() -> new CustomException(USER_NOT_FOUND));
     }
 
     /**
@@ -80,7 +80,7 @@ public class UserReaderImpl implements UserReader {
     private void validatePassword(String rawPassword, String encodedPassword) {
 
         if (!passwordEncoder.matches(rawPassword, encodedPassword)) {
-            throw new CustomException(ILLEGAL_PASSWORD_NOT_VALID);
+            throw new CustomException(INVALID_PASSWORD);
         }
     }
 

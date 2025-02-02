@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.wemo.backend.global.exception.ErrorCode.ILLEGAL_MEETING_GRANTED;
+import static com.wemo.backend.global.exception.ErrorCode.MEETING_PERMISSION_DENIED;
 
 @Service
 @RequiredArgsConstructor
@@ -76,7 +76,7 @@ public class CommUtilServiceImpl implements CommUtilService {
     public void validateMeetingOwner(User user, Meeting meeting) {
 
         if (!meeting.getUser().getEmail().equals(user.getEmail())) {
-            throw new CustomException(ILLEGAL_MEETING_GRANTED);
+            throw new CustomException(MEETING_PERMISSION_DENIED);
         }
     }
 

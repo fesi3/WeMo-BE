@@ -44,7 +44,7 @@ public class AttendanceStoreImpl implements AttendanceStore {
         // 모집 정원 마감 예외 처리
         int currentParticipants = (int) attendanceRepository.countByPlan(plan);
 
-        if (currentParticipants >= plan.getCapacity()) throw new CustomException(PLAN_IS_FULLED);
+        if (currentParticipants >= plan.getCapacity()) throw new CustomException(PLAN_IS_FULL);
 
         // 참여 정보 저장
         storeAttendance(user, plan);
