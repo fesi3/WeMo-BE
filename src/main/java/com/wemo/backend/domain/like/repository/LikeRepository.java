@@ -17,4 +17,6 @@ public interface LikeRepository extends JpaRepository<Likes, Long> {
 
     List<Likes> findAllByUser(User user);
 
+    void deleteByUser(User user);
+
 }

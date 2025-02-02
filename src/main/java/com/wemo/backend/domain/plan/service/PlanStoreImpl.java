@@ -47,4 +47,11 @@ public class PlanStoreImpl implements PlanStore {
         return plan;
     }
 
+    @Override
+    public void delete(Plan plan) {
+
+        planRepository.delete(plan);
+
+    }
+
 }

@@ -62,6 +62,20 @@ public class MeetingMemberStoreImpl implements MeetingMemberStore {
         return meetingMemberRepository.existsByUserAndMeeting(user, meeting);
     }
 
+    // 가입 내역 삭제
+    @Override
+    public void deleteAllByUser(User user) {
+
+        meetingMemberRepository.deleteByUser(user);
+    }
+
+    @Override
+    public void deleteMeetingMember(MeetingMember meetingMember) {
+
+        meetingMemberRepository.delete(meetingMember);
+    }
+
+
     // 모임 회원 저장
     private void saveMeetingMember(User user, Meeting meeting) {
 

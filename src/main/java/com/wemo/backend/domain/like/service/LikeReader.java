@@ -12,6 +12,6 @@ public interface LikeReader {
 
     void validateLikeToDelete(User user, Plan plan);
 
-    List<Likes> getLikeCountByUser(User user);
+    List<Likes> getLikesByUser(User user);
 
 }

@@ -2,6 +2,7 @@ package com.wemo.backend.domain.user.service;
 
 import com.wemo.backend.domain.attendance.entity.Attendance;
 import com.wemo.backend.domain.attendance.service.AttendanceReader;
+import com.wemo.backend.domain.attendance.service.AttendanceStore;
 import com.wemo.backend.domain.auth.UserAuth;
 import com.wemo.backend.domain.auth.token.entity.RefreshToken;
 import com.wemo.backend.domain.auth.token.repository.RefreshTokenRepository;
@@ -9,6 +10,12 @@ import com.wemo.backend.domain.auth.token.service.AccessTokenManager;
 import com.wemo.backend.domain.auth.token.service.RefreshTokenManager;
 import com.wemo.backend.domain.like.entity.Likes;
 import com.wemo.backend.domain.like.service.LikeReader;
+import com.wemo.backend.domain.like.service.LikeStore;
+import com.wemo.backend.domain.meeting.entity.Meeting;
+import com.wemo.backend.domain.meeting.service.MeetingReader;
+import com.wemo.backend.domain.meetingMember.service.MeetingMemberStore;
+import com.wemo.backend.domain.plan.entity.Plan;
+import com.wemo.backend.domain.plan.service.PlanReader;
 import com.wemo.backend.domain.review.entity.Review;
 import com.wemo.backend.domain.review.service.ReviewReader;
 import com.wemo.backend.domain.user.dto.*;
@@ -40,8 +47,13 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final AttendanceReader attendanceReader;
     private final LikeReader likeReader;
+    private final LikeStore likeStore;
     private final ReviewReader reviewReader;
     private final AccessTokenManager accessTokenManager;
+    private final MeetingReader meetingReader;
+    private final PlanReader planReader;
+    private final MeetingMemberStore meetingMemberStore;
+    private final AttendanceStore attendanceStore;
 
     /**
      * 이메일 중복 검사
@@ -122,7 +134,7 @@ public class UserServiceImpl implements UserService {
         User user = userReader.getUserByEmail(email);
 
         List<Attendance> joinedPlanList = attendanceReader.getAttendanceByUser(user);
-        List<Likes> likedPlanList = likeReader.getLikeCountByUser(user);
+        List<Likes> likedPlanList = likeReader.getLikesByUser(user);
         List<Review> reviewList = reviewReader.getReviewByUser(user);
 
         log.info("사용자 {}의 회원 정보가 반환되었습니다.", user.getEmail());
@@ -254,6 +266,37 @@ public class UserServiceImpl implements UserService {
     public UserPlanPagingResponse getMyPlanListV2(String email, Pageable pageable) {
 
         return new UserPlanPagingResponse(userRepository.getMyPlanListV2(email, pageable));
+    }
+
+    /**
+     * 회원 탈퇴 기능
+     *
+     * @param email 사용자 이메일
+     * @return 응답 메세지
+     */
+    @Override
+    @Transactional
+    public String withdraw(String email) {
+
+        // 유저 객체 조회 및 softDelete 처리
+        User user = userReader.getUserByEmail(email);
+        user.softDelete();
+        user.setDeletedUserNickname();
+
+        // 유저가 생성한 데이터 softDelete 처리 (forEach 사용하여 간결화)
+        meetingReader.getMeetingListByUser(user).forEach(Meeting::softDelete);
+        planReader.getPlanListByUser(user).forEach(Plan::softDelete);
+        reviewReader.getReviewByUser(user).forEach(Review::softDelete);
+
+        // 모임 가입 내역, 일정 참여 내역, 좋아요 내역 batch delete 처리
+        meetingMemberStore.deleteAllByUser(user);
+        attendanceStore.deleteAllByUser(user);
+        likeStore.deleteAllByUser(user);
+
+        // TODO : 이미지 삭제 (관련 오류 발생 가능성 있음 → 기본 이미지 설정 고려)
+        // imageStore.deleteAllByUser(user);
+
+        return "정상적으로 탈퇴 처리되었습니다.";
     }
 
     private String getTokenFromCookie(HttpServletRequest request, String tokenName) {

@@ -71,6 +71,14 @@ public class AttendanceStoreImpl implements AttendanceStore {
 
     }
 
+    // 일정 참여 내역 삭제
+    @Override
+    public void deleteAllByUser(User user) {
+
+        attendanceRepository.deleteByUser(user);
+    }
+
+
     @Transactional
     private void updatePlanStatus(Plan plan, int participants) {
         // 최소 인원 충족 시 개설 확정

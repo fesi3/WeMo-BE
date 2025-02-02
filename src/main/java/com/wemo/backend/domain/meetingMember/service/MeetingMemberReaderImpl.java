@@ -3,6 +3,7 @@ package com.wemo.backend.domain.meetingMember.service;
 import com.wemo.backend.domain.meeting.entity.Meeting;
 import com.wemo.backend.domain.meetingMember.entity.MeetingMember;
 import com.wemo.backend.domain.meetingMember.repository.MeetingMemberRepository;
+import com.wemo.backend.domain.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -22,9 +23,9 @@ public class MeetingMemberReaderImpl implements MeetingMemberReader {
     }
 
     @Override
-    public void delete(MeetingMember meetingMember) {
+    public List<MeetingMember> getJoinedMeetingsByUser(User user) {
 
-        meetingMemberRepository.delete(meetingMember);
+        return meetingMemberRepository.findAllByUser(user);
     }
 
 }

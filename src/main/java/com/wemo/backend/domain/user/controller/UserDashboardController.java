@@ -145,4 +145,14 @@ public class UserDashboardController {
 
     }
 
+    @Operation(summary = "회원 탈퇴", description = "회원 탈퇴합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "정상적으로 탈퇴 처리되었습니다.")
+    })
+    @RequestMapping(value = "/withdraw", method = RequestMethod.DELETE)
+    public ResponseEntity<SuccessResponse<String>> withdraw(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+
+        return ResponseEntity.ok(SuccessResponse.successWithNoData(userService.withdraw(userDetails.getUsername())));
+    }
+
 }

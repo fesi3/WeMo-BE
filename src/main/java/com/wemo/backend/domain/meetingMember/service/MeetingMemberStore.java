@@ -1,6 +1,7 @@
 package com.wemo.backend.domain.meetingMember.service;
 
 import com.wemo.backend.domain.meeting.entity.Meeting;
+import com.wemo.backend.domain.meetingMember.entity.MeetingMember;
 import com.wemo.backend.domain.user.entity.User;
 import org.springframework.stereotype.Service;
 
@@ -14,5 +15,9 @@ public interface MeetingMemberStore {
     void deleteMember(User user, Meeting meeting);
 
     boolean isAlreadyJoined(User user, Meeting meeting);
+
+    void deleteAllByUser(User user);
+
+    void deleteMeetingMember(MeetingMember meetingMember);
 
 }

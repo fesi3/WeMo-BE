@@ -32,12 +32,6 @@ public class AttendanceReaderImpl implements AttendanceReader {
         return attendanceRepository.findAllByPlan(plan);
     }
 
-    @Override
-    public void delete(Attendance attendance) {
-
-        attendanceRepository.delete(attendance);
-    }
-
     /**
      * 일정 참여 내역 조회
      *

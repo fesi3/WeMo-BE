@@ -11,4 +11,6 @@ public interface AttendanceStore {
 
     void quitPlan(User user, Plan plan);
 
+    void deleteAllByUser(User user);
+
 }

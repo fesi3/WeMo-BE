@@ -20,23 +20,17 @@ public class ReviewReaderImpl implements ReviewReader {
     private final ReviewRepository reviewRepository;
 
     @Override
+    public Review getReview(Long reviewId) {
+
+        return reviewRepository.findByIdAndDeletedAtIsNull(reviewId).orElseThrow(
+                () -> new CustomException(REVIEW_NOT_FOUND)
+        );
+    }
+
+    @Override
     public List<Review> getReviewByPlan(Plan plan) {
 
         return reviewRepository.findAllByPlan(plan);
-    }
-
-    @Override
-    public void delete(Review review) {
-
-        reviewRepository.delete(review);
-    }
-
-    @Override
-    public Review getReview(Long reviewId) {
-
-        return reviewRepository.findById(reviewId).orElseThrow(
-                () -> new CustomException(REVIEW_NOT_FOUND)
-        );
     }
 
     @Override
@@ -48,7 +42,7 @@ public class ReviewReaderImpl implements ReviewReader {
     @Override
     public List<Review> getReviewByUser(User user) {
 
-        return reviewRepository.findAllByUser(user);
+        return reviewRepository.findAllByUserAndDeletedAtIsNull(user);
     }
 
 }
