@@ -10,11 +10,12 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-import static com.wemo.backend.global.exception.ErrorCode.*;
+import static com.wemo.backend.global.exception.ErrorCode.ALREADY_LIKED_PLAN;
+import static com.wemo.backend.global.exception.ErrorCode.LIKE_NOT_FOUND;
 
 @Component
 @RequiredArgsConstructor
-public class LikeReaderImpl implements LikeReader{
+public class LikeReaderImpl implements LikeReader {
 
     private final LikeRepository likeRepository;
 
@@ -32,7 +33,7 @@ public class LikeReaderImpl implements LikeReader{
     }
 
     @Override
-    public List<Likes> getLikeCountByUser(User user) {
+    public List<Likes> getLikesByUser(User user) {
 
         return likeRepository.findAllByUser(user);
     }

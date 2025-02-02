@@ -2,7 +2,7 @@ package com.wemo.backend.domain.image.service;
 
 import com.wemo.backend.domain.image.entity.Image;
 import com.wemo.backend.domain.image.repository.ImageRepository;
-import jakarta.transaction.Transactional;
+import com.wemo.backend.domain.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -36,11 +36,9 @@ public class ImageReaderImpl implements ImageReader {
     }
 
     @Override
-    @Transactional
-    public void deleteImage(Long entityId, Image.EntityType entityType) {
+    public List<Image> getImageListByUser(User user) {
 
-        List<Image> imageList = imageRepository.findAllByEntityIdAndEntityType(entityId, entityType);
-        imageRepository.deleteAll(imageList); // 이미지 삭제
+        return imageRepository.findAllByUser(user);
     }
 
 }

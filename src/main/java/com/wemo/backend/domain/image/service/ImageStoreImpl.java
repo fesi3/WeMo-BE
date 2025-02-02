@@ -75,8 +75,8 @@ public class ImageStoreImpl implements ImageStore {
     @Override
     public void deleteImage(Long entityId, Image.EntityType entityType) {
         // 기존 이미지 삭제
-        List<Image> allByEntityIdAndEntityType = imageRepository.findAllByEntityIdAndEntityType(entityId, entityType);
-        imageRepository.deleteAll(allByEntityIdAndEntityType);
+        List<Image> imageList = imageRepository.findAllByEntityIdAndEntityType(entityId, entityType);
+        imageRepository.deleteAll(imageList);
     }
 
 }

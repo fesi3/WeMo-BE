@@ -4,8 +4,10 @@ import com.wemo.backend.domain.attendance.service.AttendanceReader;
 import com.wemo.backend.domain.comm.CommUtilService;
 import com.wemo.backend.domain.image.entity.Image;
 import com.wemo.backend.domain.image.service.ImageReader;
+import com.wemo.backend.domain.image.service.ImageStore;
 import com.wemo.backend.domain.meeting.entity.Meeting;
 import com.wemo.backend.domain.meetingMember.service.MeetingMemberReader;
+import com.wemo.backend.domain.meetingMember.service.MeetingMemberStore;
 import com.wemo.backend.domain.plan.dto.PlanListInfo;
 import com.wemo.backend.domain.plan.entity.Plan;
 import com.wemo.backend.domain.plan.service.PlanReader;
@@ -33,9 +35,13 @@ public class MeetingUtilServiceImpl implements MeetingUtilService {
 
     private final ImageReader imageReader;
 
+    private final ImageStore imageStore;
+
     private final MeetingMemberReader meetingMemberReader;
 
     private final AttendanceReader attendanceReader;
+
+    private final MeetingMemberStore meetingMemberStore;
 
     private static final Comparator<UserListInfo> USER_DATE_DESC = Comparator.comparing(UserListInfo::getCreatedAt).reversed();
     private static final Comparator<PlanListInfo> PLAN_DATE_DESC = Comparator.comparing(PlanListInfo::getDateTime).reversed();
@@ -99,6 +105,7 @@ public class MeetingUtilServiceImpl implements MeetingUtilService {
         for (Plan plan : plans) {
             deleteReviews(plan);
             deletePlanImages(plan);
+            plan.softDelete();
         }
     }
 
@@ -113,7 +120,7 @@ public class MeetingUtilServiceImpl implements MeetingUtilService {
 
         for (Review review : reviews) {
             deleteReviewImages(review);
-            reviewReader.delete(review);
+            review.softDelete();
         }
     }
 
@@ -124,7 +131,7 @@ public class MeetingUtilServiceImpl implements MeetingUtilService {
      */
     private void deleteReviewImages(Review review) {
 
-        imageReader.deleteImage(review.getId(), Image.EntityType.REVIEW);
+        imageStore.deleteImage(review.getId(), Image.EntityType.REVIEW);
     }
 
     /**
@@ -134,7 +141,7 @@ public class MeetingUtilServiceImpl implements MeetingUtilService {
      */
     private void deletePlanImages(Plan plan) {
 
-        imageReader.deleteImage(plan.getId(), Image.EntityType.PLAN);
+        imageStore.deleteImage(plan.getId(), Image.EntityType.PLAN);
     }
 
     /**
@@ -146,7 +153,7 @@ public class MeetingUtilServiceImpl implements MeetingUtilService {
     public void deleteMembers(Meeting meeting) {
 
         meetingMemberReader.getMemberListByMeeting(meeting)
-                .forEach(meetingMemberReader::delete);
+                .forEach(meetingMemberStore::deleteMeetingMember);
     }
 
     /**
@@ -157,7 +164,7 @@ public class MeetingUtilServiceImpl implements MeetingUtilService {
     @Override
     public void deleteMeetingImages(Meeting meeting) {
 
-        imageReader.deleteImage(meeting.getId(), Image.EntityType.MEETING);
+        imageStore.deleteImage(meeting.getId(), Image.EntityType.MEETING);
     }
 
     /**

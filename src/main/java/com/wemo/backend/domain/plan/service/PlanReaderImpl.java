@@ -3,6 +3,7 @@ package com.wemo.backend.domain.plan.service;
 import com.wemo.backend.domain.meeting.entity.Meeting;
 import com.wemo.backend.domain.plan.entity.Plan;
 import com.wemo.backend.domain.plan.repository.PlanRepository;
+import com.wemo.backend.domain.user.entity.User;
 import com.wemo.backend.global.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -29,14 +30,13 @@ public class PlanReaderImpl implements PlanReader {
     @Override
     public List<Plan> getPlanByMeeting(Meeting meeting) {
 
-        return planRepository.findAllByMeeting(meeting);
+        return planRepository.findAllByMeetingAndDeletedAtIsNull(meeting);
     }
 
     @Override
-    public void delete(Plan plan) {
+    public List<Plan> getPlanListByUser(User user) {
 
-        planRepository.delete(plan);
-
+        return planRepository.findAllByUserAndDeletedAtIsNull(user);
     }
 
 }

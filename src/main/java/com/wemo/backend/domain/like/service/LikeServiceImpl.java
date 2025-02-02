@@ -40,7 +40,7 @@ public class LikeServiceImpl implements LikeService {
         // 이미 좋아요를 누른 일정이라면 예외 반환
         likeReader.validateLike(user, plan);
 
-        likeStore.storeLike(user, plan);
+        likeStore.addLike(user, plan);
 
         log.info("사용자 {}가 일정 id {}에 좋아요를 눌렀습니다.", user.getEmail(), plan.getId());
 
@@ -64,7 +64,7 @@ public class LikeServiceImpl implements LikeService {
         // 좋아요를 누르지 않은 일정이라면 예외 반환
         likeReader.validateLikeToDelete(user, plan);
 
-        likeStore.deleteLike(user, plan);
+        likeStore.removeLike(user, plan);
 
         log.info("사용자 {}가 일정 id {}에 누른 좋아요를 취소했습니다.", user.getEmail(), plan.getId());
 

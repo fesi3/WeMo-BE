@@ -16,7 +16,7 @@ public class LikeStoreImpl implements LikeStore {
 
     @Override
     @Transactional
-    public void storeLike(User user, Plan plan) {
+    public void addLike(User user, Plan plan) {
 
         Likes like = Likes.builder()
                 .user(user)
@@ -27,11 +27,17 @@ public class LikeStoreImpl implements LikeStore {
     }
 
     @Override
-    public void deleteLike(User user, Plan plan) {
+    public void removeLike(User user, Plan plan) {
 
         Likes like = likeRepository.findByUserAndPlan(user, plan);
 
         likeRepository.delete(like);
+    }
+
+    @Override
+    public void deleteAllByUser(User user) {
+
+        likeRepository.deleteByUser(user);
     }
 
 }

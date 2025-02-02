@@ -12,8 +12,6 @@ public interface AttendanceReader {
 
     List<Attendance> getAttendanceList(Plan plan);
 
-    void delete(Attendance attendance);
-
     boolean existAttendance(User user, Plan plan);
 
     int getParticipantsCount(Plan plan);
