@@ -52,6 +52,12 @@ public class MeetingDetailResponse {
 
     private List<ReviewListInfo> reviewList;
 
+    @JsonProperty("isJoined")
+    public boolean getIsJoined() {
+
+        return isJoined;
+    }
+
     public static MeetingDetailResponse fromEntity(Meeting meeting, List<String> meetingImage, boolean isJoined, int memberCount, List<UserListInfo> userListInfoList, int planCounts, List<PlanListInfo> planListInfoList, int reviewCounts, double reviewAverage, List<ReviewListInfo> reviewListInfoList) {
 
         return MeetingDetailResponse.builder()
