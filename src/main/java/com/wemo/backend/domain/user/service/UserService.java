@@ -1,6 +1,7 @@
 package com.wemo.backend.domain.user.service;
 
 import com.wemo.backend.domain.user.dto.*;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -14,7 +15,7 @@ public interface UserService {
 
     void signin(SigninRequest request, HttpServletResponse response);
 
-    String signout(String accessToken, String refreshToken, HttpServletResponse response);
+    String signout(HttpServletRequest request, HttpServletResponse response);
 
     UserInfoResponse getUserInfo(String email);
 

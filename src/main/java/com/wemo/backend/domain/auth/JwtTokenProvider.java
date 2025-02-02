@@ -25,6 +25,9 @@ import java.util.Date;
 @RequiredArgsConstructor
 public class JwtTokenProvider {
 
+    @Value("${JWT_ISSUER}")
+    private String JWT_ISSUER;
+
     @Value("${JWT_SECRET_KEY}")
     private String JWT_SECRET;
 
@@ -145,16 +148,31 @@ public class JwtTokenProvider {
         }
 
         try {
+            // JWT 파싱 및 만료 시간 확인
+            DecodedJWT decodedJWT = JWT.require(Algorithm.HMAC256(JWT_SECRET))
+                    .withIssuer(JWT_ISSUER)
+                    .build()
+                    .verify(refreshToken);
+
+            Date expiresAt = decodedJWT.getExpiresAt();
+            if (expiresAt != null && expiresAt.before(new Date())) {  // 현재 시간보다 과거면 만료됨
+                log.warn("refreshToken이 만료되었습니다. 만료 시간: {}", expiresAt);
+                return false;
+            }
+
             // refreshToken 조회
             RefreshToken foundRefreshToken = refreshTokenManager.getRefreshToken(refreshToken);
 
             // refreshToken 존재 여부 확인
-            if (foundRefreshToken != null && foundRefreshToken.refreshToken() != null && foundRefreshToken.email().equals(decodeUsername(refreshToken))) {
+            if (foundRefreshToken != null && foundRefreshToken.refreshToken() != null
+                    && foundRefreshToken.email().equals(decodeUsername(refreshToken))) {
                 log.info("유효한 refreshToken입니다.");
                 return true;
             } else {
                 log.warn("DB에 해당 refreshToken이 존재하지 않습니다.");
             }
+        } catch (TokenExpiredException e) {
+            log.warn("refreshToken이 만료되었습니다.: {}", e.getMessage());
         } catch (IllegalArgumentException e) {
             log.error("잘못된 refreshToken입니다.: {}", e.getMessage());
         } catch (Exception e) {

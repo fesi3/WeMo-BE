@@ -1,12 +1,14 @@
 package com.wemo.backend.domain.auth.token.service;
 
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
 
+@Slf4j
 @Component
 public class AccessTokenManager {
 
@@ -33,6 +35,22 @@ public class AccessTokenManager {
 
         // 최종 쿠키를 응답에 추가
         response.addHeader(HttpHeaders.SET_COOKIE, cookieWithExpiry);
+    }
+
+    public void deleteAccessTokenInCookie(HttpServletResponse response) {
+
+        ResponseCookie cookie = ResponseCookie.from("accessToken", null)
+                .maxAge(0) // 쿠키 즉시 만료
+                .sameSite("None") // 쿠키 SameSite 설정
+                .secure(true) // HTTPS 환경에서만 전송
+                .httpOnly(true) // JavaScript에서 접근 불가
+                .path("/") // 모든 경로에서 유효
+                .build();
+
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString()); // 헤더에 쿠키 추가
+
+        log.info("accessToken 쿠키 삭제 완료");
+
     }
 
 }

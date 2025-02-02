@@ -104,14 +104,9 @@ public class RefreshTokenManager {
         if (email == null) {
             throw new CustomException(ILLEGAL_REFRESH_TOKEN_NOT_VALID);
         }
-        // 유효성 검사 후 기존 발급된 refreshToken 삭제
-        refreshTokenRepository.delete(getRefreshToken(refreshToken));
 
         String newAccessToken = jwtTokenUtils.generateAccessToken(email);
-        String newRefreshToken = jwtTokenUtils.generateRefreshToken(email);
-
         accessTokenManager.setAccessTokenInCookie(newAccessToken, response);
-        setRefreshTokenInCookie(newRefreshToken, response);
 
         log.info("토큰 생성 후 헤더에 담기 완료!");
     }
