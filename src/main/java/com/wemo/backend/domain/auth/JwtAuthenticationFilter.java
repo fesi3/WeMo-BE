@@ -42,6 +42,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             String accessToken = getTokenFromCookie(request, "accessToken");
             String refreshToken = getTokenFromCookie(request, "Refresh-Token");
+            log.info("accessToken: {}, refreshToken : {}", accessToken, refreshToken);
 
             if (shouldSkipFilter(request.getRequestURI(), request.getMethod(), accessToken)) {
                 filterChain.doFilter(request, response);
@@ -99,14 +100,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private boolean validateLogoutRequest(String accessToken, String refreshToken, HttpServletResponse response)
             throws IOException {
 
+        // accessToken 과 refreshToken 모두 유효하지 않은 경우 로그아웃 실패
         if (!jwtTokenProvider.validateAccessToken(accessToken) && !jwtTokenProvider.validateRefreshToken(refreshToken)) {
             sendErrorResponse(response, "accessToken과 refreshToken 모두 유효하지 않습니다.", HttpStatus.UNAUTHORIZED);
             return false;
         }
+
+        // accessToken 만료 여부에 관계없이 refreshToken 이 만료된 경우 로그아웃 실패
         if (!jwtTokenProvider.validateRefreshToken(refreshToken)) {
             sendErrorResponse(response, "유효하지 않은 refreshToken입니다.", HttpStatus.BAD_REQUEST);
             return false;
         }
+
+        // accessToken 이 유효하지 않은 경우 (값이 존재하지 않거나 이미 로그아웃된 토큰인 경우)
         if (!jwtTokenProvider.validateAccessToken(accessToken)) {
             sendErrorResponse(response, "유효하지 않은 accessToken입니다.", HttpStatus.BAD_REQUEST);
             return false;
