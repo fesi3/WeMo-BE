@@ -6,6 +6,7 @@ import com.wemo.backend.domain.auth.JwtTokenProvider;
 import com.wemo.backend.domain.auth.UserAuth;
 import com.wemo.backend.domain.auth.token.entity.RefreshToken;
 import com.wemo.backend.domain.auth.token.repository.RefreshTokenRepository;
+import com.wemo.backend.domain.auth.token.service.AccessTokenManager;
 import com.wemo.backend.domain.auth.token.service.RefreshTokenManager;
 import com.wemo.backend.domain.auth.token.service.TokenBlacklistService;
 import com.wemo.backend.domain.like.entity.Likes;
@@ -15,6 +16,8 @@ import com.wemo.backend.domain.review.service.ReviewReader;
 import com.wemo.backend.domain.user.dto.*;
 import com.wemo.backend.domain.user.entity.User;
 import com.wemo.backend.domain.user.repository.UserRepository;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +25,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -40,6 +45,7 @@ public class UserServiceImpl implements UserService {
     private final AttendanceReader attendanceReader;
     private final LikeReader likeReader;
     private final ReviewReader reviewReader;
+    private final AccessTokenManager accessTokenManager;
 
     /**
      * 이메일 중복 검사
@@ -88,21 +94,20 @@ public class UserServiceImpl implements UserService {
     /**
      * 로그아웃
      *
-     * @param accessToken  accessToken
-     * @param refreshToken refreshToken
      * @return 응답 메세지
      */
     @Override
     @Transactional
-    public String signout(String accessToken, String refreshToken, HttpServletResponse response) {
+    public String signout(HttpServletRequest request, HttpServletResponse response) {
 
-        // Bearer 제거
-        String cleanToken = accessToken.replace("Bearer ", "");
+        String accessToken = getTokenFromCookie(request, "accessToken");
+        String refreshToken = getTokenFromCookie(request, "Refresh-Token");
 
         // accessToken 검증 및 블랙리스트 처리
-        Long expiration = jwtTokenProvider.getExpiration(cleanToken);
-        tokenBlacklistService.addToBlacklist(cleanToken, expiration);
+        Long expiration = jwtTokenProvider.getExpiration(accessToken);
+        tokenBlacklistService.addToBlacklist(accessToken, expiration);
         log.info("accessToken 블랙리스트에 추가 완료");
+        accessTokenManager.deleteAccessTokenInCookie(response);
 
         // refreshToken 삭제
         RefreshToken findRefreshToken = refreshTokenManager.getRefreshToken(refreshToken);
@@ -243,6 +248,16 @@ public class UserServiceImpl implements UserService {
         User user = userReader.getUserByEmail(email);
 
         user.saveAdditionalData(request);
+    }
+
+    private String getTokenFromCookie(HttpServletRequest request, String tokenName) {
+
+        return Optional.ofNullable(request.getCookies())
+                .flatMap(cookies -> Arrays.stream(cookies)
+                        .filter(cookie -> tokenName.equals(cookie.getName()))
+                        .map(Cookie::getValue)
+                        .findFirst())
+                .orElse(null);
     }
 
 }

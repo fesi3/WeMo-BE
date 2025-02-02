@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -72,15 +73,11 @@ public class UserController {
                     content = @Content(mediaType = "application/json"))
     })
     @RequestMapping(value = "/signout", method = RequestMethod.POST)
-    public ResponseEntity<SuccessResponse<String>> signout(
-            @RequestHeader("Authorization") String accessToken,
-            @RequestHeader("Refresh-Token") String refreshToken,
-            HttpServletResponse response) {
+    public ResponseEntity<SuccessResponse<String>> signout(HttpServletRequest request,
+                                                           HttpServletResponse response) {
 
-        log.info("accessToken : {}", accessToken);
-        log.info("refreshToken : {}", refreshToken);
-
-        return ResponseEntity.ok().body(SuccessResponse.successWithNoData(userService.signout(accessToken, refreshToken, response)));
+        log.info("로그아웃 controller 탄다");
+        return ResponseEntity.ok().body(SuccessResponse.successWithNoData(userService.signout(request, response)));
     }
 
     @Operation(summary = "회원 정보 조회", description = "사용자가 회원 정보를 조회합니다.")
