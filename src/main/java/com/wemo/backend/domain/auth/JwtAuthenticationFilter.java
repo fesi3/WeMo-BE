@@ -2,7 +2,6 @@ package com.wemo.backend.domain.auth;
 
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.wemo.backend.domain.auth.token.service.TokenBlacklistService;
 import com.wemo.backend.global.response.ErrorResponse;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.Cookie;
@@ -25,7 +24,6 @@ import java.util.Optional;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
-    private final TokenBlacklistService tokenBlacklistService;
 
     private static final List<String> EXCLUDED_PATHS = List.of(
             "/api/auths/check-email", "/api/auths/signin", "/api/auths/signup", "/swagger-ui/", "/swagger-ui.html",
@@ -74,10 +72,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             sendErrorResponse(response, "accessToken이 요청에 포함되지 않았습니다.", HttpStatus.BAD_REQUEST);
             return false;
         }
-        if (tokenBlacklistService.isBlacklisted(accessToken)) {
-            sendErrorResponse(response, "이미 로그아웃된 토큰입니다. 로그인 후 다시 시도해주세요.", HttpStatus.UNAUTHORIZED);
-            return false;
-        }
         try {
             jwtTokenProvider.parseToken(accessToken);
             return true;
@@ -100,24 +94,25 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private boolean validateLogoutRequest(String accessToken, String refreshToken, HttpServletResponse response)
             throws IOException {
 
-        // accessToken 과 refreshToken 모두 유효하지 않은 경우 로그아웃 실패
-        if (!jwtTokenProvider.validateAccessToken(accessToken) && !jwtTokenProvider.validateRefreshToken(refreshToken)) {
-            sendErrorResponse(response, "accessToken과 refreshToken 모두 유효하지 않습니다.", HttpStatus.UNAUTHORIZED);
-            return false;
+        boolean isAccessTokenValid = jwtTokenProvider.validateAccessToken(accessToken);
+        boolean isRefreshTokenValid = refreshToken != null && jwtTokenProvider.validateRefreshToken(refreshToken);
+
+        // 1. accessToken 이 유효하지 않으면 로그아웃 실패
+        if (!isAccessTokenValid) {
+            // refreshToken 도 유효하지 않으면 재로그인 필요
+            if (!isRefreshTokenValid) {
+                sendErrorResponse(response, "재로그인이 필요합니다.", HttpStatus.UNAUTHORIZED);
+                return false;
+            }
+            log.info("유효하지 않은 accessToken이지만, 유효한 refreshToken이 있어 로그아웃을 진행합니다.");
         }
 
-        // accessToken 만료 여부에 관계없이 refreshToken 이 만료된 경우 로그아웃 실패
-        if (!jwtTokenProvider.validateRefreshToken(refreshToken)) {
-            sendErrorResponse(response, "유효하지 않은 refreshToken입니다.", HttpStatus.BAD_REQUEST);
-            return false;
+        // 2. refreshToken 이 유효하지 않아도 로그아웃 진행 (로그만 남김)
+        if (!isRefreshTokenValid) {
+            log.info("유효하지 않은 refreshToken입니다. 만료된 refreshToken으로 로그아웃 처리됩니다.");
         }
 
-        // accessToken 이 유효하지 않은 경우 (값이 존재하지 않거나 이미 로그아웃된 토큰인 경우)
-        if (!jwtTokenProvider.validateAccessToken(accessToken)) {
-            sendErrorResponse(response, "유효하지 않은 accessToken입니다.", HttpStatus.BAD_REQUEST);
-            return false;
-        }
-        return true;
+        return true; // 로그아웃 요청이 유효함
     }
 
     private boolean shouldSkipFilter(String requestURI, String method, String accessToken) {
