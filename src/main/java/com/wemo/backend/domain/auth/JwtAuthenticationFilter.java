@@ -16,6 +16,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -24,182 +27,115 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtTokenProvider jwtTokenProvider;
     private final TokenBlacklistService tokenBlacklistService;
 
+    private static final List<String> EXCLUDED_PATHS = List.of(
+            "/api/auths/check-email", "/api/auths/signin", "/api/auths/signup", "/swagger-ui/", "/swagger-ui.html",
+            "/v3/api-docs", "/api/regions", "/api/auths/reissue", "/login/oauth2/callback/kakao",
+            "/login/oauth2/callback/google", "/login/oauth2/callback/naver"
+    );
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws IOException {
 
         try {
+            logRequestInfo(request);
 
-            String userAgent = request.getHeader("User-Agent");
-            log.info("User-Agent: " + userAgent);
+            String accessToken = getTokenFromCookie(request, "accessToken");
+            String refreshToken = getTokenFromCookie(request, "Refresh-Token");
 
-            String clientIp = request.getRemoteAddr();
-            String requestURI = request.getRequestURI();
-            String method = request.getMethod(); // HTTP 메서드 가져오기
-            log.info("요청 IP: {}, 요청 URI: {}", clientIp, requestURI);
-
-            // 쿠키에서 토큰 읽기
-            String accessToken = getAccessTokenFromCookie(request);
-            String refreshToken = getRefreshTokenFromCookie(request);
-
-            log.info("accessToken: {}, refreshToken : {}", accessToken, refreshToken);
-
-            // 예외 경로 설정 (로그인, 회원가입 등)
-            if (isExcludedPath(requestURI)) {
-                filterChain.doFilter(request, response); // 필터를 건너뜀
+            if (shouldSkipFilter(request.getRequestURI(), request.getMethod(), accessToken)) {
+                filterChain.doFilter(request, response);
                 return;
             }
 
-            if (requestURI.startsWith("/api/meetings") && "GET".equalsIgnoreCase(method)) {
-                // 토큰이 없는 경우 비회원으로 처리
-                if (accessToken == null) {
-                    filterChain.doFilter(request, response);
-                    return;
-                }
-            }
-
-            if (requestURI.startsWith("/api/plans") && "GET".equalsIgnoreCase(method) && !requestURI.contains("like")) {
-                // 토큰이 없는 경우 비회원으로 처리
-                if (accessToken == null) {
-                    filterChain.doFilter(request, response);
-                    return;
-                }
-            }
-
-            if (requestURI.startsWith("/api/reviews") && "GET".equalsIgnoreCase(method)) {
-                // 토큰이 없는 경우 비회원으로 처리
-                if (accessToken == null) {
-                    filterChain.doFilter(request, response);
-                    return;
-                }
-            }
-
-            // 로그아웃 요청 처리
-            if ("/api/auths/signout".equals(requestURI)) {
-                if (!validateLogoutRequest(accessToken, refreshToken, response)) {
-                    // 유효성 검증 실패 시 요청 중단
-                    return;
-                }
-                // 유효성 검증에 성공하면 컨트롤러로 요청 전달
-            }
-
-            // 일반 요청 처리
-            if (accessToken == null || accessToken.isEmpty()) {
-                log.warn("accessToken이 존재하지 않습니다.");
-                sendErrorResponse(response, "accessToken이 요청에 포함되지 않았습니다.", HttpStatus.BAD_REQUEST);
+            if ("/api/auths/signout".equals(request.getRequestURI()) && !validateLogoutRequest(accessToken, refreshToken, response)) {
                 return;
-            } else {
-                // 1. accessToken이 블랙리스트에 포함되어 있는지 확인
-                if (tokenBlacklistService.isBlacklisted(accessToken)) {
-                    sendErrorResponse(response, "이미 로그아웃된 토큰입니다. 로그인 후 다시 시도해주세요.", HttpStatus.UNAUTHORIZED);
-                    return;
-                }
-                try {
-                    // 토큰 유효성 검증
-                    jwtTokenProvider.parseToken(accessToken);
-                } catch (TokenExpiredException e) {
-                    log.error("만료된 토큰입니다. {}", e.getMessage());
-                    sendErrorResponse(response, "만료된 토큰입니다.", HttpStatus.UNAUTHORIZED);
-                    return; // 필터 체인을 종료
-                } catch (Exception e) {
-                    log.error("토큰 검증 중 에러 발생: {}", e.getMessage());
-                    sendErrorResponse(response, "유효하지 않은 토큰입니다.", HttpStatus.UNAUTHORIZED);
-                    return;
-                }
-
-                // 2. accessToken 유효성 검증 및 인증 정보 저장
-                Authentication authentication = jwtTokenProvider.getAuthentication(accessToken);
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-                log.debug("Security Context에 '{}' 인증 정보를 저장했습니다, uri: {}", authentication.getName(), requestURI);
-
             }
+
+            validateAccessToken(accessToken, response);
+            setAuthentication(accessToken, request.getRequestURI());
 
             filterChain.doFilter(request, response);
-
         } catch (Exception e) {
             log.error("필터 처리 중 에러 발생: {}", e.getMessage());
             sendErrorResponse(response, "서버 에러가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
+    private void validateAccessToken(String accessToken, HttpServletResponse response) throws IOException {
+
+        if (accessToken == null || accessToken.isEmpty()) {
+            sendErrorResponse(response, "accessToken이 요청에 포함되지 않았습니다.", HttpStatus.BAD_REQUEST);
+            return;
+        }
+        if (tokenBlacklistService.isBlacklisted(accessToken)) {
+            sendErrorResponse(response, "이미 로그아웃된 토큰입니다. 로그인 후 다시 시도해주세요.", HttpStatus.UNAUTHORIZED);
+            return;
+        }
+        try {
+            jwtTokenProvider.parseToken(accessToken);
+        } catch (TokenExpiredException e) {
+            sendErrorResponse(response, "만료된 토큰입니다.", HttpStatus.UNAUTHORIZED);
+        } catch (Exception e) {
+            sendErrorResponse(response, "유효하지 않은 토큰입니다.", HttpStatus.UNAUTHORIZED);
+        }
+    }
+
+    private void setAuthentication(String accessToken, String requestURI) {
+
+        Authentication authentication = jwtTokenProvider.getAuthentication(accessToken);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        log.debug("Security Context에 '{}' 인증 정보를 저장했습니다, uri: {}", authentication.getName(), requestURI);
+    }
+
     private boolean validateLogoutRequest(String accessToken, String refreshToken, HttpServletResponse response)
             throws IOException {
 
-        boolean isAccessTokenValid = jwtTokenProvider.validateAccessToken(accessToken);
-        boolean isRefreshTokenValid = jwtTokenProvider.validateRefreshToken(refreshToken);
-
-        // accessToken과 refreshToken 모두 유효하지 않은 경우
-        if (!isAccessTokenValid && !isRefreshTokenValid) {
+        if (!jwtTokenProvider.validateAccessToken(accessToken) && !jwtTokenProvider.validateRefreshToken(refreshToken)) {
             sendErrorResponse(response, "accessToken과 refreshToken 모두 유효하지 않습니다.", HttpStatus.UNAUTHORIZED);
             return false;
         }
-
-        // refreshToken이 유효하지 않은 경우
-        if (!isRefreshTokenValid) {
+        if (!jwtTokenProvider.validateRefreshToken(refreshToken)) {
             sendErrorResponse(response, "유효하지 않은 refreshToken입니다.", HttpStatus.BAD_REQUEST);
             return false;
         }
-
-        // accessToken이 유효하지 않은 경우 (값이 존재하지 않거나 이미 로그아웃된 토큰인 경우)
-        if (!isAccessTokenValid) {
+        if (!jwtTokenProvider.validateAccessToken(accessToken)) {
             sendErrorResponse(response, "유효하지 않은 accessToken입니다.", HttpStatus.BAD_REQUEST);
             return false;
         }
-
-        // 둘 다 유효한 경우
         return true;
     }
 
-    // 공통적인 에러 응답을 보내는 메서드
+    private boolean shouldSkipFilter(String requestURI, String method, String accessToken) {
+
+        return EXCLUDED_PATHS.stream().anyMatch(requestURI::startsWith)
+                || (requestURI.startsWith("/api/meetings") && "GET".equalsIgnoreCase(method) && accessToken == null)
+                || (requestURI.startsWith("/api/plans") && "GET".equalsIgnoreCase(method) && !requestURI.contains("like") && accessToken == null)
+                || (requestURI.startsWith("/api/reviews") && "GET".equalsIgnoreCase(method) && accessToken == null);
+    }
+
     private void sendErrorResponse(HttpServletResponse response, String message, HttpStatus httpStatus) throws IOException {
 
         response.setStatus(httpStatus.value());
         response.setContentType("application/json;charset=UTF-8");
-
         ErrorResponse errorResponse = new ErrorResponse(false, message, httpStatus);
         response.getWriter().write(new ObjectMapper().writeValueAsString(errorResponse));
     }
 
-    private boolean isExcludedPath(String requestURI) {
+    private void logRequestInfo(HttpServletRequest request) {
 
-        return requestURI.startsWith("/api/auths/check-email") ||
-                requestURI.startsWith("/api/auths/signin") ||
-                requestURI.startsWith("/api/auths/signup") ||
-                requestURI.startsWith("/swagger-ui/") ||
-                requestURI.startsWith("/swagger-ui.html") ||
-                requestURI.startsWith("/v3/api-docs") ||
-                requestURI.startsWith("/api/regions") ||
-                requestURI.equals("/api/auths/reissue") ||
-                requestURI.startsWith("/login/oauth2/callback/kakao") ||
-                requestURI.startsWith("/login/oauth2/callback/google") ||
-                requestURI.startsWith("/login/oauth2/callback/naver");
+        log.info("User-Agent: {}", request.getHeader("User-Agent"));
+        log.info("요청 IP: {}, 요청 URI: {}", request.getRemoteAddr(), request.getRequestURI());
     }
 
-    // 쿠키에서 토큰 추출
-    private String getAccessTokenFromCookie(HttpServletRequest request) {
+    private String getTokenFromCookie(HttpServletRequest request, String tokenName) {
 
-        Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if ("accessToken".equals(cookie.getName())) {
-                    return cookie.getValue();
-                }
-            }
-        }
-        return null;
-    }
-
-    private String getRefreshTokenFromCookie(HttpServletRequest request) {
-
-        Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if ("Refresh-Token".equals(cookie.getName())) {
-                    return cookie.getValue();
-                }
-            }
-        }
-        return null;
+        return Optional.ofNullable(request.getCookies())
+                .flatMap(cookies -> Arrays.stream(cookies)
+                        .filter(cookie -> tokenName.equals(cookie.getName()))
+                        .map(Cookie::getValue)
+                        .findFirst())
+                .orElse(null);
     }
 
 }
