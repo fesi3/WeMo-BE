@@ -9,7 +9,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.wemo.backend.global.exception.ErrorCode.ILLEGAL_ADDRESS_NOT_VALID;
+import static com.wemo.backend.global.exception.ErrorCode.INVALID_ADDRESS;
+
 
 @Service
 @RequiredArgsConstructor
@@ -21,7 +22,7 @@ public class RegionServiceImpl implements RegionService {
 
         String[] parts = address.split(" ");
         if (parts.length < 2) {
-            throw new CustomException(ILLEGAL_ADDRESS_NOT_VALID);
+            throw new CustomException(INVALID_ADDRESS);
         }
 
         Map<String, String> addressMap = new HashMap<>();

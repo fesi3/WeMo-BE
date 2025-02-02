@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-import static com.wemo.backend.global.exception.ErrorCode.ILLEGAL_PLAN_NOT_FOUND;
+import static com.wemo.backend.global.exception.ErrorCode.PLAN_NOT_FOUND;
 
 @Component
 @RequiredArgsConstructor
@@ -22,7 +22,7 @@ public class PlanReaderImpl implements PlanReader {
     public Plan getPlan(Long planId) {
 
         return planRepository.findById(planId).orElseThrow(
-                () -> new CustomException(ILLEGAL_PLAN_NOT_FOUND)
+                () -> new CustomException(PLAN_NOT_FOUND)
         );
     }
 

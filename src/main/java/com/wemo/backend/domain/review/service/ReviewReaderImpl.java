@@ -10,8 +10,8 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-import static com.wemo.backend.global.exception.ErrorCode.ILLEGAL_REVIEW_GRANTED;
 import static com.wemo.backend.global.exception.ErrorCode.REVIEW_NOT_FOUND;
+import static com.wemo.backend.global.exception.ErrorCode.REVIEW_PERMISSION_DENIED;
 
 @Component
 @RequiredArgsConstructor
@@ -42,7 +42,7 @@ public class ReviewReaderImpl implements ReviewReader {
     @Override
     public void validateReview(User user, Review review) {
 
-        if (!user.getEmail().equals(review.getUser().getEmail())) throw new CustomException(ILLEGAL_REVIEW_GRANTED);
+        if (!user.getEmail().equals(review.getUser().getEmail())) throw new CustomException(REVIEW_PERMISSION_DENIED);
     }
 
     @Override

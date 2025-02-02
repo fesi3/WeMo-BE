@@ -16,7 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
-import static com.wemo.backend.global.exception.ErrorCode.ILLEGAL_REFRESH_TOKEN_NOT_VALID;
+import static com.wemo.backend.global.exception.ErrorCode.INVALID_REFRESH_TOKEN;
 
 @Slf4j
 @Component
@@ -59,7 +59,7 @@ public class RefreshTokenManager {
     public RefreshToken getRefreshToken(String refreshToken) {
 
         return refreshTokenRepository.findByEmail(refreshToken).orElseThrow(
-                () -> new CustomException(ILLEGAL_REFRESH_TOKEN_NOT_VALID)
+                () -> new CustomException(INVALID_REFRESH_TOKEN)
         );
 
     }
@@ -97,12 +97,12 @@ public class RefreshTokenManager {
 
         if (refreshToken == null || refreshToken.isEmpty()) {
 
-            throw new CustomException(ErrorCode.MISSING_AUTHORIZATION_REFRESH_TOKEN);
+            throw new CustomException(ErrorCode.REFRESH_TOKEN_NOT_PROVIDED);
         }
 
         String email = validateRefreshToken(refreshToken);
         if (email == null) {
-            throw new CustomException(ILLEGAL_REFRESH_TOKEN_NOT_VALID);
+            throw new CustomException(INVALID_REFRESH_TOKEN);
         }
 
         String newAccessToken = jwtTokenUtils.generateAccessToken(email);
