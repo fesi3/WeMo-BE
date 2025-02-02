@@ -2,13 +2,11 @@ package com.wemo.backend.domain.user.service;
 
 import com.wemo.backend.domain.attendance.entity.Attendance;
 import com.wemo.backend.domain.attendance.service.AttendanceReader;
-import com.wemo.backend.domain.auth.JwtTokenProvider;
 import com.wemo.backend.domain.auth.UserAuth;
 import com.wemo.backend.domain.auth.token.entity.RefreshToken;
 import com.wemo.backend.domain.auth.token.repository.RefreshTokenRepository;
 import com.wemo.backend.domain.auth.token.service.AccessTokenManager;
 import com.wemo.backend.domain.auth.token.service.RefreshTokenManager;
-import com.wemo.backend.domain.auth.token.service.TokenBlacklistService;
 import com.wemo.backend.domain.like.entity.Likes;
 import com.wemo.backend.domain.like.service.LikeReader;
 import com.wemo.backend.domain.review.entity.Review;
@@ -37,8 +35,6 @@ public class UserServiceImpl implements UserService {
     private final UserStore userStore;
     private final UserReader userReader;
     private final UserAuth userAuth;
-    private final JwtTokenProvider jwtTokenProvider;
-    private final TokenBlacklistService tokenBlacklistService;
     private final RefreshTokenManager refreshTokenManager;
     private final RefreshTokenRepository refreshTokenRepository;
     private final UserRepository userRepository;
@@ -100,13 +96,9 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public String signout(HttpServletRequest request, HttpServletResponse response) {
 
-        String accessToken = getTokenFromCookie(request, "accessToken");
         String refreshToken = getTokenFromCookie(request, "Refresh-Token");
 
-        // accessToken 검증 및 블랙리스트 처리
-        Long expiration = jwtTokenProvider.getExpiration(accessToken);
-        tokenBlacklistService.addToBlacklist(accessToken, expiration);
-        log.info("accessToken 블랙리스트에 추가 완료");
+        // accessToken 검증 무효화 처리
         accessTokenManager.deleteAccessTokenInCookie(response);
 
         // refreshToken 삭제
