@@ -39,4 +39,6 @@ public interface UserService {
 
     UserPlanPagingResponse getMyPlanListV2(String email, Pageable pageable);
 
+    String withdraw(String email);
+
 }
