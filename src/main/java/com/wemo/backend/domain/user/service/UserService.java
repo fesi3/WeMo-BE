@@ -35,4 +35,8 @@ public interface UserService {
 
     void saveAdditionalUserData(String email, AdditionalDataRequest request);
 
+    UserPlanPagingResponse getPlanListV2(String email, Pageable pageable);
+
+    UserPlanPagingResponse getMyPlanListV2(String email, Pageable pageable);
+
 }

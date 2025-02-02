@@ -70,6 +70,21 @@ public class UserDashboardController {
 
     }
 
+    @Operation(summary = "내 일정 목록 조회", description = "유저가 참여한 일정의 목록을 반환합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "내가 참여한 일정의 목록이 반환되었습니다.")
+    })
+    @RequestMapping(value = "/plans/v2", method = RequestMethod.GET)
+    public ResponseEntity<SuccessResponse<UserPlanPagingResponse>> getPlanListV2(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                                                 @RequestParam(defaultValue = "1") int page,
+                                                                                 @RequestParam(defaultValue = "10") int size) {
+
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
+
+        return ResponseEntity.ok(SuccessResponse.successWithData(userService.getPlanListV2(userDetails.getUsername(), pageable)));
+
+    }
+
     @Operation(summary = "내가 만든 일정 목록 조회", description = "유저가 만든 일정의 목록을 반환합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "내가 만든 일정의 목록이 반환되었습니다.")
@@ -82,6 +97,21 @@ public class UserDashboardController {
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
 
         return ResponseEntity.ok(SuccessResponse.successWithData(userService.getMyPlanList(userDetails.getUsername(), pageable)));
+
+    }
+
+    @Operation(summary = "내가 만든 일정 목록 조회", description = "유저가 만든 일정의 목록을 반환합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "내가 만든 일정의 목록이 반환되었습니다.")
+    })
+    @RequestMapping(value = "/plans/me/v2", method = RequestMethod.GET)
+    public ResponseEntity<SuccessResponse<UserPlanPagingResponse>> getMyPlanListV2(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                                                   @RequestParam(defaultValue = "1") int page,
+                                                                                   @RequestParam(defaultValue = "10") int size) {
+
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
+
+        return ResponseEntity.ok(SuccessResponse.successWithData(userService.getMyPlanListV2(userDetails.getUsername(), pageable)));
 
     }
 

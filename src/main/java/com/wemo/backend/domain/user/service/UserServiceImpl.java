@@ -242,6 +242,20 @@ public class UserServiceImpl implements UserService {
         user.saveAdditionalData(request);
     }
 
+    @Override
+    @Transactional
+    public UserPlanPagingResponse getPlanListV2(String email, Pageable pageable) {
+
+        return new UserPlanPagingResponse(userRepository.getUserPlanListV2(email, pageable));
+    }
+
+    @Override
+    @Transactional
+    public UserPlanPagingResponse getMyPlanListV2(String email, Pageable pageable) {
+
+        return new UserPlanPagingResponse(userRepository.getMyPlanListV2(email, pageable));
+    }
+
     private String getTokenFromCookie(HttpServletRequest request, String tokenName) {
 
         return Optional.ofNullable(request.getCookies())
