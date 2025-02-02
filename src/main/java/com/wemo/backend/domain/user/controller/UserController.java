@@ -76,7 +76,6 @@ public class UserController {
     public ResponseEntity<SuccessResponse<String>> signout(HttpServletRequest request,
                                                            HttpServletResponse response) {
 
-        log.info("로그아웃 controller 탄다");
         return ResponseEntity.ok().body(SuccessResponse.successWithNoData(userService.signout(request, response)));
     }
 
