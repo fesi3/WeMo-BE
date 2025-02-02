@@ -91,6 +91,8 @@ public class PlanQueryDslImpl implements PlanQueryDsl {
                                                 .where(plan.district.id.eq(QDistrict.district.id)),
                                         "district"
                                 ),
+                                plan.latitude,
+                                plan.longitude,
                                 Expressions.as(
                                         queryFactory.select(image.fileUrl)
                                                 .from(image)
