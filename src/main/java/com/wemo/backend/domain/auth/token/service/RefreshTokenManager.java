@@ -14,6 +14,7 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.Optional;
 
 import static com.wemo.backend.global.exception.ErrorCode.INVALID_REFRESH_TOKEN;
@@ -118,14 +119,23 @@ public class RefreshTokenManager {
      */
     public void setRefreshTokenInCookie(String refreshToken, HttpServletResponse response) {
 
+        // 현재 시간 + 10분
+        Date expiryDate = new Date(System.currentTimeMillis() + 10 * 60 * 1000);
+
         ResponseCookie cookie = ResponseCookie.from("Refresh-Token", refreshToken)
-                .maxAge(24 * 60 * 60)
+//                .maxAge(24 * 60 * 60)
                 .sameSite("None")
                 .secure(true)
                 .httpOnly(true)
                 .path("/")
                 .build();
-        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+//        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+
+        // 쿠키 설정 후 만료 시간을 Expires 헤더에 추가
+        String cookieWithExpiry = cookie + "; Expires=" + expiryDate;
+
+        // 최종 쿠키를 응답에 추가
+        response.addHeader(HttpHeaders.SET_COOKIE, cookieWithExpiry);
     }
 
     public void deleteRefreshTokenInCookie(HttpServletResponse response) {
