@@ -1,21 +1,24 @@
 package com.wemo.backend.domain.user.service;
 
+import com.wemo.backend.domain.auth.token.service.RefreshTokenManager;
+import com.wemo.backend.domain.user.dto.SigninRequest;
 import com.wemo.backend.domain.user.dto.UserCreateRequest;
 import com.wemo.backend.domain.user.entity.LoginType;
 import com.wemo.backend.domain.user.entity.User;
 import com.wemo.backend.domain.user.repository.UserRepository;
 import com.wemo.backend.global.exception.CustomException;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.ActiveProfiles;
 
 import static com.wemo.backend.global.exception.ErrorCode.EMAIL_ALREADY_IN_USE;
 import static org.junit.jupiter.api.Assertions.*;
 
+@ActiveProfiles("test")
 @SpringBootTest
 class UserServiceImplTest {
 
@@ -25,8 +28,20 @@ class UserServiceImplTest {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private RefreshTokenManager refreshTokenManager;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private HttpServletResponse response;
+
     @BeforeEach
+    @Transactional
     void setUp() {
+
+        userRepository.deleteAll();
 
         User user = User.builder()
                 .email("existing@example.com")
@@ -34,10 +49,17 @@ class UserServiceImplTest {
                 .profileImagePath("https://profileImage.jpg")
                 .loginType(LoginType.GENERAL)
                 .companyName("company")
-                .password("password123")
+                .password(passwordEncoder.encode("password123"))
                 .build();
 
         userRepository.save(user);
+    }
+
+    @AfterEach
+    @Transactional
+    void tearDown() {
+
+        userRepository.deleteAll();
     }
 
     @Nested
@@ -48,7 +70,7 @@ class UserServiceImplTest {
         @DisplayName("회원 가입 해피 케이스 테스트")
         @Transactional
         void signup_Success() {
-            // Given
+            // given
             UserCreateRequest request = new UserCreateRequest(
                     "newuser@example.com",
                     "nickname",
@@ -57,11 +79,27 @@ class UserServiceImplTest {
                     "password123"
             );
 
-            // When
+            // when
             userService.signup(request);
 
-            // Then
+            // then
             assertTrue(userRepository.findByEmail("newuser@example.com").isPresent());
+        }
+        
+        @Test
+        @DisplayName("로그인 해피 케이스 테스트")
+        void signin_Success() {
+            // given
+            String email = "existing@example.com";
+            String password = "password123";
+
+            SigninRequest signinRequest = new SigninRequest(email, password);
+
+            // when
+            userService.signin(signinRequest, response);
+
+            // then
+            assertTrue(refreshTokenManager.existsByEmail(email)); // ✅ refreshToken 저장 여부 확인
         }
 
     }
@@ -72,8 +110,8 @@ class UserServiceImplTest {
         @Test
         @DisplayName("회원 가입 이메일 중복 예외 케이스 테스트")
         @Transactional
-        void signup_Success() {
-            // Given
+        void signup_Failure() {
+            // given
             UserCreateRequest request = new UserCreateRequest(
                     "existing@example.com",
                     "nickname",
@@ -82,7 +120,7 @@ class UserServiceImplTest {
                     "password123"
             );
 
-            // When & Then
+            // when & then
             CustomException exception = assertThrows(CustomException.class, () -> userService.signup(request));
             assertEquals(EMAIL_ALREADY_IN_USE, exception.getErrorCode());
 
