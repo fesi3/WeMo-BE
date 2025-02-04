@@ -258,10 +258,10 @@ public class UserQueryDslImpl implements UserQueryDsl {
                                 Expressions.as(
                                         queryFactory.select(image.fileUrl)
                                                 .from(image)
-                                                .where(image.entityId.eq(review.id),
-                                                        image.entityType.eq(Image.EntityType.REVIEW),
+                                                .where(image.entityId.eq(plan.id),
+                                                        image.entityType.eq(Image.EntityType.PLAN),
                                                         image.main.eq(true)),
-                                        "reviewImagePath"
+                                        "planImagePath"
                                 ),
                                 review.createdAt,
                                 review.updatedAt,
@@ -287,6 +287,18 @@ public class UserQueryDslImpl implements UserQueryDsl {
                 .limit(pageable.getPageSize())
                 .offset(pageable.getOffset())
                 .fetch();
+
+        // 각 리뷰별로 이미지 목록을 별도로 처리
+        for (UserReviewListResponse review : reviewListResponses) {
+            List<String> reviewImages = queryFactory
+                    .select(image.fileUrl)
+                    .from(image)
+                    .where(image.entityId.eq(review.getReviewId()), // reviewId로 이미지를 필터링
+                            image.entityType.eq(Image.EntityType.REVIEW))
+                    .fetch();
+
+            review.setReviewImages(reviewImages); // 각 리뷰에 해당하는 이미지 목록 설정
+        }
 
         // 총 개수 조회
         long total = Optional.ofNullable(
@@ -337,18 +349,19 @@ public class UserQueryDslImpl implements UserQueryDsl {
                                 plan.updatedAt
                         )
                 )
-                .from(attendance) // attendance 테이블을 from 절에서 시작
+                .from(attendance)
                 .leftJoin(attendance.plan, plan)
                 .leftJoin(plan.meeting, meeting)
                 .leftJoin(meeting.category, category)
                 .leftJoin(attendance.user, user)
-                .leftJoin(review).on(review.plan.id.eq(plan.id)) // review와 plan을 조인
+                .leftJoin(review).on(review.plan.id.eq(plan.id))
                 .where(
-                        attendance.user.email.eq(email) // 이메일 조건
-                                .and(attendance.reviewed.eq(false)) // 후기 미작성
-                                .and(plan.dateTime.before(LocalDateTime.now())) // 일정이 지남
+                        attendance.user.email.eq(email), // 유저 참석 확인
+                        attendance.reviewed.eq(false), // 후기 미작성 필터
+                        plan.dateTime.before(LocalDateTime.now()), // 지난 일정만 조회
+                        plan.deletedAt.isNull(), // 삭제되지 않은 일정만 조회
+                        plan.meeting.deletedAt.isNull() // 삭제되지 않은 모임만 조회
                 )
-                .where(review.plan.meeting.deletedAt.isNull()) // 삭제된 모임의 필터링
                 .groupBy(plan.id)
                 .orderBy(plan.createdAt.desc());
 
@@ -361,18 +374,19 @@ public class UserQueryDslImpl implements UserQueryDsl {
         long total = Optional.ofNullable(
                 queryFactory
                         .select(plan.count())
-                        .from(attendance) // attendance 테이블을 from 절에서 시작
+                        .from(attendance)
                         .leftJoin(attendance.plan, plan)
                         .leftJoin(plan.meeting, meeting)
                         .leftJoin(meeting.category, category)
                         .leftJoin(attendance.user, user)
-                        .leftJoin(review).on(review.plan.id.eq(plan.id)) // review와 plan을 조인
+                        .leftJoin(review).on(review.plan.id.eq(plan.id))
                         .where(
-                                attendance.user.email.eq(email) // 이메일 조건
-                                        .and(attendance.reviewed.eq(false)) // 후기 미작성
-                                        .and(plan.dateTime.before(LocalDateTime.now())) // 일정이 지남
+                                attendance.user.email.eq(email), // 유저 참석 확인
+                                attendance.reviewed.eq(false), // 후기 미작성 필터
+                                plan.dateTime.before(LocalDateTime.now()), // 지난 일정만 조회
+                                plan.deletedAt.isNull(), // 삭제되지 않은 일정만 조회
+                                plan.meeting.deletedAt.isNull() // 삭제되지 않은 모임만 조회
                         )
-                        .where(review.plan.meeting.deletedAt.isNull()) // 삭제된 모임의 필터링
                         .fetchOne()
         ).orElse(0L);
 
