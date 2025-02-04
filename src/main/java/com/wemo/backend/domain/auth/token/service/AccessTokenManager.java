@@ -24,6 +24,7 @@ public class AccessTokenManager {
 
         // 쿠키 생성
         ResponseCookie cookie = ResponseCookie.from("accessToken", accessToken)
+                .domain(".we-mo.shop")
                 .sameSite("None")
                 .secure(true)
                 .httpOnly(true)

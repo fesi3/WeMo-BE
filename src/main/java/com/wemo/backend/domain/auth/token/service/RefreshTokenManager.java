@@ -154,4 +154,9 @@ public class RefreshTokenManager {
 
     }
 
+    public boolean existsByEmail(String email) {
+
+        return refreshTokenRepository.findByEmail(email).isPresent();
+    }
+
 }
