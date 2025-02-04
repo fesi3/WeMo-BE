@@ -2,9 +2,11 @@ package com.wemo.backend.domain.user.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
+@AllArgsConstructor
 public class SigninRequest {
 
     @NotBlank(message = "이메일은 필수 입력 값입니다.")
