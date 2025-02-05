@@ -107,7 +107,7 @@ public class RefreshTokenManager {
         }
 
         String newAccessToken = jwtTokenUtils.generateAccessToken(email);
-        accessTokenManager.setAccessTokenInCookie(newAccessToken, response);
+        accessTokenManager.setAccessTokenInCookie(newAccessToken, request, response);
 
         log.info("토큰 생성 후 헤더에 담기 완료!");
     }

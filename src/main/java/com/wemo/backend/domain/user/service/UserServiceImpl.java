@@ -90,13 +90,13 @@ public class UserServiceImpl implements UserService {
      * @param signinRequest 아이디, 비밀번호로 로그인
      */
     @Override
-    public void signin(SigninRequest signinRequest, HttpServletResponse response) {
+    public void signin(SigninRequest signinRequest, HttpServletRequest request, HttpServletResponse response) {
 
         // 유저 검증 및 객체 조회
         User user = userReader.getUser(signinRequest.getEmail(), signinRequest.getPassword());
         log.info("사용자 {} 로그인 성공", user.getEmail());
 
-        userAuth.generateHeaderTokens(user, response);
+        userAuth.generateHeaderTokens(user, request, response);
     }
 
     /**

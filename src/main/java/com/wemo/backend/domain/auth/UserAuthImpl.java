@@ -4,6 +4,7 @@ import com.wemo.backend.domain.auth.token.service.AccessTokenManager;
 import com.wemo.backend.domain.auth.token.service.JwtTokenUtils;
 import com.wemo.backend.domain.auth.token.service.RefreshTokenManager;
 import com.wemo.backend.domain.user.entity.User;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -52,12 +53,12 @@ public class UserAuthImpl implements UserAuth {
      * @param user 유저 객체
      */
     @Override
-    public void generateHeaderTokens(User user, HttpServletResponse response) {
+    public void generateHeaderTokens(User user, HttpServletRequest request, HttpServletResponse response) {
 
         String accessToken = getAccessToken(user);
         String refreshToken = saveRefreshTokenToRedis(user);
 
-        accessTokenManager.setAccessTokenInCookie(accessToken, response);
+        accessTokenManager.setAccessTokenInCookie(accessToken, request, response);
         refreshTokenManager.setRefreshTokenInCookie(refreshToken, response);
         log.info("accessToken 및 refreshToken 생성 완료");
         log.info("refreshToken 쿠키로 전달 완료");

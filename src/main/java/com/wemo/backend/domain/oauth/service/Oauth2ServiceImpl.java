@@ -11,6 +11,7 @@ import com.wemo.backend.domain.user.service.UserStore;
 import com.wemo.backend.global.exception.CustomException;
 import com.wemo.backend.global.exception.ErrorCode;
 import com.wemo.backend.global.response.SuccessResponse;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -64,9 +65,9 @@ public class Oauth2ServiceImpl implements Oauth2Service {
     }
 
     @Override
-    public ResponseEntity<SuccessResponse<Void>> kakaoLogin(String kakaoAccessToken, HttpServletResponse response) {
+    public ResponseEntity<SuccessResponse<Void>> kakaoLogin(String kakaoAccessToken, HttpServletRequest request, HttpServletResponse response) {
 
-        return processLogin(kakaoAccessToken, "https://kapi.kakao.com/v2/user/me", LoginType.KAKAO, response);
+        return processLogin(kakaoAccessToken, "https://kapi.kakao.com/v2/user/me", LoginType.KAKAO, request, response);
     }
 
     @Override
@@ -76,9 +77,9 @@ public class Oauth2ServiceImpl implements Oauth2Service {
     }
 
     @Override
-    public ResponseEntity<SuccessResponse<Void>> googleLogin(String googleAccessToken, HttpServletResponse response) {
+    public ResponseEntity<SuccessResponse<Void>> googleLogin(String googleAccessToken, HttpServletRequest request, HttpServletResponse response) {
 
-        return processLogin(googleAccessToken, "https://www.googleapis.com/oauth2/v2/userinfo", LoginType.GOOGLE, response);
+        return processLogin(googleAccessToken, "https://www.googleapis.com/oauth2/v2/userinfo", LoginType.GOOGLE, request, response);
     }
 
     @Override
@@ -88,9 +89,9 @@ public class Oauth2ServiceImpl implements Oauth2Service {
     }
 
     @Override
-    public ResponseEntity<SuccessResponse<Void>> naverLogin(String naverAccessToken, HttpServletResponse response) {
+    public ResponseEntity<SuccessResponse<Void>> naverLogin(String naverAccessToken, HttpServletRequest request, HttpServletResponse response) {
 
-        return processLogin(naverAccessToken, "https://openapi.naver.com/v1/nid/me", LoginType.NAVER, response);
+        return processLogin(naverAccessToken, "https://openapi.naver.com/v1/nid/me", LoginType.NAVER, request, response);
     }
 
     private String getAccessToken(String tokenUrl, String code, String clientId, String clientSecret, String redirectUri) {
@@ -110,7 +111,7 @@ public class Oauth2ServiceImpl implements Oauth2Service {
         return response.get("access_token").asText();
     }
 
-    private ResponseEntity<SuccessResponse<Void>> processLogin(String accessToken, String userInfoUrl, LoginType loginType, HttpServletResponse response) {
+    private ResponseEntity<SuccessResponse<Void>> processLogin(String accessToken, String userInfoUrl, LoginType loginType, HttpServletRequest request, HttpServletResponse response) {
 
         log.info("processLogin() 메서드 호출");
 
@@ -132,7 +133,7 @@ public class Oauth2ServiceImpl implements Oauth2Service {
 
         // 쿠키에 refreshToken, accessToken 추가
         refreshTokenManager.setRefreshTokenInCookie(jwtRefreshToken, response);
-        accessTokenManager.setAccessTokenInCookie(jwtAccessToken, response);
+        accessTokenManager.setAccessTokenInCookie(jwtAccessToken, request, response);
 
         return buildResponseEntity();
     }
