@@ -17,3 +17,8 @@ assignees: ohyeryung
 
 - [ ] TODO_1
 - [ ] TODO_2
+
+<br>
+
+## ⏰ 마감기한
+- **2025년 MM월 DD일**
