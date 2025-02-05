@@ -9,10 +9,7 @@ import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.wemo.backend.domain.image.entity.Image;
-import com.wemo.backend.domain.meeting.dto.MeetingCursorPagingResponse;
-import com.wemo.backend.domain.meeting.dto.MeetingListResponse;
-import com.wemo.backend.domain.meeting.dto.MeetingPlanListResponse;
-import com.wemo.backend.domain.meeting.dto.MeetingReviewListResponse;
+import com.wemo.backend.domain.meeting.dto.*;
 import com.wemo.backend.domain.meeting.entity.Meeting;
 import com.wemo.backend.domain.user.dto.UserListInfo;
 import jakarta.persistence.EntityManager;
@@ -20,8 +17,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.wemo.backend.domain.attendance.entity.QAttendance.attendance;
 import static com.wemo.backend.domain.image.entity.QImage.image;
@@ -219,6 +216,109 @@ public class MeetingQueryDslImpl implements MeetingQueryDsl {
                 .limit(size)
                 .fetch();  // .stream().toList()를 .fetch()로 수정
 
+        long meetingCount = Optional.ofNullable(
+                queryFactory
+                        .select(meeting.count())
+                        .from(meeting)
+                        .where(buildFilterConditions(categoryId))
+                        .where(meeting.deletedAt.isNull())
+                        .fetchOne()
+        ).orElse(0L);
+
+        return new MeetingCursorPagingResponse(meetingListResponses, (int) meetingCount);
+    }
+
+    @Override
+    public MeetingCursorPagingResponse getMeetingListV2(Long cursor, int size, Long categoryId, String sort) {
+
+        BooleanBuilder listConditions = new BooleanBuilder();
+        if (cursor != null) {
+            listConditions.and(meeting.id.lt(cursor));
+        }
+
+        // 1️⃣ Meeting 리스트 조회 (planList 제외)
+        List<MeetingListResponseV2> meetingListResponses = queryFactory
+                .select(Projections.constructor(
+                        MeetingListResponseV2.class,
+                        user.email,
+                        meeting.id,
+                        meeting.meetingName,
+                        meeting.description,
+                        Expressions.as(
+                                queryFactory.select(image.fileUrl)
+                                        .from(image)
+                                        .where(image.entityId.eq(meeting.id),
+                                                image.entityType.eq(Image.EntityType.MEETING),
+                                                image.main.eq(true)),
+                                "meetingImagePath"
+                        ),
+                        Expressions.as(
+                                JPAExpressions.select(meetingMember.count())
+                                        .from(meetingMember)
+                                        .where(meetingMember.meeting.id.eq(meeting.id)
+                                                .and(meetingMember.deletedAt.isNull())),
+                                "memberCount"
+                        ),
+                        meeting.category.categoryName
+                ))
+                .from(meeting)
+                .leftJoin(meeting.user, user)
+                .where(listConditions)
+                .where(buildFilterConditions(categoryId))
+                .where(meeting.deletedAt.isNull())
+                .orderBy(
+                        getOrderSpecifier(sort), // memberCount 정렬 기준
+                        meeting.createdAt.desc()  // createdAt 정렬 기준
+                )
+                .limit(size)
+                .fetch();
+
+        // 2️⃣ 각 Meeting ID에 대해 최근 3개의 Plan 리스트 조회
+        List<Long> meetingIds = meetingListResponses.stream()
+                .map(MeetingListResponseV2::getMeetingId)
+                .toList();
+
+        Map<Long, List<MeetingListPlanListResponse>> planMap = queryFactory
+                .select(Projections.constructor(
+                        MeetingListPlanListResponse.class,
+                        plan.id,
+                        plan.meeting.id,
+                        plan.planName,
+                        plan.dateTime,
+                        Expressions.as(
+                                queryFactory.select(attendance.count())
+                                        .from(attendance)
+                                        .where(attendance.plan.id.eq(plan.id)
+                                                .and(attendance.deletedAt.isNull())),
+                                "participants"
+                        ),
+                        plan.capacity,
+                        Expressions.as(
+                                queryFactory.select(image.fileUrl)
+                                        .from(image)
+                                        .where(image.entityId.eq(plan.id),
+                                                image.entityType.eq(Image.EntityType.PLAN),
+                                                image.main.eq(true)),
+                                "planImagePath"
+                        ),
+                        plan.opened,
+                        plan.fulled
+                ))
+                .from(plan)
+                .where(plan.meeting.id.in(meetingIds))
+                .orderBy(plan.dateTime.desc()) // 최신 일정 순으로 정렬
+                .fetch()
+                .stream()
+                .collect(Collectors.groupingBy(
+                        MeetingListPlanListResponse::getMeetingId,
+                        LinkedHashMap::new,
+                        Collectors.collectingAndThen(Collectors.toList(), list -> list.stream().limit(3).toList())
+                ));
+        // 3️⃣ meetingListResponses에 planList 추가
+        for (MeetingListResponseV2 response : meetingListResponses) {
+            response.setPlanList(planMap.getOrDefault(response.getMeetingId(), new ArrayList<>()));
+        }
+        
         long meetingCount = Optional.ofNullable(
                 queryFactory
                         .select(meeting.count())

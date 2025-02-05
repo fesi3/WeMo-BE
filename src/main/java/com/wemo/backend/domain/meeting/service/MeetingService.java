@@ -28,4 +28,6 @@ public interface MeetingService {
 
     String joinCancelMeeting(String email, Long meetingId);
 
+    MeetingCursorPagingResponse getMeetingListV2(Long cursor, int size, Long categoryId, String sort);
+
 }
