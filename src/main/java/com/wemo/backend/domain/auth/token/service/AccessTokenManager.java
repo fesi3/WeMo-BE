@@ -26,7 +26,7 @@ public class AccessTokenManager {
         ResponseCookie cookie = ResponseCookie.from("accessToken", accessToken)
                 .domain(".we-mo.shop") // 임시로 도메인 지정
                 .sameSite("None")
-                .secure(false) // 임시로 허용
+                .secure(true)
                 .httpOnly(true)
                 .path("/")
                 .build();
