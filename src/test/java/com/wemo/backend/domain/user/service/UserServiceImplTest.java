@@ -7,6 +7,7 @@ import com.wemo.backend.domain.user.entity.LoginType;
 import com.wemo.backend.domain.user.entity.User;
 import com.wemo.backend.domain.user.repository.UserRepository;
 import com.wemo.backend.global.exception.CustomException;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.*;
@@ -36,6 +37,9 @@ class UserServiceImplTest {
 
     @Autowired
     private HttpServletResponse response;
+
+    @Autowired
+    private HttpServletRequest request;
 
     @BeforeEach
     @Transactional
@@ -85,7 +89,7 @@ class UserServiceImplTest {
             // then
             assertTrue(userRepository.findByEmail("newuser@example.com").isPresent());
         }
-        
+
         @Test
         @DisplayName("로그인 해피 케이스 테스트")
         void signin_Success() {
@@ -96,7 +100,7 @@ class UserServiceImplTest {
             SigninRequest signinRequest = new SigninRequest(email, password);
 
             // when
-            userService.signin(signinRequest, response);
+            userService.signin(signinRequest, request, response);
 
             // then
             assertTrue(refreshTokenManager.existsByEmail(email)); // ✅ refreshToken 저장 여부 확인

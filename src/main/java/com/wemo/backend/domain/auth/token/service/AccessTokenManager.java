@@ -1,5 +1,6 @@
 package com.wemo.backend.domain.auth.token.service;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -17,18 +18,25 @@ public class AccessTokenManager {
      *
      * @param accessToken accessToken 값
      */
-    public void setAccessTokenInCookie(String accessToken, HttpServletResponse response) {
+    public void setAccessTokenInCookie(String accessToken, HttpServletRequest request, HttpServletResponse response) {
 
         // 현재 시간 + 5분
         Date expiryDate = new Date(System.currentTimeMillis() + 5 * 60 * 1000);
 
+        // domain 을 동적으로 설정: 로컬에서는 "localhost", 배포 환경에서는 ".we-mo.shop"
+        String domain = request.getServerName().contains("localhost") ? "localhost" : ".we-mo.shop";
+
+        // 로컬 환경에서는 Secure 비활성화, 배포 환경에서는 활성화
+        boolean isLocal = request.getServerName().contains("localhost");
+        boolean isSecure = !isLocal;
+
         // 쿠키 생성
         ResponseCookie cookie = ResponseCookie.from("accessToken", accessToken)
-                .domain(".we-mo.shop") // 임시로 도메인 지정
-                .sameSite("None")
-                .secure(true)
-                .httpOnly(true)
-                .path("/")
+                .domain(domain)          // 도메인 동적 설정
+                .sameSite("None")         // SameSite 설정
+                .secure(isSecure)         // secure 값 동적 설정
+                .httpOnly(true)           // httpOnly 설정
+                .path("/")                // 경로 설정
                 .build();
 
         // 쿠키 설정 후 만료 시간을 Expires 헤더에 추가

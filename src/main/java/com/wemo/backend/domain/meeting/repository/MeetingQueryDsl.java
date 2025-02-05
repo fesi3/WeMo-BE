@@ -18,4 +18,6 @@ public interface MeetingQueryDsl {
 
     MeetingCursorPagingResponse getMeetingList(Long cursor, int size, Long categoryId, String sort);
 
+    MeetingCursorPagingResponse getMeetingListV2(Long cursor, int size, Long categoryId, String sort);
+
 }

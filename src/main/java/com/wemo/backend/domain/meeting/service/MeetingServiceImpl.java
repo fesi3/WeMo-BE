@@ -247,6 +247,23 @@ public class MeetingServiceImpl implements MeetingService {
         return "모임 가입 취소 완료";
     }
 
+    /**
+     * 모임 목록 조회 v2
+     * - 커서 기반 페이징 처리된 모임 목록 반환 (모임의 최근 일정 3개도 함께 반환)
+     *
+     * @param cursor     커서 id
+     * @param size       데이터 개수
+     * @param categoryId 카테고리 id
+     * @param sort       정렬 기준
+     * @return 요청 조건에 알맞은 모임 목록
+     */
+    @Override
+    public MeetingCursorPagingResponse getMeetingListV2(Long cursor, int size, Long categoryId, String sort) {
+
+        return meetingRepository.getMeetingListV2(cursor, size, categoryId, sort);
+
+    }
+
     // 유틸리티 메서드들
 
     /**

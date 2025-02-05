@@ -60,9 +60,9 @@ public class UserController {
                     content = @Content(mediaType = "application/json"))
     })
     @RequestMapping(value = "/signin", method = RequestMethod.POST)
-    public ResponseEntity<SuccessResponse<String>> signin(@Valid @RequestBody SigninRequest request, HttpServletResponse response) {
+    public ResponseEntity<SuccessResponse<String>> signin(@Valid @RequestBody SigninRequest signinRequest, HttpServletRequest request, HttpServletResponse response) {
 
-        userService.signin(request, response);
+        userService.signin(signinRequest, request, response);
         return ResponseEntity.ok(SuccessResponse.successWithNoData("로그인 성공"));
     }
 

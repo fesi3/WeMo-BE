@@ -13,7 +13,7 @@ public interface UserService {
 
     void signup(UserCreateRequest request);
 
-    void signin(SigninRequest request, HttpServletResponse response);
+    void signin(SigninRequest signinRequest, HttpServletRequest request, HttpServletResponse response);
 
     String signout(HttpServletRequest request, HttpServletResponse response);
 

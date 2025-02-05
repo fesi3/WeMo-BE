@@ -28,7 +28,7 @@ public class Oauth2Controller {
         // 카카오 accessToken 요청
         String kakaoAccessToken = oauth2Service.getKakaoAccessToken(code);
         // 로그인 처리 및 응답 반환
-        return oauth2Service.kakaoLogin(kakaoAccessToken, response);
+        return oauth2Service.kakaoLogin(kakaoAccessToken, request, response);
     }
 
     @GetMapping("/google")
@@ -38,7 +38,7 @@ public class Oauth2Controller {
         // 구글 accessToken 요청
         String googleAccessToken = oauth2Service.getGoogleAccessToken(code);
         // 로그인 처리 및 응답 반환
-        return oauth2Service.googleLogin(googleAccessToken, response);
+        return oauth2Service.googleLogin(googleAccessToken, request, response);
     }
 
     @GetMapping("/naver")
@@ -48,7 +48,7 @@ public class Oauth2Controller {
         // 네이버 accessToken 요청
         String naverAccessToken = oauth2Service.getNaverAccessToken(code);
         // 로그인 처리 및 응답 반환
-        return oauth2Service.naverLogin(naverAccessToken, response);
+        return oauth2Service.naverLogin(naverAccessToken, request, response);
     }
 
 }
