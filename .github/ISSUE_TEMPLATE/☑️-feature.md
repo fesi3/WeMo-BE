@@ -28,4 +28,6 @@ assignees: ohyeryung
 <br>
 
 ## ⏰ 마감기한
-- **2025년 MM월 DD일**
+- **2025년 02월 DD일**
+
+<br>
