@@ -50,8 +50,7 @@ public class SecurityConfig {
 
                     configuration.setAllowedOrigins(Arrays.asList(
                             "http://localhost:3000",
-                            "https://we-mo-test.vercel.app",
-                            "http://sub-domain.we-mo.shop:3000"
+                            "https://we-mo.store"
                     ));
                     configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
                     configuration.setAllowCredentials(true);
