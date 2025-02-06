@@ -2,6 +2,7 @@ package com.wemo.backend.domain.auth;
 
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.wemo.backend.domain.auth.token.service.AccessTokenManager;
 import com.wemo.backend.global.response.ErrorResponse;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.Cookie;
@@ -24,6 +25,8 @@ import java.util.Optional;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
+
+    private final AccessTokenManager accessTokenManager;
 
     private static final List<String> EXCLUDED_PATHS = List.of(
             "/api/auths/check-email", "/api/auths/signin", "/api/auths/signup", "/swagger-ui/", "/swagger-ui.html",
@@ -76,6 +79,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             jwtTokenProvider.parseToken(accessToken);
             return true;
         } catch (TokenExpiredException e) {
+            // 만료된 토큰인 경우 쿠키에서 무력화
+            accessTokenManager.deleteAccessTokenInCookie(response);
             sendErrorResponse(response, "만료된 토큰입니다.", HttpStatus.UNAUTHORIZED);
             return false;
         } catch (Exception e) {
@@ -120,7 +125,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         return EXCLUDED_PATHS.stream().anyMatch(requestURI::startsWith)
                 || (requestURI.startsWith("/api/meetings") && "GET".equalsIgnoreCase(method) && accessToken == null)
                 || (requestURI.startsWith("/api/plans") && "GET".equalsIgnoreCase(method) && !requestURI.contains("like") && accessToken == null)
-                || (requestURI.startsWith("/api/reviews") && "GET".equalsIgnoreCase(method) && accessToken == null);
+                || (requestURI.startsWith("/api/reviews") && "GET".equalsIgnoreCase(method));
     }
 
     private void sendErrorResponse(HttpServletResponse response, String message, HttpStatus httpStatus) throws IOException {

@@ -2,6 +2,7 @@ package com.wemo.backend.global.config;
 
 import com.wemo.backend.domain.auth.JwtAuthenticationFilter;
 import com.wemo.backend.domain.auth.JwtTokenProvider;
+import com.wemo.backend.domain.auth.token.service.AccessTokenManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -39,6 +40,8 @@ public class SecurityConfig {
     }
 
     private final JwtTokenProvider jwtTokenProvider;
+
+    private final AccessTokenManager accessTokenManager;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -104,7 +107,7 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
 
                 )
-                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, accessTokenManager), UsernamePasswordAuthenticationFilter.class);
 
 
         //세션 설정
