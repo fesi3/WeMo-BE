@@ -1,5 +1,6 @@
 package com.wemo.backend.domain.plan.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.wemo.backend.domain.meeting.entity.Meeting;
 import com.wemo.backend.domain.plan.entity.Plan;
 import lombok.Builder;
@@ -43,6 +44,18 @@ public class PlanCreateResponse {
     private boolean isOpened;
 
     private boolean isFulled;
+
+    @JsonProperty("isOpened")
+    public boolean getIsOpened() {
+
+        return isOpened;
+    }
+
+    @JsonProperty("isFulled")
+    public boolean getIsFulled() {
+
+        return isFulled;
+    }
 
     // 이미지가 있는 경우
     public static PlanCreateResponse fromEntityWithImage(Plan plan, Meeting meeting, List<String> planImagePath) {
