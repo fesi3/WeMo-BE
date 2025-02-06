@@ -50,7 +50,11 @@ public enum ErrorCode {
     // OAuth2
     REST_REQUEST_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "REST 요청 처리에 실패했습니다."),
     INVALID_LOGIN_TYPE(HttpStatus.BAD_REQUEST, "유효하지 않은 로그인 타입입니다."),
-    INVALID_RESPONSE(HttpStatus.BAD_REQUEST, "유효하지 않은 응답입니다.");
+    INVALID_RESPONSE(HttpStatus.BAD_REQUEST, "유효하지 않은 응답입니다."),
+
+    // LightningType
+    LIGHTNING_TYPE_NOT_FOUND(HttpStatus.BAD_REQUEST, "존재하지 않는 번개모임 종류입니다.");
+
 
     private final HttpStatus httpStatus;
     private final String message;
