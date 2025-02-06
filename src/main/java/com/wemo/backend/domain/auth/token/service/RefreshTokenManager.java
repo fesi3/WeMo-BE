@@ -141,14 +141,14 @@ public class RefreshTokenManager {
     public void deleteRefreshTokenInCookie(HttpServletResponse response) {
 
         ResponseCookie cookie = ResponseCookie.from("Refresh-Token", null)
-                .maxAge(0) // 쿠키 즉시 만료
-                .sameSite("None") // 쿠키 SameSite 설정
-                .secure(true) // HTTPS 환경에서만 전송
-                .httpOnly(true) // JavaScript에서 접근 불가
-                .path("/") // 모든 경로에서 유효
+                .maxAge(0)
+                .sameSite("None")
+                .secure(true)
+                .httpOnly(true)
+                .path("/")
                 .build();
 
-        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString()); // 헤더에 쿠키 추가
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
         log.info("Refresh-Token 쿠키 삭제 완료");
 
