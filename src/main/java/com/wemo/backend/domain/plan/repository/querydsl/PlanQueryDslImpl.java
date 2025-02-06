@@ -10,13 +10,13 @@ import com.wemo.backend.domain.image.entity.Image;
 import com.wemo.backend.domain.plan.dto.PlanListResponse;
 import com.wemo.backend.domain.region.entity.QDistrict;
 import com.wemo.backend.domain.region.entity.QProvince;
+import com.wemo.backend.domain.user.repository.querydsl.UserQueryDslImpl;
 import jakarta.persistence.EntityManager;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -191,11 +191,7 @@ public class PlanQueryDslImpl implements PlanQueryDsl {
             condition = condition.and(plan.district.districtName.eq(district));
         }
 
-        if (startDate != null && !startDate.isEmpty() && endDate != null && !endDate.isEmpty()) {
-            LocalDate start = LocalDate.parse(startDate);
-            LocalDate end = LocalDate.parse(endDate);
-            condition = condition.and(plan.dateTime.between(start.atStartOfDay(), end.atTime(23, 59, 59)));
-        }
+        condition = UserQueryDslImpl.buildDateFilter(startDate, endDate, condition);
 
         if (categoryId != null) {
             if (categoryId == 1) {

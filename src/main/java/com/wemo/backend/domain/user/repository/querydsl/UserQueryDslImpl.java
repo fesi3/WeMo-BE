@@ -15,6 +15,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
@@ -274,11 +275,11 @@ public class UserQueryDslImpl implements UserQueryDsl {
                 )
                 .from(review)
                 .leftJoin(review.plan, plan)
-                .leftJoin(plan.meeting, meeting)  // meeting과 조인
-                .leftJoin(meeting.category, category)  // category와 조인
-                .leftJoin(image).on(image.entityId.eq(review.id) // Image 엔티티와 review.id를 조인
+                .leftJoin(plan.meeting, meeting)
+                .leftJoin(meeting.category, category)
+                .leftJoin(image).on(image.entityId.eq(review.id)
                         .and(image.entityType.eq(Image.EntityType.REVIEW)))
-                .where(review.user.email.eq(email)) // 유저가 작성한 후기만
+                .where(review.user.email.eq(email))
                 .where(review.plan.meeting.deletedAt.isNull())
                 .groupBy(review.id)
                 .orderBy(review.createdAt.desc());
@@ -293,11 +294,11 @@ public class UserQueryDslImpl implements UserQueryDsl {
             List<String> reviewImages = queryFactory
                     .select(image.fileUrl)
                     .from(image)
-                    .where(image.entityId.eq(review.getReviewId()), // reviewId로 이미지를 필터링
+                    .where(image.entityId.eq(review.getReviewId()),
                             image.entityType.eq(Image.EntityType.REVIEW))
                     .fetch();
 
-            review.setReviewImages(reviewImages); // 각 리뷰에 해당하는 이미지 목록 설정
+            review.setReviewImages(reviewImages);
         }
 
         // 총 개수 조회
@@ -394,80 +395,34 @@ public class UserQueryDslImpl implements UserQueryDsl {
     }
 
     @Override
-    public Page<UserPlanListResponseV2> getUserPlanListV2(String email, Pageable pageable) {
-
-        return getPlanListV2(email, pageable, false);
-    }
-
-    @Override
-    public Page<UserPlanListResponseV2> getMyPlanListV2(String email, Pageable pageable) {
-
-        return getPlanListV2(email, pageable, true);
-    }
-
-    private Page<UserPlanListResponseV2> getPlanListV2(String email, Pageable pageable, boolean isMyPlan) {
+    public UserPlanListForCalendar getUserPlanListForCalendar(String email, String startDate, String endDate) {
 
         updateIsFulledStatus();
 
         LocalDateTime nowKST = LocalDateTime.now(ZoneOffset.ofHours(9)); // KST 시간으로 현재 시간 얻기
         log.info("nowKST 현재 시각 : {}", nowKST);
 
-        BooleanExpression isUpcoming = plan.dateTime.after(nowKST).and(plan.opened.eq(true));
         BooleanExpression isCompleted = plan.dateTime.before(nowKST);
 
         BooleanBuilder whereClause = new BooleanBuilder();
-        whereClause.and(plan.deletedAt.isNull());
-        if (isMyPlan) {
-            whereClause.and(plan.user.email.eq(email));
-        } else {
-            whereClause.and(plan.user.email.ne(email)) // 사용자가 만든 일정이 아니어야 함
-                    .and(plan.id.in(
-                            JPAExpressions.select(attendance.plan.id)
-                                    .from(attendance)
-                                    .where(attendance.user.email.eq(email))
-                    )); // 사용자가 참여한 일정만 가져오기
-        }
+        whereClause.and(plan.deletedAt.isNull()); // 일정이 삭제되지 않은 것
+        whereClause.and(plan.opened.eq(true).and(isCompleted)); // 개설 확정 && 이용 완료
+        whereClause.and(
+                plan.user.email.eq(email) // 유저가 생성한 일정
+                        .or(plan.id.in( // 또는 유저가 참여한 일정
+                                JPAExpressions.select(attendance.plan.id)
+                                        .from(attendance)
+                                        .where(attendance.user.email.eq(email))
+                        ))
+        );
+        whereClause.and(buildFilterConditions(startDate, endDate)); // 기간 조건 추가
 
-        List<UserPlanListResponseV2> results = queryFactory
+        List<UserPlanListResponseForCalendar> planListForCalendar = queryFactory
                 .select(
                         Projections.constructor(
-                                UserPlanListResponseV2.class,
-                                user.nickname.as("nickname"),
-                                user.email.as("email"),
-                                user.profileImagePath.as("profileImage"),
-                                plan.id.as("planId"),
+                                UserPlanListResponseForCalendar.class,
+                                plan.id,
                                 plan.planName,
-                                Expressions.as(
-                                        queryFactory.select(meeting.category.categoryName)
-                                                .from(meeting)
-                                                .where(meeting.id.eq(plan.meeting.id)),
-                                        "category"
-                                ),
-                                Expressions.as(
-                                        queryFactory.select(meeting.id)
-                                                .from(meeting)
-                                                .where(meeting.id.eq(plan.meeting.id)),
-                                        "meetingId"
-                                ),
-                                Expressions.as(
-                                        queryFactory.select(meeting.meetingName)
-                                                .from(meeting)
-                                                .where(meeting.id.eq(plan.meeting.id)),
-                                        "meetingName"
-                                ),
-                                plan.address,
-                                Expressions.as(
-                                        queryFactory.select(province.provinceName)
-                                                .from(province)
-                                                .where(plan.district.province.id.eq(province.id)),
-                                        "province"
-                                ),
-                                Expressions.as(
-                                        queryFactory.select(district.districtName)
-                                                .from(district)
-                                                .where(plan.district.id.eq(district.id)),
-                                        "district"
-                                ),
                                 Expressions.as(
                                         queryFactory.select(image.fileUrl)
                                                 .from(image)
@@ -477,60 +432,40 @@ public class UserQueryDslImpl implements UserQueryDsl {
                                         "planImagePath"
                                 ),
                                 plan.dateTime,
-                                plan.registrationEnd,
-                                plan.capacity,
-                                Expressions.as(
-                                        queryFactory.select(attendance.count())
-                                                .from(attendance)
-                                                .where(attendance.plan.id.eq(plan.id)
-                                                        .and(attendance.deletedAt.isNull())),
-                                        "participants"
-                                ),
-                                Expressions.as(
-                                        queryFactory.select(likes.count())
-                                                .from(likes)
-                                                .where(likes.plan.id.eq(plan.id)),
-                                        "likesCount"
-                                ),
-                                plan.viewCount,
+                                category.categoryName,
+                                plan.addressDetail,
                                 plan.createdAt,
                                 plan.updatedAt,
                                 plan.opened,
-                                isUpcoming,
-                                plan.canceled,
-                                isCompleted,
-                                Expressions.as(
-                                        queryFactory.select(likes.count())
-                                                .from(likes)
-                                                .where(
-                                                        likes.plan.id.eq(plan.id)
-                                                                .and(
-                                                                        email != null
-                                                                                ? likes.user.email.eq(email)
-                                                                                : likes.user.email.isNull()
-                                                                )
-                                                ).gt(0L),
-                                        "isLiked")
+                                isCompleted
                         )
                 )
                 .from(plan)
-                .leftJoin(plan.user, user)
-                .leftJoin(attendance).on(attendance.plan.eq(plan))
+                .leftJoin(plan.meeting, meeting)
+                .leftJoin(meeting.category, category)
                 .where(whereClause)
-                .groupBy(plan.id) // 그룹화
-                .orderBy(plan.createdAt.desc())
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize())
-                .fetch();
+                .stream().toList();
 
-        long total = Objects.requireNonNullElse(
-                queryFactory.select(plan.count())
-                        .from(plan)
-                        .where(whereClause)
-                        .fetchOne(), 0L
-        );
+        return new UserPlanListForCalendar(planListForCalendar);
+    }
 
-        return new PageImpl<>(results, pageable, total);
+    private BooleanExpression buildFilterConditions(String startDate, String endDate) {
+
+        BooleanExpression condition = plan.canceled.eq(false);
+
+        condition = buildDateFilter(startDate, endDate, condition);
+
+        return condition;
+    }
+
+    public static BooleanExpression buildDateFilter(String startDate, String endDate, BooleanExpression condition) {
+
+        if (startDate != null && !startDate.isEmpty() && endDate != null && !endDate.isEmpty()) {
+            LocalDate start = LocalDate.parse(startDate);
+            LocalDate end = LocalDate.parse(endDate);
+            condition = condition.and(plan.dateTime.between(start.atStartOfDay(), end.atTime(23, 59, 59)));
+        }
+        return condition;
     }
 
     private void updateIsFulledStatus() {
