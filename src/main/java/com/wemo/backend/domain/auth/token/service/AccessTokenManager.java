@@ -49,7 +49,7 @@ public class AccessTokenManager {
     public void deleteAccessTokenInCookie(HttpServletResponse response) {
 
         // 쿠키 만료 시간 설정 (과거 날짜로 설정하여 Expires 명시적으로 제거)
-        String expiredDate = "Thu, 01 Jan 1970 00:00:00 GMT";
+//        String expiredDate = "Thu, 01 Jan 1970 00:00:00 GMT";
 
         ResponseCookie cookie = ResponseCookie.from("accessToken", null)
                 .maxAge(0)
@@ -60,7 +60,8 @@ public class AccessTokenManager {
                 .build();
 
         // 'Expires' 헤더를 과거 날짜로 설정하여 쿠키 만료 처리
-        response.addHeader(HttpHeaders.SET_COOKIE, cookie + "; Expires=" + expiredDate);
+//        response.addHeader(HttpHeaders.SET_COOKIE, cookie + "; Expires=" + expiredDate);
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
         log.info("accessToken 쿠키 삭제 완료");
 
