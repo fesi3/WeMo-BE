@@ -24,7 +24,7 @@ public class AccessTokenManager {
         Date expiryDate = new Date(System.currentTimeMillis() + 5 * 60 * 1000);
 
         // domain 을 동적으로 설정: 로컬에서는 "localhost", 배포 환경에서는 ".we-mo.shop"
-        String domain = request.getServerName().contains("localhost") ? "localhost" : ".we-mo.shop";
+//        String domain = request.getServerName().contains("localhost") ? "localhost" : ".we-mo.shop";
 
         // 로컬 환경에서는 Secure 비활성화, 배포 환경에서는 활성화
         boolean isLocal = request.getServerName().contains("localhost");
@@ -32,7 +32,7 @@ public class AccessTokenManager {
 
         // 쿠키 생성
         ResponseCookie cookie = ResponseCookie.from("accessToken", accessToken)
-                .domain(domain)          // 도메인 동적 설정
+//                .domain(domain)          // 도메인 동적 설정
                 .sameSite("None")         // SameSite 설정
                 .secure(isSecure)         // secure 값 동적 설정
                 .httpOnly(true)           // httpOnly 설정
