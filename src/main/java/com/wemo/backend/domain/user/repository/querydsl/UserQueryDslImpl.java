@@ -406,7 +406,7 @@ public class UserQueryDslImpl implements UserQueryDsl {
 
         BooleanBuilder whereClause = new BooleanBuilder();
         whereClause.and(plan.deletedAt.isNull()); // 일정이 삭제되지 않은 것
-        whereClause.and(plan.opened.eq(true).and(isCompleted)); // 개설 확정 && 이용 완료
+        whereClause.and(plan.opened.eq(true).or(isCompleted)); // 개설 확정이거나 이용 완료된 일정만 조회
         whereClause.and(
                 plan.user.email.eq(email) // 유저가 생성한 일정
                         .or(plan.id.in( // 또는 유저가 참여한 일정
@@ -444,6 +444,7 @@ public class UserQueryDslImpl implements UserQueryDsl {
                 .leftJoin(plan.meeting, meeting)
                 .leftJoin(meeting.category, category)
                 .where(whereClause)
+                .orderBy(plan.dateTime.asc())
                 .stream().toList();
 
         return new UserPlanListForCalendar(planListForCalendar);
