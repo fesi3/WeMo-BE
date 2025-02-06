@@ -140,7 +140,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private void logRequestInfo(HttpServletRequest request) {
 
-        log.info("현재 요청된 도메인: {}", request.getServerName());
         log.info("요청 IP: {}, 요청 URI: {}", request.getRemoteAddr(), request.getRequestURI());
     }
 
