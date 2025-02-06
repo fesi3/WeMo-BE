@@ -12,7 +12,7 @@ public class UserMeetingPagingResponse {
 
     private int meetingCount;
 
-    private List<?> meetingList;
+    private List<UserMeetingListResponse> meetingList;
 
     private int pageSize;
 

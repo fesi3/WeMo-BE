@@ -254,20 +254,6 @@ public class UserServiceImpl implements UserService {
         user.saveAdditionalData(request);
     }
 
-    @Override
-    @Transactional
-    public UserPlanPagingResponse getPlanListV2(String email, Pageable pageable) {
-
-        return new UserPlanPagingResponse(userRepository.getUserPlanListV2(email, pageable));
-    }
-
-    @Override
-    @Transactional
-    public UserPlanPagingResponse getMyPlanListV2(String email, Pageable pageable) {
-
-        return new UserPlanPagingResponse(userRepository.getMyPlanListV2(email, pageable));
-    }
-
     /**
      * 회원 탈퇴 기능
      *
@@ -297,6 +283,21 @@ public class UserServiceImpl implements UserService {
         // imageStore.deleteAllByUser(user);
 
         return "정상적으로 탈퇴 처리되었습니다.";
+    }
+
+    /**
+     * 내 일정 목록 조회 (달력용)
+     *
+     * @param email     사용자 이메일
+     * @param startDate 시작 날짜
+     * @param endDate   끝 날짜
+     * @return 기간별 참여 일정 데이터
+     */
+    @Override
+    @Transactional
+    public UserPlanListForCalendar getUserPlanListForCalendar(String email, String startDate, String endDate) {
+
+        return userRepository.getUserPlanListForCalendar(email, startDate, endDate);
     }
 
     private String getTokenFromCookie(HttpServletRequest request, String tokenName) {

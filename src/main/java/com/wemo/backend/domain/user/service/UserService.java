@@ -35,10 +35,8 @@ public interface UserService {
 
     void saveAdditionalUserData(String email, AdditionalDataRequest request);
 
-    UserPlanPagingResponse getPlanListV2(String email, Pageable pageable);
-
-    UserPlanPagingResponse getMyPlanListV2(String email, Pageable pageable);
-
     String withdraw(String email);
+
+    UserPlanListForCalendar getUserPlanListForCalendar(String email, String startDate, String endDate);
 
 }

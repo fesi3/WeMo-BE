@@ -2,6 +2,7 @@ package com.wemo.backend.domain.user.controller;
 
 import com.wemo.backend.domain.auth.UserDetailsImpl;
 import com.wemo.backend.domain.user.dto.UserMeetingPagingResponse;
+import com.wemo.backend.domain.user.dto.UserPlanListForCalendar;
 import com.wemo.backend.domain.user.dto.UserPlanPagingResponse;
 import com.wemo.backend.domain.user.dto.UserReviewPagingResponse;
 import com.wemo.backend.domain.user.service.UserService;
@@ -70,21 +71,6 @@ public class UserDashboardController {
 
     }
 
-    @Operation(summary = "내 일정 목록 조회", description = "유저가 참여한 일정의 목록을 반환합니다.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "내가 참여한 일정의 목록이 반환되었습니다.")
-    })
-    @RequestMapping(value = "/plans/v2", method = RequestMethod.GET)
-    public ResponseEntity<SuccessResponse<UserPlanPagingResponse>> getPlanListV2(@AuthenticationPrincipal UserDetailsImpl userDetails,
-                                                                                 @RequestParam(defaultValue = "1") int page,
-                                                                                 @RequestParam(defaultValue = "10") int size) {
-
-        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
-
-        return ResponseEntity.ok(SuccessResponse.successWithData(userService.getPlanListV2(userDetails.getUsername(), pageable)));
-
-    }
-
     @Operation(summary = "내가 만든 일정 목록 조회", description = "유저가 만든 일정의 목록을 반환합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "내가 만든 일정의 목록이 반환되었습니다.")
@@ -100,25 +86,8 @@ public class UserDashboardController {
 
     }
 
-    @Operation(summary = "내가 만든 일정 목록 조회", description = "유저가 만든 일정의 목록을 반환합니다.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "내가 만든 일정의 목록이 반환되었습니다.")
-    })
-    @RequestMapping(value = "/plans/me/v2", method = RequestMethod.GET)
-    public ResponseEntity<SuccessResponse<UserPlanPagingResponse>> getMyPlanListV2(@AuthenticationPrincipal UserDetailsImpl userDetails,
-                                                                                   @RequestParam(defaultValue = "1") int page,
-                                                                                   @RequestParam(defaultValue = "10") int size) {
-
-        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
-
-        return ResponseEntity.ok(SuccessResponse.successWithData(userService.getMyPlanListV2(userDetails.getUsername(), pageable)));
-
-    }
-
     @Operation(summary = "내가 작성한 후기 목록 조회", description = "유저가 작성한 후기의 목록을 반환합니다.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "내가 작성한 후기의 목록이 반환되었습니다.")
-    })
+    @ApiResponse(responseCode = "200", description = "내가 작성한 후기의 목록이 반환되었습니다.")
     @RequestMapping(value = "/reviews", method = RequestMethod.GET)
     public ResponseEntity<SuccessResponse<UserReviewPagingResponse>> getMyReviewList(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                                                                      @RequestParam(defaultValue = "1") int page,
@@ -131,9 +100,7 @@ public class UserDashboardController {
     }
 
     @Operation(summary = "후기 작성 가능한 일정 목록 조회", description = "후기 작성 가능한 일정의 목록을 반환합니다.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "후기 작성 가능한 일정의 목록이 반환되었습니다.")
-    })
+    @ApiResponse(responseCode = "200", description = "후기 작성 가능한 일정의 목록이 반환되었습니다.")
     @RequestMapping(value = "/reviews/available", method = RequestMethod.GET)
     public ResponseEntity<SuccessResponse<UserPlanPagingResponse>> getPlanListReviewAvailable(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                                                                               @RequestParam(defaultValue = "1") int page,
@@ -146,13 +113,21 @@ public class UserDashboardController {
     }
 
     @Operation(summary = "회원 탈퇴", description = "회원 탈퇴합니다.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "정상적으로 탈퇴 처리되었습니다.")
-    })
+    @ApiResponse(responseCode = "200", description = "정상적으로 탈퇴 처리되었습니다.")
     @RequestMapping(value = "/withdraw", method = RequestMethod.DELETE)
     public ResponseEntity<SuccessResponse<String>> withdraw(@AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         return ResponseEntity.ok(SuccessResponse.successWithNoData(userService.withdraw(userDetails.getUsername())));
+    }
+
+    @Operation(summary = "내 일정 조회 (달력용)", description = "달력에서 내 일정 조회합니다.")
+    @ApiResponse(responseCode = "200", description = "내 일정 목록이 반환되었습니다.")
+    @RequestMapping(value = "/plans/calendar", method = RequestMethod.GET)
+    public ResponseEntity<SuccessResponse<UserPlanListForCalendar>> getUserPlanListForCalendar(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                                                               @RequestParam(required = false) String startDate,
+                                                                                               @RequestParam(required = false) String endDate) {
+
+        return ResponseEntity.ok(SuccessResponse.successWithData(userService.getUserPlanListForCalendar(userDetails.getUsername(), startDate, endDate)));
     }
 
 }

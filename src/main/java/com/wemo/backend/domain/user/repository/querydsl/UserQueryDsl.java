@@ -18,8 +18,6 @@ public interface UserQueryDsl {
 
     Page<UserPlanReviewableListResponse> getUserPlanListReviewAvailable(String email, Pageable pageable);
 
-    Page<UserPlanListResponseV2> getUserPlanListV2(String email, Pageable pageable);
-
-    Page<UserPlanListResponseV2> getMyPlanListV2(String email, Pageable pageable);
+    UserPlanListForCalendar getUserPlanListForCalendar(String email, String startDate, String endDate);
 
 }
