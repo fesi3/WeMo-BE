@@ -4,6 +4,7 @@ import com.wemo.backend.domain.lightning.dto.LightningCreateRequest;
 import com.wemo.backend.domain.lightning.dto.LightningCreateResponse;
 import com.wemo.backend.domain.lightning.entity.Lightning;
 import com.wemo.backend.domain.lightning.entity.LightningType;
+import com.wemo.backend.domain.lightningJoin.service.LightningJoinStore;
 import com.wemo.backend.domain.user.entity.User;
 import com.wemo.backend.domain.user.service.UserReader;
 import jakarta.transaction.Transactional;
@@ -20,6 +21,8 @@ public class LightningServiceImpl implements LightningService {
 
     private final LightningStore lightningStore;
 
+    private final LightningJoinStore lightningJoinStore;
+
     /**
      * 번개 모임 생성
      *
@@ -34,6 +37,9 @@ public class LightningServiceImpl implements LightningService {
         User user = userReader.getUserByEmail(email);
         LightningType lightningType = lightningTypeReader.getLightningType(request.getLightningTypeId());
         Lightning lightning = lightningStore.store(user, lightningType, request);
+
+        // 주최자는 자동 참여
+        lightningJoinStore.store(user, lightning);
 
         return LightningCreateResponse.fromEntity(lightning);
     }
