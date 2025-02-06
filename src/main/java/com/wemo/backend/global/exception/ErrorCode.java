@@ -53,7 +53,11 @@ public enum ErrorCode {
     INVALID_RESPONSE(HttpStatus.BAD_REQUEST, "유효하지 않은 응답입니다."),
 
     // LightningType
-    LIGHTNING_TYPE_NOT_FOUND(HttpStatus.BAD_REQUEST, "존재하지 않는 번개모임 종류입니다.");
+    LIGHTNING_TYPE_NOT_FOUND(HttpStatus.BAD_REQUEST, "존재하지 않는 번개모임 종류입니다."),
+
+    // Lightning
+    LIGHTNING_MEETING_NOT_FOUND(HttpStatus.BAD_REQUEST, "존재하지 않는 번개 모임입니다."),
+    ALREADY_JOINED_LIGHTNING_MEETING(HttpStatus.BAD_REQUEST, "이미 참여된 모임입니다.");
 
 
     private final HttpStatus httpStatus;
