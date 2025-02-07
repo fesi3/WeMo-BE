@@ -103,6 +103,7 @@ public class SecurityConfig {
                         .requestMatchers(GET, "/api/plans/**").permitAll()
                         .requestMatchers(GET, "/api/reviews/**").permitAll()
                         .requestMatchers(GET, "/api/regions/**").permitAll()
+                        .requestMatchers(GET, "/api/lightnings/**").permitAll()
 
                         .anyRequest().authenticated()
 

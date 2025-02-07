@@ -125,7 +125,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         return EXCLUDED_PATHS.stream().anyMatch(requestURI::startsWith)
                 || (requestURI.startsWith("/api/meetings") && "GET".equalsIgnoreCase(method) && accessToken == null)
                 || (requestURI.startsWith("/api/plans") && "GET".equalsIgnoreCase(method) && !requestURI.contains("like") && accessToken == null)
-                || (requestURI.startsWith("/api/reviews") && "GET".equalsIgnoreCase(method));
+                || (requestURI.startsWith("/api/reviews") && "GET".equalsIgnoreCase(method))
+                || ("/api/lightnings".equals(requestURI) && "GET".equalsIgnoreCase(method))
+                || (requestURI.startsWith("/api/lightnings?") && "GET".equalsIgnoreCase(method));
     }
 
     private void sendErrorResponse(HttpServletResponse response, String message, HttpStatus httpStatus) throws IOException {
