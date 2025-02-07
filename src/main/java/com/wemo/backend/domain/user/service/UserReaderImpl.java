@@ -57,6 +57,19 @@ public class UserReaderImpl implements UserReader {
     }
 
     /**
+     * 이메일로 활동 중인 유저 조회
+     *
+     * @param email 사용자 이메일
+     * @return 해당 유저 객체
+     */
+    @Override
+    public User getActiveUserByEmail(String email) {
+
+        return userRepository.findByEmailAndDeletedAtIsNull(email)
+                .orElseThrow(() -> new CustomException(USER_WITHDRAW));
+    }
+
+    /**
      * 유저 객체 검증
      *
      * @param email    사용자 아이디
@@ -66,7 +79,7 @@ public class UserReaderImpl implements UserReader {
     @Override
     public User getUser(String email, String password) {
 
-        User user = getUserByEmail(email); // 중복된 조회 로직을 재사용
+        User user = getActiveUserByEmail(email);
         validatePassword(password, user.getPassword());
         return user;
     }
