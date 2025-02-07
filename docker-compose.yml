@@ -33,6 +33,31 @@ services:
     volumes:
       - testdb-vl:/var/lib/mysql  # 테스트 DB 볼륨
 
+  # 블루-그린 배포를 위한 Wemo 서비스들
+  wemo-blue:
+    image: 0304ohyeryung/wemo:latest
+    container_name: wemo-blue
+    ports:
+      - "8081:8080"  # 블루 버전은 8081 포트로 외부 노출
+    environment:
+      DB_HOST: mysql
+      REDIS_HOST: redis
+    depends_on:
+      - mysql
+      - redis
+
+  wemo-green:
+    image: 0304ohyeryung/wemo:latest
+    container_name: wemo-green
+    ports:
+      - "8082:8080"  # 그린 버전은 8082 포트로 외부 노출
+    environment:
+      DB_HOST: mysql
+      REDIS_HOST: redis
+    depends_on:
+      - mysql
+      - redis
+
 volumes:
   mysql-vl:
     driver: local
