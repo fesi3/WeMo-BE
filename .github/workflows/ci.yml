@@ -46,11 +46,3 @@ jobs:
 
       - name: Cleanup .env file
         run: rm -f .env
-
-      # CD 배포 작업 트리거 추가
-      - name: Trigger CD deployment
-        if: github.event_name == 'push'
-        uses: peter-evans/workflow-dispatch@v1
-        with:
-          workflow: "deploy-to-ec2.yml"  # CD 배포 워크플로우 파일 이름
-          ref: refs/heads/dev  # CI가 실행된 브랜치

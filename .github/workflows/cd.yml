@@ -1,13 +1,14 @@
 name: Deploy to EC2 with Docker
 
 on:
-  workflow_dispatch:  # CI 완료 후 CD가 트리거 되도록 설정
+  workflow_run:
+    workflows: [ "Java CI with Gradle" ]
+    types:
+      - completed
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
 
     steps:
       # 1. GitHub 저장소에서 코드 체크아웃
