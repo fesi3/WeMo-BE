@@ -1,11 +1,14 @@
 package com.wemo.backend.domain.lightning.service;
 
+import com.wemo.backend.domain.auth.UserDetailsImpl;
 import com.wemo.backend.domain.lightning.dto.LightningCreateRequest;
 import com.wemo.backend.domain.lightning.dto.LightningCreateResponse;
 import com.wemo.backend.domain.lightning.dto.LightningCursorPagingResponse;
+import com.wemo.backend.domain.lightning.dto.LightningDetailResponse;
 import com.wemo.backend.domain.lightning.entity.Lightning;
 import com.wemo.backend.domain.lightning.entity.LightningType;
 import com.wemo.backend.domain.lightning.repository.LightningRepository;
+import com.wemo.backend.domain.lightningJoin.repository.LightningJoinRepository;
 import com.wemo.backend.domain.lightningJoin.service.LightningJoinStore;
 import com.wemo.backend.domain.region.entity.District;
 import com.wemo.backend.domain.region.entity.Province;
@@ -38,6 +41,10 @@ public class LightningServiceImpl implements LightningService {
 
     private final LightningRepository lightningRepository;
 
+    private final LightningReader lightningReader;
+
+    private final LightningJoinRepository lightningJoinRepository;
+
     /**
      * 번개 모임 생성
      *
@@ -49,7 +56,7 @@ public class LightningServiceImpl implements LightningService {
     @Transactional
     public LightningCreateResponse createLightnings(String email, LightningCreateRequest request) {
 
-        User user = userReader.getUserByEmail(email);
+        User user = userReader.getActiveUserByEmail(email);
         LightningType lightningType = lightningTypeReader.getLightningType(request.getLightningTypeId());
 
         Map<String, String> parsedAddress = RegionServiceImpl.parseAddress(request.getAddress());
@@ -82,6 +89,30 @@ public class LightningServiceImpl implements LightningService {
     public LightningCursorPagingResponse getLightningMeetingList(Long cursor, int size, String province, String district, Long lightningTypeId, Integer lightningTimeId, Double latitude, Double longitude, Double radius) {
 
         return lightningRepository.getLightningMeetingList(cursor, size, province, district, lightningTypeId, lightningTimeId, latitude, longitude, radius);
+    }
+
+    /**
+     * 번개 모임 상세 조회
+     *
+     * @param userDetails 유저 정보 객체
+     * @param lightningId 번개 모임 id
+     * @return 요청한 번개 모임 상세 정보
+     */
+    @Override
+    public LightningDetailResponse getLightningMeetingDetail(UserDetailsImpl userDetails, Long lightningId) {
+
+        // 번개 모임 유효성 검사 및 조회
+        Lightning lightning = lightningReader.getLightningById(lightningId);
+
+        // 회원인 경우 참여 내역 확인
+        if (userDetails != null && !userDetails.isGuest()) {
+            User user = userReader.getActiveUserByEmail(userDetails.getUsername());
+            boolean isJoined = lightningJoinRepository.existsByUserAndLightning(user, lightning);
+            return LightningDetailResponse.fromEntity(lightning, isJoined);
+        }
+
+        // 비회원인 경우 참여 내역 false
+        return LightningDetailResponse.fromEntity(lightning, false);
     }
 
     private Province getOrSaveProvince(String provinceName) {

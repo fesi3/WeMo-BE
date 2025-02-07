@@ -4,6 +4,7 @@ import com.wemo.backend.domain.auth.UserDetailsImpl;
 import com.wemo.backend.domain.lightning.dto.LightningCreateRequest;
 import com.wemo.backend.domain.lightning.dto.LightningCreateResponse;
 import com.wemo.backend.domain.lightning.dto.LightningCursorPagingResponse;
+import com.wemo.backend.domain.lightning.dto.LightningDetailResponse;
 import com.wemo.backend.domain.lightning.service.LightningService;
 import com.wemo.backend.global.response.SuccessResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -53,6 +54,19 @@ public class LightningController {
 
         return ResponseEntity.ok(SuccessResponse.successWithData(lightningService.getLightningMeetingList(cursor, size, province, district,
                 lightningTypeId, lightningTimeId, latitude, longitude, radius)));
+    }
+
+    @Operation(summary = "번개 모임 상세조회", description = "요청한 번개 모임의 상세 정보를 조회합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "요청한 번개 모임의 상세 정보가 반환되었습니다."),
+            @ApiResponse(responseCode = "404", description = "존재하지 않는 모임입니다.",
+                    content = @Content(mediaType = "application/json"))
+    })
+    @RequestMapping(value = "/{lightningId}", method = RequestMethod.GET)
+    public ResponseEntity<SuccessResponse<LightningDetailResponse>> getLightningMeetingDetail(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                                                              @PathVariable Long lightningId) {
+
+        return ResponseEntity.ok(SuccessResponse.successWithData(lightningService.getLightningMeetingDetail(userDetails, lightningId)));
     }
 
 }
