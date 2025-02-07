@@ -57,7 +57,8 @@ public enum ErrorCode {
 
     // Lightning
     LIGHTNING_MEETING_NOT_FOUND(HttpStatus.BAD_REQUEST, "존재하지 않는 번개 모임입니다."),
-    ALREADY_JOINED_LIGHTNING_MEETING(HttpStatus.BAD_REQUEST, "이미 참여된 모임입니다.");
+    ALREADY_JOINED_LIGHTNING_MEETING(HttpStatus.BAD_REQUEST, "이미 참여된 모임입니다."),
+    LIGHTNING_MEETING_IS_FULL(HttpStatus.BAD_REQUEST, "정원이 마감된 모임입니다.");
 
 
     private final HttpStatus httpStatus;
