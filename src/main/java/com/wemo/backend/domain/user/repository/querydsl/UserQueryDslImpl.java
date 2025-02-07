@@ -59,11 +59,13 @@ public class UserQueryDslImpl implements UserQueryDsl {
 
         BooleanBuilder whereClause = new BooleanBuilder();
         whereClause.and(meeting.deletedAt.isNull());
-        whereClause.and(user.email.eq(email)); // ✅ user를 기준으로 필터링
+        whereClause.and(user.email.eq(email)); // user 기준으로 필터링
         if (isMyMeeting) {
-            whereClause.and(meeting.user.email.eq(email)); // ✅ 내가 만든 모임 조회
+            log.info("{}가 만든 모임 목록 조회 요청", email);
+            whereClause.and(meeting.user.email.eq(email)); // 내가 만든 모임 조회
         } else {
-            whereClause.and(meeting.user.email.ne(email)); // ✅ 가입된 모임 중 내가 만든 모임 제외
+            log.info("{}가 가입된 모임 목록 조회 요청", email);
+            whereClause.and(meeting.user.email.ne(email)); // 가입된 모임 중 내가 만든 모임 제외
         }
 
         List<UserMeetingListResponse> results = queryFactory
@@ -93,9 +95,9 @@ public class UserQueryDslImpl implements UserQueryDsl {
                                 meeting.updatedAt
                         )
                 )
-                .from(meetingMember)  // ✅ meetingMember 기준 조회
-                .join(meetingMember.meeting, meeting)  // ✅ meetingMember → meeting Join
-                .join(meetingMember.user, user)  // ✅ meetingMember → user Join
+                .from(meetingMember)
+                .join(meetingMember.meeting, meeting)
+                .join(meetingMember.user, user)
                 .where(whereClause)
                 .groupBy(meeting.id) // 그룹화
                 .orderBy(meeting.createdAt.desc())
@@ -128,13 +130,16 @@ public class UserQueryDslImpl implements UserQueryDsl {
     private Page<UserPlanListResponse> getPlanList(String email, Pageable pageable, boolean isMyPlan) {
 
         updateIsFulledStatus();
-        LocalDateTime nowKST = LocalDateTime.now(ZoneOffset.ofHours(9)); // KST 시간으로 현재 시간 얻기
+        LocalDateTime nowKST = LocalDateTime.now(ZoneOffset.ofHours(9));
 
         BooleanBuilder whereClause = new BooleanBuilder();
         whereClause.and(plan.deletedAt.isNull().and(plan.dateTime.after(nowKST)));
         if (isMyPlan) {
+            log.info("{}가 만든 일정 목록 조회 요청", email);
+
             whereClause.and(plan.user.email.eq(email));
         } else {
+            log.info("{}가 참여한 일정 목록 조회 요청", email);
             whereClause.and(plan.user.email.ne(email)) // 사용자가 만든 일정이 아니어야 함
                     .and(plan.id.in(
                             JPAExpressions.select(attendance.plan.id)
@@ -230,7 +235,7 @@ public class UserQueryDslImpl implements UserQueryDsl {
                 .leftJoin(plan.user, user)
                 .leftJoin(attendance).on(attendance.plan.eq(plan))
                 .where(whereClause)
-                .groupBy(plan.id) // 그룹화
+                .groupBy(plan.id)
                 .orderBy(plan.createdAt.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
@@ -248,6 +253,8 @@ public class UserQueryDslImpl implements UserQueryDsl {
 
     @Override
     public Page<UserReviewListResponse> getUserReviewList(String email, Pageable pageable) {
+
+        log.info("{}의 작성한 후기 목록 조회 요청", email);
 
         JPAQuery<UserReviewListResponse> queryBuilder = queryFactory
                 .select(
@@ -321,6 +328,11 @@ public class UserQueryDslImpl implements UserQueryDsl {
     @Override
     public Page<UserPlanReviewableListResponse> getUserPlanListReviewAvailable(String email, Pageable pageable) {
 
+        log.info("{}의 후기 작성 가능한 일정 목록 조회 요청", email);
+
+        LocalDateTime nowKST = LocalDateTime.now(ZoneOffset.ofHours(9));
+        BooleanExpression isCompleted = plan.dateTime.before(nowKST);
+
         JPAQuery<UserPlanReviewableListResponse> queryBuilder = queryFactory
                 .select(
                         Projections.constructor(
@@ -357,6 +369,7 @@ public class UserQueryDslImpl implements UserQueryDsl {
                 .leftJoin(attendance.user, user)
                 .leftJoin(review).on(review.plan.id.eq(plan.id))
                 .where(
+                        isCompleted, // 이용 완료
                         attendance.user.email.eq(email), // 유저 참석 확인
                         attendance.reviewed.eq(false), // 후기 미작성 필터
                         plan.dateTime.before(LocalDateTime.now()), // 지난 일정만 조회
@@ -382,6 +395,7 @@ public class UserQueryDslImpl implements UserQueryDsl {
                         .leftJoin(attendance.user, user)
                         .leftJoin(review).on(review.plan.id.eq(plan.id))
                         .where(
+                                isCompleted, // 이용 완료
                                 attendance.user.email.eq(email), // 유저 참석 확인
                                 attendance.reviewed.eq(false), // 후기 미작성 필터
                                 plan.dateTime.before(LocalDateTime.now()), // 지난 일정만 조회
@@ -397,11 +411,10 @@ public class UserQueryDslImpl implements UserQueryDsl {
     @Override
     public UserPlanListForCalendar getUserPlanListForCalendar(String email, String startDate, String endDate) {
 
+        log.info("{}의 월별 일정 목록 조회 요청", email);
         updateIsFulledStatus();
 
-        LocalDateTime nowKST = LocalDateTime.now(ZoneOffset.ofHours(9)); // KST 시간으로 현재 시간 얻기
-        log.info("nowKST 현재 시각 : {}", nowKST);
-
+        LocalDateTime nowKST = LocalDateTime.now(ZoneOffset.ofHours(9));
         BooleanExpression isCompleted = plan.dateTime.before(nowKST);
 
         BooleanBuilder whereClause = new BooleanBuilder();
