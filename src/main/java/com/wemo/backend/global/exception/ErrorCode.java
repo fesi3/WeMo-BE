@@ -10,6 +10,7 @@ public enum ErrorCode {
     EMAIL_ALREADY_IN_USE(HttpStatus.CONFLICT, "이미 사용 중인 이메일 입니다."),
     INVALID_PASSWORD(HttpStatus.BAD_REQUEST, "비밀번호가 일치하지 않습니다."),
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "가입되지 않은 아이디입니다."),
+    USER_WITHDRAW(HttpStatus.BAD_REQUEST, "탈퇴한 사용자입니다."),
 
     // Token
     REFRESH_TOKEN_NOT_PROVIDED(HttpStatus.BAD_REQUEST, "refreshToken이 요청에 포함되지 않았습니다."),
