@@ -10,7 +10,6 @@ import com.wemo.backend.domain.image.entity.Image;
 import com.wemo.backend.domain.plan.dto.PlanListResponse;
 import com.wemo.backend.domain.region.entity.QDistrict;
 import com.wemo.backend.domain.region.entity.QProvince;
-import com.wemo.backend.domain.user.repository.querydsl.UserQueryDslImpl;
 import jakarta.persistence.EntityManager;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -177,31 +176,8 @@ public class PlanQueryDslImpl implements PlanQueryDsl {
 
     private BooleanExpression buildFilterConditions(String query, String province, String district, String startDate, String endDate, Long categoryId) {
 
-        BooleanExpression condition = plan.canceled.eq(false);
+        return PlanCursorQueryDslImpl.buildFilterForPlanList(query, province, district, startDate, endDate, categoryId);
 
-        if (query != null && !query.isEmpty()) {
-            condition = condition.and(plan.planName.contains(query));
-        }
-
-        if (province != null && !province.isEmpty()) {
-            condition = condition.and(plan.district.province.provinceName.eq(province));
-        }
-
-        if (district != null && !district.isEmpty()) {
-            condition = condition.and(plan.district.districtName.eq(district));
-        }
-
-        condition = UserQueryDslImpl.buildDateFilter(startDate, endDate, condition);
-
-        if (categoryId != null) {
-            if (categoryId == 1) {
-                condition = condition.and(plan.meeting.category.parentId.eq(categoryId)); // parentId가 1인 경우
-            } else {
-                condition = condition.and(plan.meeting.category.id.eq(categoryId)); // categoryId가 1이 아닌 경우는 해당 id 필터링
-            }
-        }
-
-        return condition;
     }
 
 }

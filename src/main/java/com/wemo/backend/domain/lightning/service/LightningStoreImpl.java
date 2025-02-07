@@ -5,6 +5,7 @@ import com.wemo.backend.domain.lightning.entity.DateType;
 import com.wemo.backend.domain.lightning.entity.Lightning;
 import com.wemo.backend.domain.lightning.entity.LightningType;
 import com.wemo.backend.domain.lightning.repository.LightningRepository;
+import com.wemo.backend.domain.region.entity.District;
 import com.wemo.backend.domain.user.entity.User;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +19,7 @@ public class LightningStoreImpl implements LightningStore {
 
     @Override
     @Transactional
-    public Lightning store(User user, LightningType lightningType, LightningCreateRequest request) {
+    public Lightning store(User user, LightningType lightningType, District district, LightningCreateRequest request) {
 
         Lightning lightning = Lightning.builder()
                 .user(user)
@@ -29,6 +30,7 @@ public class LightningStoreImpl implements LightningStore {
                 .lightningContent(request.getLightningContent())
                 .lightningCapacity(request.getLightningCapacity())
                 .address(request.getAddress())
+                .district(district)
                 .latitude(request.getLatitude())
                 .longitude(request.getLongitude())
                 .build();

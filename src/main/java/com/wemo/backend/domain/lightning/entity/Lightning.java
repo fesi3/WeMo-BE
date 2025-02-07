@@ -1,5 +1,6 @@
 package com.wemo.backend.domain.lightning.entity;
 
+import com.wemo.backend.domain.region.entity.District;
 import com.wemo.backend.domain.user.entity.User;
 import com.wemo.backend.global.entity.Timestamped;
 import jakarta.persistence.*;
@@ -59,6 +60,11 @@ public class Lightning extends Timestamped {
     @Column(name = "address", nullable = false)
     @Comment("모임 장소")
     private String address;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "district_id", nullable = false)
+    @Comment("군/구 id")
+    private District district;
 
     @Column(name = "latitude", nullable = false)
     @Comment("위도")

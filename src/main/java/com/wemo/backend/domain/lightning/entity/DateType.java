@@ -24,4 +24,9 @@ public enum DateType {
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 번개 모임 시간 타입입니다."));
     }
+    
+    public String getDisplayName() {
+
+        return this.name;
+    }
 }

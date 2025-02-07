@@ -5,9 +5,9 @@ import com.querydsl.core.types.ConstructorExpression;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
-import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.wemo.backend.domain.image.entity.Image;
+import com.wemo.backend.domain.lightning.repository.querydsl.LightningCursorQueryDslImpl;
 import com.wemo.backend.domain.plan.dto.PlanCursorPagingResponse;
 import com.wemo.backend.domain.plan.dto.PlanListResponse;
 import com.wemo.backend.domain.plan.entity.Plan;
@@ -21,6 +21,7 @@ import java.util.Optional;
 
 import static com.wemo.backend.domain.attendance.entity.QAttendance.attendance;
 import static com.wemo.backend.domain.image.entity.QImage.image;
+import static com.wemo.backend.domain.lightning.repository.querydsl.LightningCursorQueryDslImpl.buildAddressFilter;
 import static com.wemo.backend.domain.like.entity.QLikes.likes;
 import static com.wemo.backend.domain.meeting.entity.QMeeting.meeting;
 import static com.wemo.backend.domain.plan.entity.QPlan.plan;
@@ -64,7 +65,7 @@ public class PlanCursorQueryDslImpl implements PlanCursorQueryDsl {
         BooleanBuilder baseConditions = new BooleanBuilder()
                 .and(buildFilterConditions(query, province, district, startDate, endDate, categoryId, latitude, longitude, radius));
 
-        // 1. 목록 조회 쿼리 (커서 조건 포함)
+        // 목록 조회 쿼리 (커서 조건 포함)
         BooleanBuilder listConditions = new BooleanBuilder(baseConditions);
         if (cursor != null) {
             Plan targetPlan = queryFactory
@@ -89,7 +90,6 @@ public class PlanCursorQueryDslImpl implements PlanCursorQueryDsl {
             }
         }
 
-
         List<PlanListResponse> planListResponses = queryFactory
                 .select(buildPlanListProjection(email))
                 .from(plan)
@@ -105,7 +105,7 @@ public class PlanCursorQueryDslImpl implements PlanCursorQueryDsl {
                 .limit(size)
                 .fetch();
 
-        // 2. 전체 개수 조회 쿼리 (커서 조건 제외)
+        // 전체 개수 조회 쿼리 (커서 조건 제외)
         long planCount = Optional.ofNullable(
                 queryFactory
                         .select(plan.count())
@@ -207,19 +207,21 @@ public class PlanCursorQueryDslImpl implements PlanCursorQueryDsl {
                                                     String startDate, String endDate, Long categoryId,
                                                     Double latitude, Double longitude, Double radius) {
 
+        BooleanExpression booleanExpression = buildFilterForPlanList(query, province, district, startDate, endDate, categoryId);
+
+        // 위치 기반 필터링 추가 (필터가 없는 경우)
+        return buildAddressFilter(province, district, latitude, longitude, radius, booleanExpression);
+    }
+
+    static BooleanExpression buildFilterForPlanList(String query, String province, String district, String startDate, String endDate, Long categoryId) {
+
         BooleanExpression condition = plan.canceled.eq(false);
 
         if (query != null && !query.isEmpty()) {
             condition = condition.and(plan.planName.contains(query));
         }
 
-        if (province != null && !province.isEmpty()) {
-            condition = condition.and(plan.district.province.provinceName.eq(province));
-        }
-
-        if (district != null && !district.isEmpty()) {
-            condition = condition.and(plan.district.districtName.eq(district));
-        }
+        condition = LightningCursorQueryDslImpl.buildRegionFilter(province, district, condition, plan.district);
 
         condition = UserQueryDslImpl.buildDateFilter(startDate, endDate, condition);
 
@@ -228,19 +230,6 @@ public class PlanCursorQueryDslImpl implements PlanCursorQueryDsl {
                 condition = condition.and(plan.meeting.category.parentId.eq(categoryId));
             } else {
                 condition = condition.and(plan.meeting.category.id.eq(categoryId));
-            }
-        }
-
-        // 위치 기반 필터링 추가 (필터가 없는 경우)
-        if ((province == null || province.isEmpty()) && (district == null || district.isEmpty())) {
-            if (latitude != null && longitude != null && radius != null) {
-                double radiusInMeters = radius * 1000; // km → m 변환
-
-                NumberExpression<Double> distance = Expressions.numberTemplate(Double.class,
-                        "ST_Distance_Sphere(point({0}, {1}), point(plan.longitude, plan.latitude))",
-                        longitude, latitude);
-
-                condition = condition.and(distance.loe(radiusInMeters));
             }
         }
 
