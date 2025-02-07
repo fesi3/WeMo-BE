@@ -49,10 +49,13 @@ jobs:
                 IDLE_CONTAINER="wemo-blue"
             fi
             echo "🚀 새로운 버전 실행 중: $IDLE_CONTAINER"
-            docker-compose -f /home/ubuntu/docker-compose.yml up -d --no-deps --build $IDLE_CONTAINER
+            
+            # Blue와 Green 두 컨테이너를 모두 실행
+            docker-compose -f /home/ubuntu/docker-compose.yml up -d --build wemo-blue wemo-green
             
             echo "⏳ 컨테이너 실행 확인..."
             sleep 10  # 컨테이너가 정상 실행될 때까지 대기
+            
             echo "🔀 Nginx 트래픽 전환"
             if [ "$IDLE_CONTAINER" == "wemo-green" ]; then
                 sed -i 's/wemo-blue/wemo-green/g' /home/ubuntu/nginx/nginx.conf
@@ -60,6 +63,7 @@ jobs:
                 sed -i 's/wemo-green/wemo-blue/g' /home/ubuntu/nginx/nginx.conf
             fi
             docker exec wemo-nginx nginx -s reload  # Nginx 설정 리로드
+            
             echo "🛑 기존 컨테이너 중지: $ACTIVE_CONTAINER"
             docker stop $ACTIVE_CONTAINER
             docker rm $ACTIVE_CONTAINER
