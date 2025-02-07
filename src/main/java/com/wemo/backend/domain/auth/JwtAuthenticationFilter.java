@@ -27,9 +27,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtTokenProvider jwtTokenProvider;
 
     private final AccessTokenManager accessTokenManager;
-
-    private final IpUtils ipUtils;
-
+    
     private static final List<String> EXCLUDED_PATHS = List.of(
             "/api/auths/check-email", "/api/auths/signin", "/api/auths/signup", "/swagger-ui/", "/swagger-ui.html",
             "/v3/api-docs", "/api/regions", "/api/auths/reissue", "/login/oauth2/callback/kakao",
