@@ -79,7 +79,7 @@ public class LightningCursorQueryDslImpl implements LightningCursorQueryDsl {
 
         // 쿼리 결과 후, lightningTime 값에 대해 getDisplayName()을 호출하여 변환
         lightningListResponses.forEach(response -> {
-            response.setLightningTime(DateType.valueOf(response.getLightningTime()).getDisplayName());  // 변환된 값으로 설정
+            response.setLightningTime(Enum.valueOf(DateType.class, response.getLightningTime()).getDisplayName());  // 변환된 값으로 설정
         });
 
         return new LightningCursorPagingResponse(lightningListResponses, lightningListResponses.size());
