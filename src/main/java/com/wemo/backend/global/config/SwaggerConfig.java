@@ -20,6 +20,7 @@ public class SwaggerConfig {
                 .addTagsItem(new Tag().name("Images").description("이미지 관련 API"))
                 .addTagsItem(new Tag().name("Meetings").description("모임 관련 API"))
                 .addTagsItem(new Tag().name("Plans").description("일정 관련 API"))
+                .addTagsItem(new Tag().name("Lightnings").description("번개 모임 관련 API"))
                 .addTagsItem(new Tag().name("Reviews").description("후기 관련 API"))
                 .addTagsItem(new Tag().name("Regions").description("지역 관련 API"))
                 .addTagsItem(new Tag().name("Tokens").description("토큰 관련 API"))
