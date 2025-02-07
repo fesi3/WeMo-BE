@@ -45,7 +45,7 @@ jobs:
         run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/wemo
 
       - name: Cleanup .env file
-        run: rm .env
+        run: rm -f .env
 
   dependency-submission:
     runs-on: ubuntu-latest
