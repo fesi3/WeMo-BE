@@ -128,9 +128,10 @@ public class UserQueryDslImpl implements UserQueryDsl {
     private Page<UserPlanListResponse> getPlanList(String email, Pageable pageable, boolean isMyPlan) {
 
         updateIsFulledStatus();
+        LocalDateTime nowKST = LocalDateTime.now(ZoneOffset.ofHours(9)); // KST 시간으로 현재 시간 얻기
 
         BooleanBuilder whereClause = new BooleanBuilder();
-        whereClause.and(plan.deletedAt.isNull());
+        whereClause.and(plan.deletedAt.isNull().and(plan.dateTime.after(nowKST)));
         if (isMyPlan) {
             whereClause.and(plan.user.email.eq(email));
         } else {
@@ -211,7 +212,6 @@ public class UserQueryDslImpl implements UserQueryDsl {
                                 plan.updatedAt,
                                 plan.opened,
                                 plan.canceled,
-                                plan.fulled,
                                 Expressions.as(
                                         queryFactory.select(likes.count())
                                                 .from(likes)
