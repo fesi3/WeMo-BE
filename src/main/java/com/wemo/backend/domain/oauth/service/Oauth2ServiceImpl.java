@@ -132,7 +132,7 @@ public class Oauth2ServiceImpl implements Oauth2Service {
         String jwtRefreshToken = refreshTokenManager.saveRefreshToken(email);
 
         // 쿠키에 refreshToken, accessToken 추가
-        refreshTokenManager.setRefreshTokenInCookie(jwtRefreshToken, response);
+        refreshTokenManager.setRefreshTokenInCookie(jwtRefreshToken, request, response);
         accessTokenManager.setAccessTokenInCookie(jwtAccessToken, request, response);
 
         return buildResponseEntity();

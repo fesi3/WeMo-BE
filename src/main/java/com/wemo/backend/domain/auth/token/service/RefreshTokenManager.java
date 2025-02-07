@@ -109,7 +109,7 @@ public class RefreshTokenManager {
         String newAccessToken = jwtTokenUtils.generateAccessToken(email);
         accessTokenManager.setAccessTokenInCookie(newAccessToken, request, response);
 
-        log.info("토큰 생성 후 헤더에 담기 완료!");
+        log.info("토큰 생성 후 쿠키에 담기 완료!");
     }
 
     /**
@@ -117,13 +117,17 @@ public class RefreshTokenManager {
      *
      * @param refreshToken refreshToken 값
      */
-    public void setRefreshTokenInCookie(String refreshToken, HttpServletResponse response) {
+    public void setRefreshTokenInCookie(String refreshToken, HttpServletRequest request, HttpServletResponse response) {
+
+        // domain 을 동적으로 설정: 로컬에서는 "localhost", 배포 환경에서는 ".we-mo.store"
+        String domain = request.getServerName().contains("localhost") ? "localhost" : ".we-mo.store";
 
         // 현재 시간 + 10분
         Date expiryDate = new Date(System.currentTimeMillis() + 10 * 60 * 1000);
 
         ResponseCookie cookie = ResponseCookie.from("Refresh-Token", refreshToken)
 //                .maxAge(24 * 60 * 60)
+                .domain(domain)
                 .sameSite("None")
                 .secure(true)
                 .httpOnly(true)

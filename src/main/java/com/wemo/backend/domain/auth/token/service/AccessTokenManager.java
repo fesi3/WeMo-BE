@@ -23,7 +23,7 @@ public class AccessTokenManager {
         // 현재 시간 + 5분
         Date expiryDate = new Date(System.currentTimeMillis() + 5 * 60 * 1000);
 
-        // domain 을 동적으로 설정: 로컬에서는 "localhost", 배포 환경에서는 ".we-mo.shop"
+        // domain 을 동적으로 설정: 로컬에서는 "localhost", 배포 환경에서는 ".we-mo.store"
         String domain = request.getServerName().contains("localhost") ? "localhost" : ".we-mo.store";
 
         // 로컬 환경에서는 Secure 비활성화, 배포 환경에서는 활성화
