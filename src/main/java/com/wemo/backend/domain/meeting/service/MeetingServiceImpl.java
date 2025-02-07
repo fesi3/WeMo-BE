@@ -103,7 +103,7 @@ public class MeetingServiceImpl implements MeetingService {
 
         boolean joined = false;
         if (userDetails != null && !userDetails.isGuest()) {
-            User user = userReader.getUserByEmail(userDetails.getUsername());
+            User user = userReader.getActiveUserByEmail(userDetails.getUsername());
             joined = meetingMemberStore.isAlreadyJoined(user, meeting);
         }
         return MeetingDetailResponse.fromEntity(
@@ -240,7 +240,7 @@ public class MeetingServiceImpl implements MeetingService {
     @Override
     public String joinCancelMeeting(String email, Long meetingId) {
 
-        User user = userReader.getUserByEmail(email);
+        User user = userReader.getActiveUserByEmail(email);
         Meeting meeting = meetingReader.getMeeting(meetingId);
 
         meetingMemberStore.deleteMember(user, meeting);
@@ -274,7 +274,7 @@ public class MeetingServiceImpl implements MeetingService {
      */
     private User validateUser(String email) {
 
-        return userReader.getUserByEmail(email);
+        return userReader.getActiveUserByEmail(email);
     }
 
     /**

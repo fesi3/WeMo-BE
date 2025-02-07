@@ -36,7 +36,7 @@ public class LightningJoinServiceImpl implements LightningJoinService {
     @Transactional
     public String participateLightningMeeting(String email, Long lightningId) {
 
-        User user = userReader.getUserByEmail(email);
+        User user = userReader.getActiveUserByEmail(email);
         Lightning lightning = lightningReader.getLightningById(lightningId);
 
         int currentParticipants = lightningJoinReader.getParticipantsCount(lightning);

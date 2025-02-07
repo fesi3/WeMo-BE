@@ -56,9 +56,6 @@ public class UserPlanListResponse {
     @JsonProperty("isCanceled")
     private boolean isCanceled;
 
-    @JsonProperty("isFulled")
-    private boolean isFulled;
-
     @JsonProperty("isLiked")
     private boolean isLiked;
 
@@ -72,12 +69,6 @@ public class UserPlanListResponse {
     public boolean getIsOpened() {
 
         return isOpened;
-    }
-
-    @JsonProperty("isFulled")
-    public boolean getIsFulled() {
-
-        return isFulled;
     }
 
     @JsonProperty("isLiked")

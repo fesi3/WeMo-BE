@@ -174,7 +174,7 @@ public class Oauth2ServiceImpl implements Oauth2Service {
 
         User user;
         try {
-            user = userReader.getUserByEmail(email);
+            user = userReader.getActiveUserByEmail(email);
         } catch (CustomException e) {
             log.info("신규 유저 저장: 추가 데이터 필요, email : {}", email);
 
