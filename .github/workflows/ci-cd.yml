@@ -35,13 +35,9 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
-      - name: Build Docker image
+      - name: Build and push Docker image
         if: github.event_name == 'push'
-        run: docker build --platform linux/amd64 -t ${{ secrets.DOCKERHUB_USERNAME }}/wemo --push .
-
-      - name: Docker Hub push
-        if: github.event_name == 'push'
-        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/wemo
+        run: docker build --platform linux/amd64 -t ${{ secrets.DOCKERHUB_USERNAME }}/wemo:latest --push .
 
       - name: Cleanup .env file
         run: rm -f .env
