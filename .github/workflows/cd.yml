@@ -7,59 +7,56 @@ on:
     branches: [ "dev" ]
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      # 다른 빌드 작업을 추가할 수 있습니다.
-
-  # 독립적인 작업 추가 (예: check)
-  check:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Check the code status
-        run: echo "Code check complete."
-
   deploy:
     runs-on: ubuntu-latest
-    needs: build  # build 작업이 완료된 후 실행
     permissions:
       contents: read
 
     steps:
+      # 1. GitHub 저장소에서 코드 체크아웃
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: EC2 접속 후 Blue-Green 배포 수행
+      # 2. SSH 접속을 통해 EC2에서 Docker Compose로 배포
+      - name: EC2 접속 후 Docker Compose 로 배포
         uses: appleboy/ssh-action@v0.1.5
         with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: 22
+          host: ${{ secrets.SERVER_HOST }}  # EC2 서버 IP
+          username: ${{ secrets.SERVER_USER }}  # EC2 서버 로그인 사용자
+          key: ${{ secrets.SSH_PRIVATE_KEY }}  # EC2 SSH private key
+          port: 22  # EC2 SSH 포트
           script: |
-            echo "🔍 현재 활성화된 컨테이너 확인..."
+            # 3. 현재 실행 중인 컨테이너 확인 (블루-그린 배포용)
             ACTIVE_CONTAINER=$(docker ps --format "{{.Names}}" | grep 'wemo-blue\|wemo-green')
             if [ "$ACTIVE_CONTAINER" == "wemo-blue" ]; then
-                IDLE_CONTAINER="wemo-green"
+              IDLE_CONTAINER="wemo-green"
             else
-                IDLE_CONTAINER="wemo-blue"
+              IDLE_CONTAINER="wemo-blue"
             fi
             echo "🚀 새로운 버전 실행 중: $IDLE_CONTAINER"
+            
+            # 4. 기존 Docker Compose 중지 및 제거
+            echo "Stopping and removing existing containers..."
+            docker-compose -f /home/ubuntu/docker-compose.yml down
+            
+            # 5. 최신 Docker 이미지 pull
+            echo "Pulling latest Docker images..."
+            docker-compose -f /home/ubuntu/docker-compose.yml pull
+            
+            # 6. Docker Compose로 새로운 버전 실행
+            echo "Starting application with Docker Compose..."
             docker-compose -f /home/ubuntu/docker-compose.yml up -d --no-deps --build $IDLE_CONTAINER
             
-            echo "⏳ 컨테이너 실행 확인..."
-            sleep 10  # 컨테이너가 정상 실행될 때까지 대기
+            # 7. Nginx 설정 업데이트 (트래픽 전환)
             echo "🔀 Nginx 트래픽 전환"
             if [ "$IDLE_CONTAINER" == "wemo-green" ]; then
-                sed -i 's/wemo-blue/wemo-green/g' /home/ubuntu/nginx/nginx.conf
+              sed -i 's/wemo-blue/wemo-green/g' /home/ubuntu/nginx/nginx.conf
             else
-                sed -i 's/wemo-green/wemo-blue/g' /home/ubuntu/nginx/nginx.conf
+              sed -i 's/wemo-green/wemo-blue/g' /home/ubuntu/nginx/nginx.conf
             fi
-            docker exec wemo-nginx nginx -s reload  # Nginx 설정 리로드
+            
+            # 8. Nginx 리로드
+            docker exec wemo-nginx nginx -s reload
             echo "🛑 기존 컨테이너 중지: $ACTIVE_CONTAINER"
             docker stop $ACTIVE_CONTAINER
             docker rm $ACTIVE_CONTAINER
