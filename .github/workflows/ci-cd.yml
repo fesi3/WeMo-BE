@@ -55,7 +55,7 @@ jobs:
     needs: build  # build 작업이 완료된 후 실행
     permissions:
       contents: read
-
+  
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -81,6 +81,11 @@ jobs:
             fi
 
             echo "🚀 새로운 버전 실행 중: $IDLE_CONTAINER"
+            
+            # Docker 이미지 pull
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/wemo:latest
+
+            # 기존 컨테이너가 실행 중인 경우 새로운 이미지로 빌드하여 실행
             docker-compose -f /home/ubuntu/docker-compose.yml up -d --build $IDLE_CONTAINER
 
             echo "⏳ 컨테이너 실행 확인..."
