@@ -59,7 +59,7 @@ public class UserAuthImpl implements UserAuth {
         String refreshToken = saveRefreshTokenToRedis(user);
 
         accessTokenManager.setAccessTokenInCookie(accessToken, request, response);
-        refreshTokenManager.setRefreshTokenInCookie(refreshToken, response);
+        refreshTokenManager.setRefreshTokenInCookie(refreshToken, request, response);
         log.info("accessToken 및 refreshToken 생성 완료");
         log.info("refreshToken 쿠키로 전달 완료");
 
