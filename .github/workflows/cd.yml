@@ -7,9 +7,25 @@ on:
     branches: [ "dev" ]
 
 jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      # 다른 빌드 작업을 추가할 수 있습니다.
+
+  # 독립적인 작업 추가 (예: check)
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Check the code status
+        run: echo "Code check complete."
+
   deploy:
     runs-on: ubuntu-latest
-    needs: build  # CI가 성공한 후 실행
+    needs: build  # build 작업이 완료된 후 실행
     permissions:
       contents: read
 
@@ -27,19 +43,16 @@ jobs:
           script: |
             echo "🔍 현재 활성화된 컨테이너 확인..."
             ACTIVE_CONTAINER=$(docker ps --format "{{.Names}}" | grep 'wemo-blue\|wemo-green')
-
             if [ "$ACTIVE_CONTAINER" == "wemo-blue" ]; then
                 IDLE_CONTAINER="wemo-green"
             else
                 IDLE_CONTAINER="wemo-blue"
             fi
-
             echo "🚀 새로운 버전 실행 중: $IDLE_CONTAINER"
             docker-compose -f /home/ubuntu/docker-compose.yml up -d --no-deps --build $IDLE_CONTAINER
             
             echo "⏳ 컨테이너 실행 확인..."
             sleep 10  # 컨테이너가 정상 실행될 때까지 대기
-
             echo "🔀 Nginx 트래픽 전환"
             if [ "$IDLE_CONTAINER" == "wemo-green" ]; then
                 sed -i 's/wemo-blue/wemo-green/g' /home/ubuntu/nginx/nginx.conf
@@ -47,7 +60,6 @@ jobs:
                 sed -i 's/wemo-green/wemo-blue/g' /home/ubuntu/nginx/nginx.conf
             fi
             docker exec wemo-nginx nginx -s reload  # Nginx 설정 리로드
-
             echo "🛑 기존 컨테이너 중지: $ACTIVE_CONTAINER"
             docker stop $ACTIVE_CONTAINER
             docker rm $ACTIVE_CONTAINER
