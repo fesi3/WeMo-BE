@@ -18,7 +18,9 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -27,7 +29,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtTokenProvider jwtTokenProvider;
 
     private final AccessTokenManager accessTokenManager;
-    
+
     private static final List<String> EXCLUDED_PATHS = List.of(
             "/api/auths/check-email", "/api/auths/signin", "/api/auths/signup", "/swagger-ui/", "/swagger-ui.html",
             "/v3/api-docs", "/api/regions", "/api/auths/reissue", "/login/oauth2/callback/kakao",
@@ -122,12 +124,25 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private boolean shouldSkipFilter(String requestURI, String method, String accessToken) {
 
-        return EXCLUDED_PATHS.stream().anyMatch(requestURI::startsWith)
-                || (requestURI.startsWith("/api/meetings") && "GET".equalsIgnoreCase(method) && accessToken == null)
-                || (requestURI.startsWith("/api/plans") && "GET".equalsIgnoreCase(method) && !requestURI.contains("like") && accessToken == null)
-                || (requestURI.startsWith("/api/reviews") && "GET".equalsIgnoreCase(method))
-                || ("/api/lightnings".equals(requestURI) && "GET".equalsIgnoreCase(method))
-                || (requestURI.startsWith("/api/lightnings?") && "GET".equalsIgnoreCase(method));
+        if (EXCLUDED_PATHS.stream().anyMatch(requestURI::startsWith)) {
+            return true;
+        }
+
+        boolean isGetMethod = "GET".equalsIgnoreCase(method);
+        if (!isGetMethod) return false;
+
+        Map<Predicate<String>, Predicate<String>> conditions = Map.of(
+                uri -> uri.equals("/api/lightnings") || uri.startsWith("/api/lightnings?"), req -> true,
+                uri -> uri.matches("^/api/lightnings/\\d+$"), req -> accessToken == null,
+                uri -> uri.startsWith("/api/meetings"), req -> accessToken == null,
+                uri -> uri.startsWith("/api/plans") && !uri.contains("like"), req -> accessToken == null,
+                uri -> uri.startsWith("/api/reviews"), req -> true
+        );
+
+        return conditions.entrySet().stream()
+                .filter(entry -> entry.getKey().test(requestURI))
+                .map(Map.Entry::getValue)
+                .anyMatch(condition -> condition.test(requestURI));
     }
 
     private void sendErrorResponse(HttpServletResponse response, String message, HttpStatus httpStatus) throws IOException {
