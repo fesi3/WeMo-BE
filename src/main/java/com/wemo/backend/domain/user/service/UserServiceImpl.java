@@ -92,7 +92,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void signin(SigninRequest signinRequest, HttpServletRequest request, HttpServletResponse response) {
 
-        // 유저 검증 및 객체 조회
+        // 유저 검증 및 객체 조회 (탈퇴한 유저의 정보와 같은 이메일로 로그인 하는 경우 예외 반환)
         User user = userReader.getUser(signinRequest.getEmail(), signinRequest.getPassword());
         log.info("사용자 {} 로그인 성공", user.getEmail());
 
@@ -151,6 +151,8 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserMeetingPagingResponse getMeetingList(String email, Pageable pageable) {
 
+        userReader.getActiveUserByEmail(email);
+
         return new UserMeetingPagingResponse(userRepository.getUserMeetingList(email, pageable));
     }
 
@@ -163,6 +165,8 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public UserMeetingPagingResponse getMyMeetingList(String email, Pageable pageable) {
+
+        userReader.getActiveUserByEmail(email);
 
         return new UserMeetingPagingResponse(userRepository.getMyMeetingList(email, pageable));
     }
@@ -178,6 +182,8 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public UserPlanPagingResponse getPlanList(String email, Pageable pageable) {
 
+        userReader.getActiveUserByEmail(email);
+
         return new UserPlanPagingResponse(userRepository.getUserPlanList(email, pageable));
     }
 
@@ -192,6 +198,8 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public UserPlanPagingResponse getMyPlanList(String email, Pageable pageable) {
 
+        userReader.getActiveUserByEmail(email);
+
         return new UserPlanPagingResponse(userRepository.getMyPlanList(email, pageable));
     }
 
@@ -204,6 +212,8 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public UserReviewPagingResponse getMyReviewList(String email, Pageable pageable) {
+
+        userReader.getActiveUserByEmail(email);
 
         return new UserReviewPagingResponse(userRepository.getUserReviewList(email, pageable));
     }
@@ -219,6 +229,8 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public UserPlanPagingResponse getPlanListReviewAvailable(String email, Pageable pageable) {
 
+        userReader.getActiveUserByEmail(email);
+
         return new UserPlanPagingResponse(userRepository.getUserPlanListReviewAvailable(email, pageable));
     }
 
@@ -233,7 +245,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public UserUpdateResponse updateProfile(String email, UserUpdateRequest request) {
 
-        User user = userReader.getUserByEmail(email);
+        User user = userReader.getActiveUserByEmail(email);
         User updateUser = user.update(request);
 
         return UserUpdateResponse.fromEntity(updateUser);
@@ -249,7 +261,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public void saveAdditionalUserData(String email, AdditionalDataRequest request) {
 
-        User user = userReader.getUserByEmail(email);
+        User user = userReader.getActiveUserByEmail(email);
 
         user.saveAdditionalData(request);
     }
@@ -264,8 +276,8 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public String withdraw(String email) {
 
-        // 유저 객체 조회 및 softDelete 처리
-        User user = userReader.getUserByEmail(email);
+        // 유저 객체 조회 및 softDelete 처리 (이미 탈퇴한 유저의 경우 재탈퇴 불가)
+        User user = userReader.getActiveUserByEmail(email);
         user.softDelete();
         user.setDeletedUserNickname();
 
@@ -296,6 +308,8 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public UserPlanListForCalendar getUserPlanListForCalendar(String email, String startDate, String endDate) {
+
+        userReader.getActiveUserByEmail(email);
 
         return userRepository.getUserPlanListForCalendar(email, startDate, endDate);
     }

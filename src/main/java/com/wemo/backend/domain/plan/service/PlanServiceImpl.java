@@ -70,7 +70,7 @@ public class PlanServiceImpl implements PlanService {
     @Transactional
     public PlanCreateResponse createPlan(String email, PlanCreateRequest request, Long meetingId) {
 
-        User user = userReader.getUserByEmail(email);
+        User user = userReader.getActiveUserByEmail(email);
         Meeting meeting = meetingReader.getMeeting(meetingId);
 
         commUtilService.validateMeetingOwner(user, meeting);
@@ -115,7 +115,7 @@ public class PlanServiceImpl implements PlanService {
     @Transactional
     public String joinPlan(String email, Long planId) {
 
-        User user = userReader.getUserByEmail(email);
+        User user = userReader.getActiveUserByEmail(email);
         Plan plan = planReader.getPlan(planId);
 
         attendanceStore.attendPlan(user, plan);
@@ -171,7 +171,7 @@ public class PlanServiceImpl implements PlanService {
         // 회원인 경우 참여 여부 판단
         if (userDetails != null && !userDetails.isGuest()) {
             String email = userDetails.getUsername();
-            User user = userReader.getUserByEmail(email);
+            User user = userReader.getActiveUserByEmail(email);
             existAttendance = attendanceReader.existAttendance(user, plan);
         }
 
@@ -197,7 +197,7 @@ public class PlanServiceImpl implements PlanService {
     @Transactional
     public String cancelPlan(String email, Long planId) {
 
-        User user = userReader.getUserByEmail(email);
+        User user = userReader.getActiveUserByEmail(email);
         Plan plan = planReader.getPlan(planId);
 
         commUtilService.validateMeetingOwner(user, plan.getMeeting());
@@ -218,7 +218,7 @@ public class PlanServiceImpl implements PlanService {
     @Override
     public String cancelAttendance(String email, Long planId) {
 
-        User user = userReader.getUserByEmail(email);
+        User user = userReader.getActiveUserByEmail(email);
         Plan plan = planReader.getPlan(planId);
 
         attendanceStore.quitPlan(user, plan);
@@ -246,7 +246,7 @@ public class PlanServiceImpl implements PlanService {
     @Transactional
     public UserPlanPagingResponse getLikedPlanList(String email, Pageable pageable, String query, String province, String district, String startDate, String endDate, Long categoryId, String sort) {
         // 사용자 검증
-        userReader.getUserByEmail(email);
+        userReader.getActiveUserByEmail(email);
         return new UserPlanPagingResponse(planRepository.getLikedPlanList(email, pageable, query, province, district, startDate, endDate, categoryId, sort));
     }
 
@@ -265,7 +265,7 @@ public class PlanServiceImpl implements PlanService {
         if (userDetails == null || userDetails.isGuest()) {
             return false;
         }
-        User user = userReader.getUserByEmail(userDetails.getUsername());
+        User user = userReader.getActiveUserByEmail(userDetails.getUsername());
         return likeRepository.existsByUserAndPlan(user, plan);
     }
 

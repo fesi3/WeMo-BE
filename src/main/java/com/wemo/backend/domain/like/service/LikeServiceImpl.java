@@ -34,7 +34,7 @@ public class LikeServiceImpl implements LikeService {
     public String likePlan(String email, Long planId) {
 
         // 유효성 검사
-        User user = userReader.getUserByEmail(email);
+        User user = userReader.getActiveUserByEmail(email);
         Plan plan = planReader.getPlan(planId);
 
         // 이미 좋아요를 누른 일정이라면 예외 반환
@@ -58,7 +58,7 @@ public class LikeServiceImpl implements LikeService {
     public String deleteLikePlan(String email, Long planId) {
 
         // 유효성 검사
-        User user = userReader.getUserByEmail(email);
+        User user = userReader.getActiveUserByEmail(email);
         Plan plan = planReader.getPlan(planId);
 
         // 좋아요를 누르지 않은 일정이라면 예외 반환

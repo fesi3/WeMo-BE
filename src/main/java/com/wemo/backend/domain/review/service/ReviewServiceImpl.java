@@ -61,7 +61,7 @@ public class ReviewServiceImpl implements ReviewService {
     @Transactional
     public ReviewCreateResponse createReview(String email, Long planId, ReviewCreateRequest request) {
 
-        User user = userReader.getUserByEmail(email);
+        User user = userReader.getActiveUserByEmail(email);
         Plan plan = planReader.getPlan(planId);
 
         checkExistingReview(user, plan);
@@ -105,7 +105,7 @@ public class ReviewServiceImpl implements ReviewService {
     @Transactional
     public ReviewCreateResponse updateReview(String email, Long reviewId, ReviewCreateRequest request) {
 
-        User user = userReader.getUserByEmail(email);
+        User user = userReader.getActiveUserByEmail(email);
         Review review = reviewReader.getReview(reviewId);
         // 본인 후기인지 확인
         reviewReader.validateReview(user, review);
@@ -134,7 +134,7 @@ public class ReviewServiceImpl implements ReviewService {
     @Transactional
     public String deleteReview(String email, Long reviewId) {
 
-        User user = userReader.getUserByEmail(email);
+        User user = userReader.getActiveUserByEmail(email);
         Review review = reviewReader.getReview(reviewId);
         // 본인 후기인지 확인
         reviewReader.validateReview(user, review);
