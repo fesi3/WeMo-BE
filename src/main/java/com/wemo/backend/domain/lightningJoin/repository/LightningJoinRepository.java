@@ -9,4 +9,6 @@ public interface LightningJoinRepository extends JpaRepository<LightningJoin, Lo
 
     boolean existsByUserAndLightning(User user, Lightning lightning);
 
+    long countByLightning(Lightning lightning);
+
 }
