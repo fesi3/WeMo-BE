@@ -78,9 +78,18 @@ public class LightningController {
     @RequestMapping(value = "/{lightningId}", method = RequestMethod.PUT)
     public ResponseEntity<SuccessResponse<LightningResponse>> updateLightnings(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                                                                @PathVariable Long lightningId,
-                                                                               @Valid @RequestBody LightningRequest lightningRequest) {
+                                                                               @Valid @RequestBody LightningRequest request) {
 
-        return ResponseEntity.ok(SuccessResponse.successWithData(lightningService.updateLightnings(userDetails.getUsername(), lightningId, lightningRequest)));
+        return ResponseEntity.ok(SuccessResponse.successWithData(lightningService.updateLightnings(userDetails.getUsername(), lightningId, request)));
+    }
+
+    @Operation(summary = "번개 모임 삭제", description = "번개 모임을 삭제합니다.")
+    @ApiResponse(responseCode = "200", description = "번개 모임이 삭제되었습니다.")
+    @RequestMapping(value = "/{lightningId}", method = RequestMethod.DELETE)
+    public ResponseEntity<SuccessResponse<String>> deleteLightningMeeting(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                                          @PathVariable Long lightningId) {
+
+        return ResponseEntity.ok(SuccessResponse.successWithNoData(lightningService.deleteLightningMeeting(userDetails.getUsername(), lightningId)));
     }
 
 }

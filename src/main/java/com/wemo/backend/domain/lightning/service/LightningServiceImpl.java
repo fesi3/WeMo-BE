@@ -11,18 +11,15 @@ import com.wemo.backend.domain.lightning.repository.LightningRepository;
 import com.wemo.backend.domain.lightningJoin.repository.LightningJoinRepository;
 import com.wemo.backend.domain.lightningJoin.service.LightningJoinStore;
 import com.wemo.backend.domain.region.entity.District;
-import com.wemo.backend.domain.region.entity.Province;
-import com.wemo.backend.domain.region.repository.DistrictRepository;
-import com.wemo.backend.domain.region.repository.ProvinceRepository;
-import com.wemo.backend.domain.region.service.RegionServiceImpl;
+import com.wemo.backend.domain.region.service.RegionStore;
 import com.wemo.backend.domain.user.entity.User;
 import com.wemo.backend.domain.user.service.UserReader;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.Map;
-
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class LightningServiceImpl implements LightningService {
@@ -31,9 +28,7 @@ public class LightningServiceImpl implements LightningService {
 
     private final LightningTypeReader lightningTypeReader;
 
-    private final ProvinceRepository provinceRepository;
-
-    private final DistrictRepository districtRepository;
+    private final RegionStore regionStore;
 
     private final LightningStore lightningStore;
 
@@ -58,15 +53,13 @@ public class LightningServiceImpl implements LightningService {
 
         User user = userReader.getActiveUserByEmail(email);
         LightningType lightningType = lightningTypeReader.getLightningType(request.getLightningTypeId());
-
-        Map<String, String> parsedAddress = RegionServiceImpl.parseAddress(request.getAddress());
-        Province province = getOrSaveProvince(parsedAddress.get("province"));
-        District district = getOrSaveDistrict(parsedAddress.get("district"), province);
-
+        District district = regionStore.parseAndGetDistrict(request.getAddress());
         Lightning lightning = lightningStore.store(user, lightningType, district, request);
 
+        log.info("번개 모임 생성 - 모임 ID: {}, 사용자: {}", lightning.getId(), email);
         // 주최자는 자동 참여
         lightningJoinStore.store(user, lightning);
+        log.info("번개 모임 자동 가입 - 모임 ID: {}, 사용자: {}", lightning.getId(), email);
 
         return LightningResponse.fromEntity(lightning);
     }
@@ -101,6 +94,7 @@ public class LightningServiceImpl implements LightningService {
     @Override
     public LightningDetailResponse getLightningMeetingDetail(UserDetailsImpl userDetails, Long lightningId) {
 
+        log.info("번개 모임 상세 조회 - 모임 ID: {}", lightningId);
         // 번개 모임 유효성 검사 및 조회
         Lightning lightning = lightningReader.getLightningById(lightningId);
 
@@ -118,42 +112,50 @@ public class LightningServiceImpl implements LightningService {
     /**
      * 번개 모임 수정
      *
-     * @param email            사용자 이메일
-     * @param lightningId      번개 모임 id
-     * @param lightningRequest 수정 요청 데이터
+     * @param email       사용자 이메일
+     * @param lightningId 번개 모임 id
+     * @param request     수정 요청 데이터
      * @return 수정된 번개 모임 데이터
      */
     @Override
     @Transactional
-    public LightningResponse updateLightnings(String email, Long lightningId, LightningRequest lightningRequest) {
+    public LightningResponse updateLightnings(String email, Long lightningId, LightningRequest request) {
 
+        // 유저 및 모임 권한 검증
         User user = userReader.getActiveUserByEmail(email);
-        Lightning lightning = lightningReader.getLightningById(lightningId);
+        Lightning lightning = lightningReader.validateLightningOwnership(user, lightningId);
 
-        // 본인이 생성한 모임인지 검증
-        lightningReader.validLightningUser(user, lightning);
+        LightningType lightningType = lightningTypeReader.getLightningType(request.getLightningTypeId());
+        District district = regionStore.parseAndGetDistrict(request.getAddress());
 
-        LightningType lightningType = lightningTypeReader.getLightningType(lightningRequest.getLightningTypeId());
-        Map<String, String> parsedAddress = RegionServiceImpl.parseAddress(lightningRequest.getAddress());
-        Province province = getOrSaveProvince(parsedAddress.get("province"));
-        District district = getOrSaveDistrict(parsedAddress.get("district"), province);
+        lightning.update(request, lightningType, district);
 
-        lightning.update(lightningRequest, lightningType, district);
+        log.info("번개 모임 수정 - 모임 ID: {}, 사용자: {}", lightning.getId(), email);
 
         return LightningResponse.fromEntity(lightning);
     }
 
-    private Province getOrSaveProvince(String provinceName) {
+    /**
+     * 번개 모임 삭제
+     *
+     * @param email       사용자 이메일
+     * @param lightningId 번개 모임 id
+     * @return 응답 메세지
+     */
+    @Override
+    @Transactional
+    public String deleteLightningMeeting(String email, Long lightningId) {
 
-        return provinceRepository.findByProvinceName(provinceName)
-                .orElseGet(() -> provinceRepository.save(new Province(provinceName)));
+        // 유저 및 모임 권한 검증
+        User user = userReader.getActiveUserByEmail(email);
+        Lightning lightning = lightningReader.validateLightningOwnership(user, lightningId);
+
+        lightningJoinRepository.deleteAllByLightning(lightning);
+        lightningStore.delete(lightning);
+
+        log.info("번개 모임 삭제 - 모임 ID: {}, 사용자: {}", lightning.getId(), email);
+
+        return "번개 모임이 성공적으로 삭제되었습니다.";
     }
-
-    private District getOrSaveDistrict(String districtName, Province province) {
-
-        return districtRepository.findByDistrictNameAndProvince(districtName, province)
-                .orElseGet(() -> districtRepository.save(new District(districtName, province)));
-    }
-
 
 }
