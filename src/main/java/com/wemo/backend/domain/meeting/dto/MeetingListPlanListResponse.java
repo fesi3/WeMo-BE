@@ -14,20 +14,14 @@ public class MeetingListPlanListResponse {
 
     private Long meetingId;
 
-    private String planName;
-
     private LocalDateTime dateTime;
 
-    private Long participants;
-
-    private int capacity;
-
-    private String planImagePath;
-
-    @JsonProperty("isOpened")
-    private boolean isOpened;
+    private boolean isFulled;
 
     @JsonProperty("isFulled")
-    private boolean isFulled;
+    public boolean getIsFulled() {
+
+        return isFulled;
+    }
 
 }

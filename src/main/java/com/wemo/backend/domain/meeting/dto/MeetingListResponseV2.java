@@ -23,9 +23,11 @@ public class MeetingListResponseV2 {
 
     private String category;
 
+    private Long planCount;
+
     private List<MeetingListPlanListResponse> planList;
 
-    public MeetingListResponseV2(String email, Long meetingId, String meetingName, String description, String meetingImagePath, Long memberCount, String category) {
+    public MeetingListResponseV2(String email, Long meetingId, String meetingName, String description, String meetingImagePath, Long memberCount, String category, Long planCount) {
 
         this.email = email;
         this.meetingId = meetingId;
@@ -34,6 +36,7 @@ public class MeetingListResponseV2 {
         this.meetingImagePath = meetingImagePath;
         this.memberCount = memberCount;
         this.category = category;
+        this.planCount = planCount;
     }
 
     public void setPlanList(List<MeetingListPlanListResponse> planListResponses) {
