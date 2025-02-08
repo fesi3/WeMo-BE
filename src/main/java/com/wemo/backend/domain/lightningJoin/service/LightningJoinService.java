@@ -7,4 +7,6 @@ public interface LightningJoinService {
 
     String participateLightningMeeting(String email, Long lightningId);
 
+    String leaveLightningMeeting(String email, Long lightningId);
+
 }

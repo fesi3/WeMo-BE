@@ -37,4 +37,17 @@ public class LightningJoinController {
         return ResponseEntity.status(201).body(SuccessResponse.successWithData(lightningJoinService.participateLightningMeeting(userDetails.getUsername(), lightningId)));
     }
 
+    @Operation(summary = "번개 모임 참여 취소", description = "번개 모임에 참여를 취소합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "번개 모임에서 나갔습니다."),
+            @ApiResponse(responseCode = "404", description = "존재하지 않는 모임입니다.",
+                    content = @Content(mediaType = "application/json"))
+    })
+    @RequestMapping(value = "/{lightningId}", method = RequestMethod.DELETE)
+    public ResponseEntity<SuccessResponse<String>> leaveLightningMeeting(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                                         @PathVariable Long lightningId) {
+
+        return ResponseEntity.ok(SuccessResponse.successWithData(lightningJoinService.leaveLightningMeeting(userDetails.getUsername(), lightningId)));
+    }
+
 }

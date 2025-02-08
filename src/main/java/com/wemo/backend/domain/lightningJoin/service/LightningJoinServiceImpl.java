@@ -50,4 +50,24 @@ public class LightningJoinServiceImpl implements LightningJoinService {
         return "모임에 참여되었습니다.";
     }
 
+    /**
+     * 번개 모임 참여 취소
+     *
+     * @param email       사용자 이메일
+     * @param lightningId 번개 모임 id
+     * @return 응답 메세
+     */
+    @Override
+    public String leaveLightningMeeting(String email, Long lightningId) {
+
+        User user = userReader.getActiveUserByEmail(email);
+        Lightning lightning = lightningReader.getLightningById(lightningId);
+
+        lightningJoinStore.delete(user, lightning);
+
+        log.info("{}가 번개 모임 id {} 에서 나갔습니다.", email, lightningId);
+
+        return "번개 모임에서 나갔습니다.";
+    }
+
 }
