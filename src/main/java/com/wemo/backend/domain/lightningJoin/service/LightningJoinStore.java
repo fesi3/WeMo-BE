@@ -7,4 +7,6 @@ public interface LightningJoinStore {
 
     void store(User user, Lightning lightning);
 
+    void delete(User user, Lightning lightning);
+
 }
