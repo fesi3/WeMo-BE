@@ -79,7 +79,7 @@ public class UserReaderImpl implements UserReader {
     @Override
     public User getUser(String email, String password) {
 
-        User user = getActiveUserByEmail(email);
+        User user = getUserByEmail(email);
         validatePassword(password, user.getPassword());
         return user;
     }
