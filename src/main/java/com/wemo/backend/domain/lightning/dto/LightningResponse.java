@@ -10,7 +10,9 @@ import java.time.LocalDateTime;
 @Getter
 @Builder
 @AllArgsConstructor
-public class LightningCreateResponse {
+public class LightningResponse {
+
+    private Long lightningId;
 
     private String lightningName;
 
@@ -30,9 +32,10 @@ public class LightningCreateResponse {
 
     private int lightningCapacity;
 
-    public static LightningCreateResponse fromEntity(Lightning lightning) {
+    public static LightningResponse fromEntity(Lightning lightning) {
 
-        return LightningCreateResponse.builder()
+        return LightningResponse.builder()
+                .lightningId(lightning.getId())
                 .lightningName(lightning.getLightningName())
                 .lightningType(lightning.getLightningType().getLightTypeName())
                 .lightningTime(lightning.getDateType().getName())
