@@ -16,6 +16,8 @@ public interface LightningService {
 
     LightningDetailResponse getLightningMeetingDetail(UserDetailsImpl userDetails, Long lightningId);
 
-    LightningResponse updateLightnings(String email, Long lightningId, LightningRequest lightningRequest);
+    LightningResponse updateLightnings(String email, Long lightningId, LightningRequest request);
+
+    String deleteLightningMeeting(String email, Long lightningId);
 
 }

@@ -8,6 +8,6 @@ public interface LightningReader {
 
     Lightning getLightningById(Long lightningId);
 
-    void validLightningUser(User user, Lightning lightning);
+    Lightning validateLightningOwnership(User user, Long lightning);
 
 }

@@ -39,4 +39,10 @@ public class LightningStoreImpl implements LightningStore {
 
     }
 
+    @Override
+    public void delete(Lightning lightning) {
+
+        lightningRepository.delete(lightning);
+    }
+
 }

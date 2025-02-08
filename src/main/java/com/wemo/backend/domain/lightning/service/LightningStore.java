@@ -10,4 +10,6 @@ public interface LightningStore {
 
     Lightning store(User user, LightningType lightningType, District district, LightningRequest request);
 
+    void delete(Lightning lightning);
+
 }

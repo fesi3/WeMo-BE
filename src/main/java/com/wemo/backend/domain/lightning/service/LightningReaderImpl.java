@@ -25,10 +25,13 @@ public class LightningReaderImpl implements LightningReader {
     }
 
     @Override
-    public void validLightningUser(User user, Lightning lightning) {
+    public Lightning validateLightningOwnership(User user, Long lightningId) {
 
-        if (lightning.getUser() != user) throw new CustomException(LIGHTNING_PERMISSION_DENIED);
+        Lightning lightningById = getLightningById(lightningId);
 
+        if (lightningById.getUser() != user) throw new CustomException(LIGHTNING_PERMISSION_DENIED);
+
+        return lightningById;
     }
 
 }
