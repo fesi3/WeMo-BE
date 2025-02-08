@@ -34,7 +34,7 @@ public enum ErrorCode {
     PLAN_ATTENDANCE_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 일정에 참여 기록이 없습니다."),
     ALREADY_LIKED_PLAN(HttpStatus.BAD_REQUEST, "이미 좋아요한 일정입니다."),
     LIKE_NOT_FOUND(HttpStatus.NOT_FOUND, "좋아요를 누르지 않은 일정입니다."),
-    HOST_ATTENDANCE_REQUIRED(HttpStatus.BAD_REQUEST, "주최자는 참여가 필수입니다."),
+    HOST_ATTENDANCE_REQUIRED(HttpStatus.FORBIDDEN, "주최자는 필수 참여입니다."),
 
     // Review
     REVIEW_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "이미 후기를 등록한 일정입니다."),
@@ -59,6 +59,7 @@ public enum ErrorCode {
     // Lightning
     LIGHTNING_MEETING_NOT_FOUND(HttpStatus.BAD_REQUEST, "존재하지 않는 번개 모임입니다."),
     ALREADY_JOINED_LIGHTNING_MEETING(HttpStatus.BAD_REQUEST, "이미 참여된 모임입니다."),
+    LIGHTNING_MEETING_ATTENDANCE_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 일정에 참여 기록이 없습니다."),
     LIGHTNING_MEETING_IS_FULL(HttpStatus.BAD_REQUEST, "정원이 마감된 모임입니다."),
     LIGHTNING_PERMISSION_DENIED(HttpStatus.UNAUTHORIZED, "본인이 생성한 모임만 수정/삭제 가능합니다.");
 
