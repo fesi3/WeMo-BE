@@ -1,10 +1,10 @@
 package com.wemo.backend.domain.lightning.controller;
 
 import com.wemo.backend.domain.auth.UserDetailsImpl;
-import com.wemo.backend.domain.lightning.dto.LightningCreateRequest;
-import com.wemo.backend.domain.lightning.dto.LightningCreateResponse;
 import com.wemo.backend.domain.lightning.dto.LightningCursorPagingResponse;
 import com.wemo.backend.domain.lightning.dto.LightningDetailResponse;
+import com.wemo.backend.domain.lightning.dto.LightningRequest;
+import com.wemo.backend.domain.lightning.dto.LightningResponse;
 import com.wemo.backend.domain.lightning.service.LightningService;
 import com.wemo.backend.global.response.SuccessResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -33,8 +33,8 @@ public class LightningController {
                     content = @Content(mediaType = "application/json"))
     })
     @RequestMapping(value = "", method = RequestMethod.POST)
-    public ResponseEntity<SuccessResponse<LightningCreateResponse>> createLightnings(@AuthenticationPrincipal UserDetailsImpl userDetails,
-                                                                                     @Valid @RequestBody LightningCreateRequest request) {
+    public ResponseEntity<SuccessResponse<LightningResponse>> createLightnings(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                                               @Valid @RequestBody LightningRequest request) {
 
         return ResponseEntity.status(201).body(SuccessResponse.successWithData(lightningService.createLightnings(userDetails.getUsername(), request)));
     }
@@ -67,6 +67,20 @@ public class LightningController {
                                                                                               @PathVariable Long lightningId) {
 
         return ResponseEntity.ok(SuccessResponse.successWithData(lightningService.getLightningMeetingDetail(userDetails, lightningId)));
+    }
+
+    @Operation(summary = "번개 모임 수정", description = "번개 모임 정보를 수정합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "번개 모임 정보가 수정되었습니다."),
+            @ApiResponse(responseCode = "400", description = "입력값을 확인해주세요.",
+                    content = @Content(mediaType = "application/json"))
+    })
+    @RequestMapping(value = "/{lightningId}", method = RequestMethod.PUT)
+    public ResponseEntity<SuccessResponse<LightningResponse>> updateLightnings(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                                               @PathVariable Long lightningId,
+                                                                               @Valid @RequestBody LightningRequest lightningRequest) {
+
+        return ResponseEntity.ok(SuccessResponse.successWithData(lightningService.updateLightnings(userDetails.getUsername(), lightningId, lightningRequest)));
     }
 
 }

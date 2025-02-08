@@ -1,10 +1,10 @@
 package com.wemo.backend.domain.lightning.service;
 
 import com.wemo.backend.domain.auth.UserDetailsImpl;
-import com.wemo.backend.domain.lightning.dto.LightningCreateRequest;
-import com.wemo.backend.domain.lightning.dto.LightningCreateResponse;
 import com.wemo.backend.domain.lightning.dto.LightningCursorPagingResponse;
 import com.wemo.backend.domain.lightning.dto.LightningDetailResponse;
+import com.wemo.backend.domain.lightning.dto.LightningRequest;
+import com.wemo.backend.domain.lightning.dto.LightningResponse;
 import com.wemo.backend.domain.lightning.entity.Lightning;
 import com.wemo.backend.domain.lightning.entity.LightningType;
 import com.wemo.backend.domain.lightning.repository.LightningRepository;
@@ -54,7 +54,7 @@ public class LightningServiceImpl implements LightningService {
      */
     @Override
     @Transactional
-    public LightningCreateResponse createLightnings(String email, LightningCreateRequest request) {
+    public LightningResponse createLightnings(String email, LightningRequest request) {
 
         User user = userReader.getActiveUserByEmail(email);
         LightningType lightningType = lightningTypeReader.getLightningType(request.getLightningTypeId());
@@ -68,7 +68,7 @@ public class LightningServiceImpl implements LightningService {
         // 주최자는 자동 참여
         lightningJoinStore.store(user, lightning);
 
-        return LightningCreateResponse.fromEntity(lightning);
+        return LightningResponse.fromEntity(lightning);
     }
 
     /**
@@ -113,6 +113,34 @@ public class LightningServiceImpl implements LightningService {
 
         // 비회원인 경우 참여 내역 false
         return LightningDetailResponse.fromEntity(lightning, false);
+    }
+
+    /**
+     * 번개 모임 수정
+     *
+     * @param email            사용자 이메일
+     * @param lightningId      번개 모임 id
+     * @param lightningRequest 수정 요청 데이터
+     * @return 수정된 번개 모임 데이터
+     */
+    @Override
+    @Transactional
+    public LightningResponse updateLightnings(String email, Long lightningId, LightningRequest lightningRequest) {
+
+        User user = userReader.getActiveUserByEmail(email);
+        Lightning lightning = lightningReader.getLightningById(lightningId);
+
+        // 본인이 생성한 모임인지 검증
+        lightningReader.validLightningUser(user, lightning);
+
+        LightningType lightningType = lightningTypeReader.getLightningType(lightningRequest.getLightningTypeId());
+        Map<String, String> parsedAddress = RegionServiceImpl.parseAddress(lightningRequest.getAddress());
+        Province province = getOrSaveProvince(parsedAddress.get("province"));
+        District district = getOrSaveDistrict(parsedAddress.get("district"), province);
+
+        lightning.update(lightningRequest, lightningType, district);
+
+        return LightningResponse.fromEntity(lightning);
     }
 
     private Province getOrSaveProvince(String provinceName) {
