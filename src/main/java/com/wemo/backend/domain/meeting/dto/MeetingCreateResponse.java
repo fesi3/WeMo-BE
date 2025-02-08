@@ -14,6 +14,8 @@ public class MeetingCreateResponse {
 
     private String meetingName;
 
+    private String category;
+
     private String description;
 
     private List<String> meetingImagePath;
@@ -23,6 +25,7 @@ public class MeetingCreateResponse {
         return MeetingCreateResponse.builder()
                 .meetingId(meeting.getId())
                 .meetingName(meeting.getMeetingName())
+                .category(meeting.getCategory().getCategoryName())
                 .description(meeting.getDescription())
                 .meetingImagePath(meetingImagePath)
                 .build();
