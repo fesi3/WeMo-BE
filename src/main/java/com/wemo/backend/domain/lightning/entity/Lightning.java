@@ -1,5 +1,6 @@
 package com.wemo.backend.domain.lightning.entity;
 
+import com.wemo.backend.domain.lightning.dto.LightningRequest;
 import com.wemo.backend.domain.region.entity.District;
 import com.wemo.backend.domain.user.entity.User;
 import com.wemo.backend.global.entity.Timestamped;
@@ -73,5 +74,19 @@ public class Lightning extends Timestamped {
     @Column(name = "longitude", nullable = false)
     @Comment("경도")
     private double longitude;
+
+    public void update(LightningRequest request, LightningType lightningType, District district) {
+
+        this.lightningName = request.getLightningName();
+        this.lightningType = lightningType;
+        this.dateType = DateType.fromId(request.getDateTypeId());
+        this.lightningDate = request.getLightningDate();
+        this.lightningContent = request.getLightningContent();
+        this.lightningCapacity = request.getLightningCapacity();
+        this.address = request.getAddress();
+        this.district = district;
+        this.latitude = request.getLatitude();
+        this.longitude = request.getLongitude();
+    }
 
 }

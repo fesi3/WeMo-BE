@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @AllArgsConstructor
-public class LightningCreateRequest {
+public class LightningRequest {
 
     @NotBlank(message = "모임명은 필수 입력 값입니다.")
     private String lightningName;

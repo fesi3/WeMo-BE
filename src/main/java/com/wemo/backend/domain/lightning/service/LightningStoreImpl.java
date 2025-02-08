@@ -1,6 +1,6 @@
 package com.wemo.backend.domain.lightning.service;
 
-import com.wemo.backend.domain.lightning.dto.LightningCreateRequest;
+import com.wemo.backend.domain.lightning.dto.LightningRequest;
 import com.wemo.backend.domain.lightning.entity.DateType;
 import com.wemo.backend.domain.lightning.entity.Lightning;
 import com.wemo.backend.domain.lightning.entity.LightningType;
@@ -19,7 +19,7 @@ public class LightningStoreImpl implements LightningStore {
 
     @Override
     @Transactional
-    public Lightning store(User user, LightningType lightningType, District district, LightningCreateRequest request) {
+    public Lightning store(User user, LightningType lightningType, District district, LightningRequest request) {
 
         Lightning lightning = Lightning.builder()
                 .user(user)
