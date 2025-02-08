@@ -47,6 +47,10 @@ public class LightningDetailResponse {
         return isJoined;
     }
 
+    private LocalDateTime createdAt;
+
+    private LocalDateTime updatedAt;
+
     public static LightningDetailResponse fromEntity(Lightning lightning, boolean isJoined) {
 
         return LightningDetailResponse.builder()
@@ -64,6 +68,8 @@ public class LightningDetailResponse {
                 .nickname(lightning.getUser().getNickname())
                 .profileImagePath(lightning.getUser().getProfileImagePath())
                 .isJoined(isJoined)
+                .createdAt(lightning.getCreatedAt())
+                .updatedAt(lightning.getUpdatedAt())
                 .build();
     }
 
