@@ -259,7 +259,15 @@ public class MeetingQueryDslImpl implements MeetingQueryDsl {
                                                 .and(meetingMember.deletedAt.isNull())),
                                 "memberCount"
                         ),
-                        meeting.category.categoryName
+                        meeting.category.categoryName,
+                        Expressions.as(
+                                JPAExpressions.select(plan.count())
+                                        .from(plan)
+                                        .where(plan.meeting.eq(meeting)
+                                                .and(plan.canceled.eq(false))
+                                                .and(plan.deletedAt.isNull())),
+                                "planCount"
+                        )
                 ))
                 .from(meeting)
                 .leftJoin(meeting.user, user)
@@ -283,25 +291,7 @@ public class MeetingQueryDslImpl implements MeetingQueryDsl {
                         MeetingListPlanListResponse.class,
                         plan.id,
                         plan.meeting.id,
-                        plan.planName,
                         plan.dateTime,
-                        Expressions.as(
-                                queryFactory.select(attendance.count())
-                                        .from(attendance)
-                                        .where(attendance.plan.id.eq(plan.id)
-                                                .and(attendance.deletedAt.isNull())),
-                                "participants"
-                        ),
-                        plan.capacity,
-                        Expressions.as(
-                                queryFactory.select(image.fileUrl)
-                                        .from(image)
-                                        .where(image.entityId.eq(plan.id),
-                                                image.entityType.eq(Image.EntityType.PLAN),
-                                                image.main.eq(true)),
-                                "planImagePath"
-                        ),
-                        plan.opened,
                         plan.fulled
                 ))
                 .from(plan)
@@ -312,13 +302,13 @@ public class MeetingQueryDslImpl implements MeetingQueryDsl {
                 .collect(Collectors.groupingBy(
                         MeetingListPlanListResponse::getMeetingId,
                         LinkedHashMap::new,
-                        Collectors.collectingAndThen(Collectors.toList(), list -> list.stream().limit(3).toList())
+                        Collectors.collectingAndThen(Collectors.toList(), list -> list.stream().limit(4).toList())
                 ));
         // 3️⃣ meetingListResponses에 planList 추가
         for (MeetingListResponseV2 response : meetingListResponses) {
             response.setPlanList(planMap.getOrDefault(response.getMeetingId(), new ArrayList<>()));
         }
-        
+
         long meetingCount = Optional.ofNullable(
                 queryFactory
                         .select(meeting.count())

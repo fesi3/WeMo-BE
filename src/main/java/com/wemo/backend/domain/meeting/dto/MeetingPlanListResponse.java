@@ -22,10 +22,20 @@ public class MeetingPlanListResponse {
 
     private String planImagePath;
 
-    @JsonProperty("isOpened")
     private boolean isOpened;
 
-    @JsonProperty("isFulled")
+    @JsonProperty("isOpened")
+    public boolean getIsOpened() {
+
+        return isOpened;
+    }
+
     private boolean isFulled;
+
+    @JsonProperty("isFulled")
+    public boolean getIsFulled() {
+
+        return isFulled;
+    }
 
 }

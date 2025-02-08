@@ -135,6 +135,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 uri -> uri.equals("/api/lightnings") || uri.startsWith("/api/lightnings?"), req -> true,
                 uri -> uri.matches("^/api/lightnings/\\d+$"), req -> accessToken == null,
                 uri -> uri.startsWith("/api/meetings"), req -> accessToken == null,
+                uri -> uri.matches("^/api/meetings/\\d+$"), req -> accessToken == null,
                 uri -> uri.startsWith("/api/plans") && !uri.contains("like"), req -> accessToken == null,
                 uri -> uri.startsWith("/api/reviews"), req -> true
         );
