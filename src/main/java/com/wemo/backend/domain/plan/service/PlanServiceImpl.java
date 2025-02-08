@@ -20,10 +20,7 @@ import com.wemo.backend.domain.plan.dto.PlanDetailResponse;
 import com.wemo.backend.domain.plan.entity.Plan;
 import com.wemo.backend.domain.plan.repository.PlanRepository;
 import com.wemo.backend.domain.region.entity.District;
-import com.wemo.backend.domain.region.entity.Province;
-import com.wemo.backend.domain.region.repository.DistrictRepository;
-import com.wemo.backend.domain.region.repository.ProvinceRepository;
-import com.wemo.backend.domain.region.service.RegionServiceImpl;
+import com.wemo.backend.domain.region.service.RegionStore;
 import com.wemo.backend.domain.user.dto.UserListInfo;
 import com.wemo.backend.domain.user.dto.UserPlanPagingResponse;
 import com.wemo.backend.domain.user.entity.User;
@@ -35,7 +32,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -45,8 +41,7 @@ public class PlanServiceImpl implements PlanService {
 
     private final UserReader userReader;
     private final MeetingReader meetingReader;
-    private final ProvinceRepository provinceRepository;
-    private final DistrictRepository districtRepository;
+    private final RegionStore regionStore;
     private final ImageStore imageStore;
     private final PlanStore planStore;
     private final PlanReader planReader;
@@ -75,9 +70,7 @@ public class PlanServiceImpl implements PlanService {
 
         commUtilService.validateMeetingOwner(user, meeting);
 
-        Map<String, String> parsedAddress = RegionServiceImpl.parseAddress(request.getAddress());
-        Province province = getOrSaveProvince(parsedAddress.get("province"));
-        District district = getOrSaveDistrict(parsedAddress.get("district"), province);
+        District district = regionStore.parseAndGetDistrict(request.getAddress());
 
         Plan plan = planStore.storePlan(request, district, user, meeting);
         log.info("일정 id {} 저장 완료", plan.getId());
@@ -90,18 +83,6 @@ public class PlanServiceImpl implements PlanService {
         }
 
         return PlanCreateResponse.fromEntity(plan, meeting);
-    }
-
-    private Province getOrSaveProvince(String provinceName) {
-
-        return provinceRepository.findByProvinceName(provinceName)
-                .orElseGet(() -> provinceRepository.save(new Province(provinceName)));
-    }
-
-    private District getOrSaveDistrict(String districtName, Province province) {
-
-        return districtRepository.findByDistrictNameAndProvince(districtName, province)
-                .orElseGet(() -> districtRepository.save(new District(districtName, province)));
     }
 
     /**
