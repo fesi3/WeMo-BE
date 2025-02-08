@@ -1,6 +1,5 @@
 package com.wemo.backend.domain.region.service;
 
-import com.wemo.backend.domain.region.dto.ProvinceListResponse;
 import com.wemo.backend.domain.region.entity.District;
 import com.wemo.backend.domain.region.entity.Province;
 import com.wemo.backend.domain.region.repository.DistrictRepository;
