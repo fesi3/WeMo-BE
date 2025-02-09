@@ -10,6 +10,6 @@ public interface UserAuth {
 
     String saveRefreshTokenToRedis(User user);
 
-    void generateHeaderTokens(User user, HttpServletRequest request, HttpServletResponse response);
+    void generateCookieTokens(User user, HttpServletRequest request, HttpServletResponse response);
 
 }

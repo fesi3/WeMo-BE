@@ -53,7 +53,7 @@ public class UserAuthImpl implements UserAuth {
      * @param user 유저 객체
      */
     @Override
-    public void generateHeaderTokens(User user, HttpServletRequest request, HttpServletResponse response) {
+    public void generateCookieTokens(User user, HttpServletRequest request, HttpServletResponse response) {
 
         String accessToken = getAccessToken(user);
         String refreshToken = saveRefreshTokenToRedis(user);
