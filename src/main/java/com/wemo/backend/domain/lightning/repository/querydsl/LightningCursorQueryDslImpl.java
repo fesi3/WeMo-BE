@@ -124,7 +124,7 @@ public class LightningCursorQueryDslImpl implements LightningCursorQueryDsl {
                 double radiusInMeters = radius * 1000; // km → m 변환
 
                 NumberExpression<Double> distance = Expressions.numberTemplate(Double.class,
-                        "ST_Distance_Sphere(point({0}, {1}), point(plan.longitude, plan.latitude))",
+                        "ST_Distance_Sphere(point({0}, {1}), point(lightning.longitude, lightning.latitude))",
                         longitude, latitude);
 
                 condition = condition.and(distance.loe(radiusInMeters));
