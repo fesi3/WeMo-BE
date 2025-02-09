@@ -142,7 +142,7 @@ public class JwtTokenProvider {
                 log.info("유효한 refreshToken입니다.");
                 return true;
             } else {
-                log.warn("DB에 해당 refreshToken이 존재하지 않습니다.");
+                log.warn("Redis에 해당 refreshToken이 존재하지 않습니다.");
             }
         } catch (TokenExpiredException e) {
             log.warn("refreshToken이 만료되었습니다.: {}", e.getMessage());
