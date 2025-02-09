@@ -96,7 +96,7 @@ public class UserServiceImpl implements UserService {
         User user = userReader.getUser(signinRequest.getEmail(), signinRequest.getPassword());
         log.info("사용자 {} 로그인 성공", user.getEmail());
 
-        userAuth.generateHeaderTokens(user, request, response);
+        userAuth.generateCookieTokens(user, request, response);
     }
 
     /**
@@ -109,15 +109,25 @@ public class UserServiceImpl implements UserService {
     public String signout(HttpServletRequest request, HttpServletResponse response) {
 
         String refreshToken = getTokenFromCookie(request, "Refresh-Token");
+        log.info("Extracted refreshToken: {}", refreshToken);
+        // ✅ refreshToken이 null이면 바로 종료
+        if (refreshToken == null) {
+            log.warn("로그아웃 실패: RefreshToken이 존재하지 않음");
+            return "로그아웃 실패: RefreshToken이 존재하지 않음";
+        }
 
         // accessToken 검증 무효화 처리
         accessTokenManager.deleteAccessTokenInCookie(response);
 
         // refreshToken 삭제
         RefreshToken findRefreshToken = refreshTokenManager.getRefreshToken(refreshToken);
+        if (findRefreshToken == null) {
+            log.warn("로그아웃 실패: 해당 RefreshToken이 존재하지 않음");
+            return "로그아웃 실패: 해당 RefreshToken이 존재하지 않음";
+        }
         refreshTokenManager.deleteRefreshTokenInCookie(response);
         refreshTokenRepository.delete(findRefreshToken);
-        log.info("refreshToken 삭제 완료");
+        log.info("Redis에서 refreshToken 삭제 완료");
 
         return "로그아웃 성공";
     }
