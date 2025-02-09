@@ -5,6 +5,7 @@ import com.querydsl.core.types.ConstructorExpression;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.wemo.backend.domain.image.entity.Image;
 import com.wemo.backend.domain.lightning.repository.querydsl.LightningCursorQueryDslImpl;
@@ -21,7 +22,6 @@ import java.util.Optional;
 
 import static com.wemo.backend.domain.attendance.entity.QAttendance.attendance;
 import static com.wemo.backend.domain.image.entity.QImage.image;
-import static com.wemo.backend.domain.lightning.repository.querydsl.LightningCursorQueryDslImpl.buildAddressFilter;
 import static com.wemo.backend.domain.like.entity.QLikes.likes;
 import static com.wemo.backend.domain.meeting.entity.QMeeting.meeting;
 import static com.wemo.backend.domain.plan.entity.QPlan.plan;
@@ -211,6 +211,23 @@ public class PlanCursorQueryDslImpl implements PlanCursorQueryDsl {
 
         // 위치 기반 필터링 추가 (필터가 없는 경우)
         return buildAddressFilter(province, district, latitude, longitude, radius, booleanExpression);
+    }
+
+    public static BooleanExpression buildAddressFilter(String province, String district, Double latitude, Double longitude, Double radius, BooleanExpression condition) {
+
+        if ((province == null || province.isEmpty()) && (district == null || district.isEmpty())) {
+            if (latitude != null && longitude != null && radius != null) {
+                double radiusInMeters = radius * 1000; // km → m 변환
+
+                NumberExpression<Double> distance = Expressions.numberTemplate(Double.class,
+                        "ST_Distance_Sphere(point({0}, {1}), point(plan.longitude, plan.latitude))",
+                        longitude, latitude);
+
+                condition = condition.and(distance.loe(radiusInMeters));
+            }
+        }
+
+        return condition;
     }
 
     static BooleanExpression buildFilterForPlanList(String query, String province, String district, String startDate, String endDate, Long categoryId) {
