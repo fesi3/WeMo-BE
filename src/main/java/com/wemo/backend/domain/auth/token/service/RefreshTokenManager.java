@@ -1,7 +1,7 @@
 package com.wemo.backend.domain.auth.token.service;
 
 import com.wemo.backend.domain.auth.token.entity.RefreshToken;
-import com.wemo.backend.domain.auth.token.repository.RefreshTokenRepository;
+import com.wemo.backend.domain.auth.token.repository.RefreshTokenRedisRepository;
 import com.wemo.backend.global.exception.CustomException;
 import com.wemo.backend.global.exception.ErrorCode;
 import jakarta.servlet.http.Cookie;
@@ -10,8 +10,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Component;
@@ -19,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 
 import static com.wemo.backend.global.exception.ErrorCode.INVALID_REFRESH_TOKEN;
 
@@ -28,14 +25,12 @@ import static com.wemo.backend.global.exception.ErrorCode.INVALID_REFRESH_TOKEN;
 @RequiredArgsConstructor
 public class RefreshTokenManager {
 
-    private final RefreshTokenRepository refreshTokenRepository;
+    private final RefreshTokenRedisRepository refreshTokenRedisRepository;
     private final JwtTokenUtils jwtTokenUtils;
     private final AccessTokenManager accessTokenManager;
 
     @Value("${REFRESH_TOKEN_EXPIRATION}")
     private int REFRESH_TOKEN_EXPIRATION;
-
-    private final RedisTemplate<String, String> redisTemplate;
 
     /**
      * JWT refreshToken 생성 및 저장
@@ -48,33 +43,8 @@ public class RefreshTokenManager {
 
         String refreshToken = jwtTokenUtils.generateRefreshToken(email);
 
-        Optional<RefreshToken> existingToken = refreshTokenRepository.findByRefreshToken(email);
-
-        if (existingToken.isPresent()) {
-            log.info("existingToken : {}", existingToken.get());
-            refreshTokenRepository.delete(existingToken.get());
-            log.info("기존에 존재하는 refreshToken DB에서 삭제 완료");
-        }
-
-        redisTemplate.delete("email:" + email);
-        log.info("기존에 존재하는 refreshToken DB에서 삭제 완료");
-
-        // 새 refreshToken DB에 저장
-        refreshTokenRepository.save(new RefreshToken(refreshToken, email));
-
-        // Redis에서 기존에 발급된 refreshToken 있는지 확인
-        ValueOperations<String, String> valueOperations = redisTemplate.opsForValue();
-        String existingRedisToken = valueOperations.get(refreshToken);
-
-        // 기존 refreshToken이 Redis에 존재하면 삭제
-        if (existingRedisToken != null && !existingRedisToken.isEmpty()) {
-            redisTemplate.delete(existingRedisToken);
-            log.info("기존 refreshToken Redis에서 삭제 완료");
-        }
-
         // 새 refreshToken을 Redis에 저장
-        redisTemplate.opsForValue().set(refreshToken, email, REFRESH_TOKEN_EXPIRATION, TimeUnit.MILLISECONDS);
-        log.info("새로운 refreshToken Redis에 저장 완료");
+        refreshTokenRedisRepository.saveToRedis(new RefreshToken(refreshToken, email));
 
         return refreshToken;
     }
@@ -87,7 +57,7 @@ public class RefreshTokenManager {
      */
     public RefreshToken getRefreshToken(String refreshToken) {
 
-        return refreshTokenRepository.findByRefreshToken(refreshToken).orElseThrow(
+        return refreshTokenRedisRepository.findByRefreshToken(refreshToken).orElseThrow(
                 () -> new CustomException(INVALID_REFRESH_TOKEN)
         );
 
@@ -101,7 +71,7 @@ public class RefreshTokenManager {
      */
     public String validateRefreshToken(String refreshToken) {
 
-        Optional<RefreshToken> token = refreshTokenRepository.findByRefreshToken(refreshToken);
+        Optional<RefreshToken> token = refreshTokenRedisRepository.findByRefreshToken(refreshToken);
         return token.map(RefreshToken::email).orElse(null);
     }
 
@@ -147,21 +117,20 @@ public class RefreshTokenManager {
      */
     public void setRefreshTokenInCookie(String refreshToken, HttpServletRequest request, HttpServletResponse response) {
 
-        // domain 을 동적으로 설정: 로컬에서는 "localhost", 배포 환경에서는 ".we-mo.store"
-        String domain = request.getServerName().contains("localhost") ? "localhost" : ".we-mo.store";
+        // domain 을 동적으로 설정: 로컬에서는 "localhost", 배포 환경에서는 "we-mo.store"
+        String domain = request.getServerName().contains("localhost") ? "localhost" : "we-mo.store";
 
         // 현재 시간 + 10분
         Date expiryDate = new Date(System.currentTimeMillis() + 10 * 60 * 1000);
+//        Date expiryDate = new Date(System.currentTimeMillis() + REFRESH_TOKEN_EXPIRATION);
 
         ResponseCookie cookie = ResponseCookie.from("Refresh-Token", refreshToken)
-//                .maxAge(24 * 60 * 60)
                 .domain(domain)
                 .sameSite("None")
                 .secure(true)
                 .httpOnly(true)
                 .path("/")
                 .build();
-//        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
         // 쿠키 설정 후 만료 시간을 Expires 헤더에 추가
         String cookieWithExpiry = cookie + "; Expires=" + expiryDate;
@@ -173,7 +142,7 @@ public class RefreshTokenManager {
     public void deleteRefreshTokenInCookie(HttpServletResponse response) {
 
         // "Refresh-Token" 쿠키 삭제를 위한 설정
-        ResponseCookie cookie = ResponseCookie.from("Refresh-Token", "")
+        ResponseCookie cookie = ResponseCookie.from("Refresh-Token", null)
                 .maxAge(0)  // 유효기간을 0으로 설정해서 삭제
                 .sameSite("None")
                 .secure(true)
@@ -184,12 +153,15 @@ public class RefreshTokenManager {
         // 쿠키 삭제를 위한 헤더 추가
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
-        log.info("Refresh-Token 쿠키 삭제 완료");
+        log.info("refreshToken 쿠키 삭제 완료");
     }
 
-    public boolean existsByEmail(String email) {
+    public boolean existsByRefreshToken(String refreshToken) {
 
-        return refreshTokenRepository.findByRefreshToken(email).isPresent();
+        log.info("existsByRefreshToken()에서 받은 refreshToken : {}", refreshToken);
+
+        return refreshTokenRedisRepository.findByRefreshToken(refreshToken).isPresent();
     }
 
 }
+

@@ -3,6 +3,7 @@ package com.wemo.backend.domain.auth.token.service;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Component;
@@ -13,6 +14,9 @@ import java.util.Date;
 @Component
 public class AccessTokenManager {
 
+    @Value("${ACCESS_TOKEN_EXPIRATION}")
+    private int ACCESS_TOKEN_EXPIRATION;
+
     /**
      * accessToken 을 쿠키에 저장
      *
@@ -22,9 +26,10 @@ public class AccessTokenManager {
 
         // 현재 시간 + 1분
         Date expiryDate = new Date(System.currentTimeMillis() + 60 * 1000);
+//        Date expiryDate = new Date(System.currentTimeMillis() + ACCESS_TOKEN_EXPIRATION);
 
-        // domain 을 동적으로 설정: 로컬에서는 "localhost", 배포 환경에서는 ".we-mo.store"
-        String domain = request.getServerName().contains("localhost") ? "localhost" : ".we-mo.store";
+        // domain 을 동적으로 설정: 로컬에서는 "localhost", 배포 환경에서는 "we-mo.store"
+        String domain = request.getServerName().contains("localhost") ? "localhost" : "we-mo.store";
 
         // 로컬 환경에서는 Secure 비활성화, 배포 환경에서는 활성화
         boolean isLocal = request.getServerName().contains("localhost");
@@ -32,7 +37,7 @@ public class AccessTokenManager {
 
         // 쿠키 생성
         ResponseCookie cookie = ResponseCookie.from("accessToken", accessToken)
-                .domain(domain)          // 도메인 동적 설정
+                .domain(domain)           // 도메인 동적 설정
                 .sameSite("None")         // SameSite 설정
                 .secure(isSecure)         // secure 값 동적 설정
                 .httpOnly(true)           // httpOnly 설정
