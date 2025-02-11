@@ -1,13 +1,16 @@
 package com.wemo.backend.domain.plan.repository.querydsl;
 
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.PathBuilder;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.wemo.backend.domain.image.entity.Image;
 import com.wemo.backend.domain.plan.dto.PlanListResponse;
+import com.wemo.backend.domain.plan.entity.Plan;
 import com.wemo.backend.domain.region.entity.QDistrict;
 import com.wemo.backend.domain.region.entity.QProvince;
 import jakarta.persistence.EntityManager;
@@ -38,6 +41,20 @@ public class PlanQueryDslImpl implements PlanQueryDsl {
     }
 
     private static final String DEFAULT_SORT_FIELD = "createdAt";
+    private static final PathBuilder<Plan> planPath = new PathBuilder<>(Plan.class, "plan");
+
+    public OrderSpecifier<?> getOrderSpecifier(String sortField) {
+
+        if (sortField == null || sortField.isEmpty()) {
+            sortField = DEFAULT_SORT_FIELD;
+        }
+
+        if ("closeDate".equals(sortField)) {
+            return planPath.getDate("registrationEnd", LocalDateTime.class).asc().nullsLast();
+        } else {
+            return planPath.getDate("createdAt", LocalDateTime.class).desc();
+        }
+    }
 
     @Override
     public Page<PlanListResponse> getLikedPlanList(String email, Pageable pageable, String query, String province, String district, String startDate, String endDate, Long categoryId, String sort) {
@@ -138,7 +155,10 @@ public class PlanQueryDslImpl implements PlanQueryDsl {
                 .where(likes.user.email.eq(email)) // 유저가 좋아요한 일정
                 .where(plan.canceled.eq(false))
                 .where(plan.meeting.deletedAt.isNull())
-                .orderBy(sortField.equals("closeDate") ? plan.registrationEnd.asc() : plan.createdAt.desc());
+                .orderBy(
+                        getOrderSpecifier(sortField),
+                        plan.createdAt.asc() // 마감일자가 같으면 일정 생성일자 기준 추가 정렬
+                );
 
         List<PlanListResponse> planListResponses = queryBuilder
                 .limit(pageable.getPageSize())
