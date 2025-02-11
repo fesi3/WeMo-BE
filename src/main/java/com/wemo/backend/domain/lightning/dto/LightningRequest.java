@@ -17,10 +17,6 @@ public class LightningRequest {
     @Min(value = 1, message = "모임 타입 id는 1 이상이어야 합니다.")
     private Long lightningTypeId;
 
-    @NotNull(message = "모임 시간 id는 필수 입력 값입니다.")
-    @Min(value = 1, message = "모임 시간 id는 1 이상이어야 합니다.")
-    private Integer dateTypeId;
-
     @NotNull(message = "모임 날짜는 필수 입력 값입니다.")
     @Future(message = "모임 날짜는 현재 날짜 이후여야 합니다.")
     private LocalDateTime lightningDate;
