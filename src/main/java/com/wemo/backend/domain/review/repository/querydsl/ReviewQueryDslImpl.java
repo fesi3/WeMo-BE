@@ -1,8 +1,10 @@
 package com.wemo.backend.domain.review.repository.querydsl;
 
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.PathBuilder;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.wemo.backend.domain.image.entity.Image;
@@ -14,6 +16,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -128,12 +131,18 @@ public class ReviewQueryDslImpl implements ReviewQueryDsl {
             }
         }
 
-        // 정렬 조건 적용
+        queryBuilder.orderBy(getOrderSpecifier(sort));
+
+    }
+
+    private OrderSpecifier<?> getOrderSpecifier(String sort) {
+
+        PathBuilder<?> entityPath = new PathBuilder<>(review.getType(), "review");
+
         if ("ratingOrder".equals(sort)) {
-            queryBuilder.orderBy(review.score.desc());
-        } else {
-            queryBuilder.orderBy(review.createdAt.desc());
+            return entityPath.getNumber("score", Double.class).desc();
         }
+        return entityPath.getDateTime("createdAt", LocalDateTime.class).desc();
     }
 
     // 필터링된 총 개수를 위한 메서드

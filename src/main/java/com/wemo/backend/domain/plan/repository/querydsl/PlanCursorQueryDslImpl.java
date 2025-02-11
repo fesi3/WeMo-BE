@@ -2,10 +2,12 @@ package com.wemo.backend.domain.plan.repository.querydsl;
 
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.ConstructorExpression;
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
+import com.querydsl.core.types.dsl.PathBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.wemo.backend.domain.image.entity.Image;
 import com.wemo.backend.domain.lightning.repository.querydsl.LightningCursorQueryDslImpl;
@@ -32,13 +34,27 @@ import static com.wemo.backend.domain.user.entity.QUser.user;
 @Slf4j
 public class PlanCursorQueryDslImpl implements PlanCursorQueryDsl {
 
-    private static final String DEFAULT_SORT_FIELD = "createdAt";
-
     private final JPAQueryFactory queryFactory;
 
     public PlanCursorQueryDslImpl(EntityManager em) {
 
         this.queryFactory = new JPAQueryFactory(em);
+    }
+
+    private static final String DEFAULT_SORT_FIELD = "createdAt";
+    private static final PathBuilder<Plan> planPath = new PathBuilder<>(Plan.class, "plan");
+
+    public OrderSpecifier<?> getOrderSpecifier(String sortField) {
+
+        if (sortField == null || sortField.isEmpty()) {
+            sortField = DEFAULT_SORT_FIELD;
+        }
+
+        if ("closeDate".equals(sortField)) {
+            return planPath.getDate("registrationEnd", LocalDateTime.class).asc().nullsLast();
+        } else {
+            return planPath.getDate("createdAt", LocalDateTime.class).desc();
+        }
     }
 
     @Override
@@ -98,10 +114,9 @@ public class PlanCursorQueryDslImpl implements PlanCursorQueryDsl {
                 .where(plan.canceled.eq(false))
                 .where(plan.meeting.deletedAt.isNull())
                 .orderBy(
-                        sortField.equals("closeDate")
-                                ? plan.registrationEnd.asc().nullsLast()
-                                : plan.createdAt.desc(),
-                        plan.id.asc()) // 마감일자가 같으면 planId 기준 추가 정렬
+                        getOrderSpecifier(sortField),
+                        plan.createdAt.asc() // 마감일자가 같으면 일정 생성일자 기준 추가 정렬
+                )
                 .limit(size)
                 .fetch();
 

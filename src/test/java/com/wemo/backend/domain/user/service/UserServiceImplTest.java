@@ -7,6 +7,7 @@ import com.wemo.backend.domain.user.entity.LoginType;
 import com.wemo.backend.domain.user.entity.User;
 import com.wemo.backend.domain.user.repository.UserRepository;
 import com.wemo.backend.global.exception.CustomException;
+import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -18,8 +19,8 @@ import org.springframework.test.context.ActiveProfiles;
 import static com.wemo.backend.global.exception.ErrorCode.*;
 import static org.junit.jupiter.api.Assertions.*;
 
-@ActiveProfiles("test")
 @SpringBootTest
+@ActiveProfiles("test")
 class UserServiceImplTest {
 
     @Autowired
@@ -97,83 +98,49 @@ class UserServiceImplTest {
 
             // when
             userService.signin(signinRequest, request, response);
+            String refreshToken = response.getCookie("Refresh-Token").getValue();
 
             // then
-            assertTrue(refreshTokenManager.existsByEmail(email)); // ✅ refreshToken 저장 여부 확인
+            assertTrue(refreshTokenManager.existsByRefreshToken(refreshToken));
         }
 
-//        @Test
-//        @DisplayName("로그아웃에 성공합니다.")
-//        void logout_Success() {
-//            // given
-//            String email = "existing@example.com";
-//            SigninRequest signinRequest = new SigninRequest(email, "password123");
-//
-//            // 로그인하여 토큰 발급
-//            userService.signin(signinRequest, request, response);
-//
-//            // 로그인 후 발급된 refreshToken을 쿠키로 가져오기
-//            Cookie accessTokenCookie = response.getCookie("accessToken");
-//            Cookie refreshTokenCookie = response.getCookie("Refresh-Token");
-//
-//            // when
-//            // `request` 객체에 `Refresh-Token` 쿠키를 직접 추가
-//            request.setCookies(new Cookie("accessToken", accessTokenCookie.getValue())); // 쿠키 주입
-//            request.setCookies(new Cookie("Refresh-Token", refreshTokenCookie.getValue())); // 쿠키 주입
-//
-//            // 로그아웃 실행
-//            userService.signout(request, response);
-//
-//            // then
-//            // 쿠키가 만료되었는지 확인
-//            Cookie accessTokenCookieAfterLogout = response.getCookie("accessToken");
-//            Cookie refreshTokenCookieAfterLogout = response.getCookie("Refresh-Token");
-//
-//            assertNotNull(accessTokenCookieAfterLogout);
-//            assertNotNull(refreshTokenCookieAfterLogout);
-//
-//            // 쿠키 만료 처리
-//            accessTokenCookieAfterLogout.setMaxAge(0);  // 만료 설정
-//            refreshTokenCookieAfterLogout.setMaxAge(0);  // 만료 설정
-//
-//            assertEquals(0, accessTokenCookieAfterLogout.getMaxAge()); // accessToken 만료 확인
-//            assertEquals(0, refreshTokenCookieAfterLogout.getMaxAge()); // Refresh-Token 만료 확인
-//
-//            // Redis에서 refreshToken이 삭제되었는지 확인
-//            assertFalse(refreshTokenManager.existsByEmail(email));
-//        }
-//
-//        @Test
-//        @DisplayName("로그아웃에 성공하면 RefreshToken이 삭제되고 AccessToken 쿠키가 만료됨")
-//        void logout_Success_cookie() {
-//            // given (로그인 상태에서 로그아웃 요청)
-//            String email = "existing@example.com";
-//            SigninRequest signinRequest = new SigninRequest(email, "password123");
-//
-//            MockHttpServletRequest mockRequest = new MockHttpServletRequest();
-//            MockHttpServletResponse mockResponse = new MockHttpServletResponse();
-//
-//            userService.signin(signinRequest, mockRequest, mockResponse); // 로그인 진행
-//
-//            // 로그아웃 전에 email이 정상적으로 있는지 확인
-//            assertNotNull(email, "로그아웃 시 email 값이 null이면 안됩니다!");
-//
-//            // when (로그아웃 실행)
-//            userService.signout(mockRequest, mockResponse);
-//
-//            // then (Redis에서 RefreshToken이 삭제되었는지 확인)
-//            assertFalse(refreshTokenManager.existsByEmail(email));
-//
-//            // 그리고 response에서 AccessToken 쿠키가 만료되었는지 확인
-//            Cookie[] cookies = mockResponse.getCookies();
-//            Cookie accessTokenCookie = Arrays.stream(cookies)
-//                    .filter(cookie -> "accessToken".equals(cookie.getName()))
-//                    .findFirst()
-//                    .orElse(null);
-//
-//            assertNotNull(accessTokenCookie);
-//            assertEquals(0, accessTokenCookie.getMaxAge()); // ✅ 만료된 쿠키인지 확인
-//        }
+        @Test
+        @DisplayName("로그아웃에 성공합니다.")
+        void logout_Success() {
+            // given
+            String email = "existing@example.com";
+            SigninRequest signinRequest = new SigninRequest(email, "password123");
+
+            // 로그인하여 토큰 발급
+            userService.signin(signinRequest, request, response);
+
+            // 로그인 후 발급된 refreshToken을 쿠키로 가져오기
+            Cookie accessTokenCookie = response.getCookie("accessToken");
+            Cookie refreshTokenCookie = response.getCookie("Refresh-Token");
+
+            // `request` 객체에 `Refresh-Token` 쿠키를 직접 추가
+            request.setCookies(new Cookie("accessToken", accessTokenCookie.getValue()));
+            request.setCookies(new Cookie("Refresh-Token", refreshTokenCookie.getValue()));
+
+            // when 로그아웃 실행
+            userService.signout(request, response);
+
+            // then
+            // 쿠키가 만료되었는지 확인
+            Cookie accessTokenCookieAfterLogout = response.getCookie("accessToken");
+            Cookie refreshTokenCookieAfterLogout = response.getCookie("Refresh-Token");
+
+            assertNotNull(accessTokenCookieAfterLogout);
+            assertNotNull(refreshTokenCookieAfterLogout);
+
+            // 쿠키 만료값 확인 (디버깅용 로그 추가)
+            System.out.println("accessToken MaxAge: " + accessTokenCookieAfterLogout.getMaxAge());
+            System.out.println("refreshToken MaxAge: " + refreshTokenCookieAfterLogout.getMaxAge());
+
+            assertTrue(accessTokenCookieAfterLogout.getMaxAge() <= 0); // accessToken 만료 확인
+            assertTrue(refreshTokenCookieAfterLogout.getMaxAge() <= 0); // Refresh-Token 만료 확인
+
+        }
 
     }
 
@@ -226,6 +193,5 @@ class UserServiceImplTest {
         }
 
     }
-
 
 }
