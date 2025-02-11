@@ -9,8 +9,10 @@ import com.wemo.backend.domain.region.entity.District;
 import com.wemo.backend.domain.user.entity.User;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class LightningStoreImpl implements LightningStore {
@@ -25,7 +27,7 @@ public class LightningStoreImpl implements LightningStore {
                 .user(user)
                 .lightningName(request.getLightningName())
                 .lightningType(lightningType)
-                .dateType(DateType.fromId(request.getDateTypeId()))
+                .dateType(DateType.typeConverter(request.getLightningDate()))
                 .lightningDate(request.getLightningDate())
                 .lightningContent(request.getLightningContent())
                 .lightningCapacity(request.getLightningCapacity())
