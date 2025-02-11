@@ -5,7 +5,7 @@ import com.wemo.backend.domain.attendance.service.AttendanceReader;
 import com.wemo.backend.domain.attendance.service.AttendanceStore;
 import com.wemo.backend.domain.auth.UserAuth;
 import com.wemo.backend.domain.auth.token.entity.RefreshToken;
-import com.wemo.backend.domain.auth.token.repository.RefreshTokenRepository;
+import com.wemo.backend.domain.auth.token.repository.RefreshTokenRedisRepository;
 import com.wemo.backend.domain.auth.token.service.AccessTokenManager;
 import com.wemo.backend.domain.auth.token.service.RefreshTokenManager;
 import com.wemo.backend.domain.like.entity.Likes;
@@ -43,7 +43,7 @@ public class UserServiceImpl implements UserService {
     private final UserReader userReader;
     private final UserAuth userAuth;
     private final RefreshTokenManager refreshTokenManager;
-    private final RefreshTokenRepository refreshTokenRepository;
+    private final RefreshTokenRedisRepository refreshTokenRedisRepository;
     private final UserRepository userRepository;
     private final AttendanceReader attendanceReader;
     private final LikeReader likeReader;
@@ -109,24 +109,15 @@ public class UserServiceImpl implements UserService {
     public String signout(HttpServletRequest request, HttpServletResponse response) {
 
         String refreshToken = getTokenFromCookie(request, "Refresh-Token");
-        log.info("Extracted refreshToken: {}", refreshToken);
-        // ✅ refreshToken이 null이면 바로 종료
-        if (refreshToken == null) {
-            log.warn("로그아웃 실패: RefreshToken이 존재하지 않음");
-            return "로그아웃 실패: RefreshToken이 존재하지 않음";
-        }
+        log.info("로그아웃 요청: refreshToken : {}", refreshToken);
 
         // accessToken 검증 무효화 처리
         accessTokenManager.deleteAccessTokenInCookie(response);
 
-        // refreshToken 삭제
-        RefreshToken findRefreshToken = refreshTokenManager.getRefreshToken(refreshToken);
-        if (findRefreshToken == null) {
-            log.warn("로그아웃 실패: 해당 RefreshToken이 존재하지 않음");
-            return "로그아웃 실패: 해당 RefreshToken이 존재하지 않음";
-        }
+        // refreshToken 삭제 및 무효화 처리
         refreshTokenManager.deleteRefreshTokenInCookie(response);
-        refreshTokenRepository.delete(findRefreshToken);
+        RefreshToken findRefreshToken = refreshTokenManager.getRefreshToken(refreshToken);
+        refreshTokenRedisRepository.delete(findRefreshToken);
         log.info("Redis에서 refreshToken 삭제 완료");
 
         return "로그아웃 성공";
