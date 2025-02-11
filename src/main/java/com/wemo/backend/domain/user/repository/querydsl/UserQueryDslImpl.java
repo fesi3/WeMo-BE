@@ -5,6 +5,7 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
+import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.wemo.backend.domain.image.entity.Image;
@@ -136,7 +137,6 @@ public class UserQueryDslImpl implements UserQueryDsl {
         whereClause.and(plan.deletedAt.isNull().and(plan.dateTime.after(nowKST)));
         if (isMyPlan) {
             log.info("{}가 만든 일정 목록 조회 요청", email);
-
             whereClause.and(plan.user.email.eq(email));
         } else {
             log.info("{}가 참여한 일정 목록 조회 요청", email);
@@ -188,24 +188,11 @@ public class UserQueryDslImpl implements UserQueryDsl {
                                                 .where(plan.district.id.eq(district.id)),
                                         "district"
                                 ),
-                                Expressions.as(
-                                        queryFactory.select(image.fileUrl)
-                                                .from(image)
-                                                .where(image.entityId.eq(plan.id),
-                                                        image.entityType.eq(Image.EntityType.PLAN),
-                                                        image.main.eq(true)),
-                                        "planImagePath"
-                                ),
+                                Expressions.as(getPlanImageQuery(), "planImagePath"),
                                 plan.dateTime,
                                 plan.registrationEnd,
                                 plan.capacity,
-                                Expressions.as(
-                                        queryFactory.select(attendance.count())
-                                                .from(attendance)
-                                                .where(attendance.plan.id.eq(plan.id)
-                                                        .and(attendance.deletedAt.isNull())),
-                                        "participants"
-                                ),
+                                Expressions.as(getParticipantCountQuery(), "participants"),
                                 Expressions.as(
                                         queryFactory.select(likes.count())
                                                 .from(likes)
@@ -263,14 +250,7 @@ public class UserQueryDslImpl implements UserQueryDsl {
                                 review.id,
                                 review.score,
                                 review.comment,
-                                Expressions.as(
-                                        queryFactory.select(image.fileUrl)
-                                                .from(image)
-                                                .where(image.entityId.eq(plan.id),
-                                                        image.entityType.eq(Image.EntityType.PLAN),
-                                                        image.main.eq(true)),
-                                        "planImagePath"
-                                ),
+                                Expressions.as(getPlanImageQuery(), "planImagePath"),
                                 review.createdAt,
                                 review.updatedAt,
                                 review.plan.id,
@@ -332,8 +312,9 @@ public class UserQueryDslImpl implements UserQueryDsl {
 
         LocalDateTime nowKST = LocalDateTime.now(ZoneOffset.ofHours(9));
         BooleanExpression isCompleted = plan.dateTime.before(nowKST);
+        BooleanExpression baseCondition = getBaseCondition(email, isCompleted);
 
-        JPAQuery<UserPlanReviewableListResponse> queryBuilder = queryFactory
+        JPAQuery<UserPlanReviewableListResponse> queryBuilder = baseQuery()
                 .select(
                         Projections.constructor(
                                 UserPlanReviewableListResponse.class,
@@ -342,70 +323,51 @@ public class UserQueryDslImpl implements UserQueryDsl {
                                 plan.dateTime,
                                 category.categoryName,
                                 plan.address,
-                                Expressions.as(
-                                        queryFactory.select(image.fileUrl)
-                                                .from(image)
-                                                .where(image.entityId.eq(plan.id),
-                                                        image.entityType.eq(Image.EntityType.PLAN),
-                                                        image.main.eq(true)),
-                                        "planImagePath"
-                                ),
+                                Expressions.as(getPlanImageQuery(), "planImagePath"),
                                 plan.capacity,
-                                Expressions.as(
-                                        queryFactory.select(attendance.count())
-                                                .from(attendance)
-                                                .where(attendance.plan.id.eq(plan.id)
-                                                        .and(attendance.deletedAt.isNull())),
-                                        "participants"
-                                ),
+                                Expressions.as(getParticipantCountQuery(), "participants"),
                                 plan.createdAt,
                                 plan.updatedAt
                         )
                 )
+                .where(baseCondition)
+                .groupBy(plan.id)
+                .orderBy(plan.createdAt.desc())
+                .limit(pageable.getPageSize())
+                .offset(pageable.getOffset());
+
+        List<UserPlanReviewableListResponse> reviewListResponses = queryBuilder.fetch();
+
+        long total = Optional.ofNullable(
+                baseQuery()
+                        .select(plan.count())
+                        .where(baseCondition)
+                        .fetchOne()
+        ).orElse(0L);
+
+        return new PageImpl<>(reviewListResponses, pageable, total);
+    }
+
+    private BooleanExpression getBaseCondition(String email, BooleanExpression isCompleted) {
+
+        return isCompleted
+                .and(attendance.user.email.eq(email))
+                .and(attendance.reviewed.eq(false))
+                .and(plan.dateTime.before(LocalDateTime.now()))
+                .and(plan.deletedAt.isNull())
+                .and(plan.meeting.deletedAt.isNull())
+                .and(plan.opened.eq(true));
+    }
+
+    private JPAQuery<?> baseQuery() {
+
+        return queryFactory
                 .from(attendance)
                 .leftJoin(attendance.plan, plan)
                 .leftJoin(plan.meeting, meeting)
                 .leftJoin(meeting.category, category)
                 .leftJoin(attendance.user, user)
-                .leftJoin(review).on(review.plan.id.eq(plan.id))
-                .where(
-                        isCompleted, // 이용 완료
-                        attendance.user.email.eq(email), // 유저 참석 확인
-                        attendance.reviewed.eq(false), // 후기 미작성 필터
-                        plan.dateTime.before(LocalDateTime.now()), // 지난 일정만 조회
-                        plan.deletedAt.isNull(), // 삭제되지 않은 일정만 조회
-                        plan.meeting.deletedAt.isNull() // 삭제되지 않은 모임만 조회
-                )
-                .groupBy(plan.id)
-                .orderBy(plan.createdAt.desc());
-
-        List<UserPlanReviewableListResponse> reviewListResponses = queryBuilder
-                .limit(pageable.getPageSize())
-                .offset(pageable.getOffset())
-                .fetch();
-
-        // 총 개수 조회
-        long total = Optional.ofNullable(
-                queryFactory
-                        .select(plan.count())
-                        .from(attendance)
-                        .leftJoin(attendance.plan, plan)
-                        .leftJoin(plan.meeting, meeting)
-                        .leftJoin(meeting.category, category)
-                        .leftJoin(attendance.user, user)
-                        .leftJoin(review).on(review.plan.id.eq(plan.id))
-                        .where(
-                                isCompleted, // 이용 완료
-                                attendance.user.email.eq(email), // 유저 참석 확인
-                                attendance.reviewed.eq(false), // 후기 미작성 필터
-                                plan.dateTime.before(LocalDateTime.now()), // 지난 일정만 조회
-                                plan.deletedAt.isNull(), // 삭제되지 않은 일정만 조회
-                                plan.meeting.deletedAt.isNull() // 삭제되지 않은 모임만 조회
-                        )
-                        .fetchOne()
-        ).orElse(0L);
-
-        return new PageImpl<>(reviewListResponses, pageable, total);
+                .leftJoin(review).on(review.plan.id.eq(plan.id));
     }
 
     @Override
@@ -436,14 +398,7 @@ public class UserQueryDslImpl implements UserQueryDsl {
                                 UserPlanListResponseForCalendar.class,
                                 plan.id,
                                 plan.planName,
-                                Expressions.as(
-                                        queryFactory.select(image.fileUrl)
-                                                .from(image)
-                                                .where(image.entityId.eq(plan.id),
-                                                        image.entityType.eq(Image.EntityType.PLAN),
-                                                        image.main.eq(true)),
-                                        "planImagePath"
-                                ),
+                                Expressions.as(getPlanImageQuery(), "planImagePath"),
                                 plan.dateTime,
                                 category.categoryName,
                                 plan.addressDetail,
@@ -492,6 +447,23 @@ public class UserQueryDslImpl implements UserQueryDsl {
 
         log.info("일정의 모집 마감 상태가 {} 번 업데이트되었습니다.", updatedCount);
 
+    }
+
+    private JPQLQuery<String> getPlanImageQuery() {
+
+        return queryFactory.select(image.fileUrl)
+                .from(image)
+                .where(image.entityId.eq(plan.id),
+                        image.entityType.eq(Image.EntityType.PLAN),
+                        image.main.eq(true));
+    }
+
+    private JPQLQuery<Long> getParticipantCountQuery() {
+
+        return queryFactory.select(attendance.count())
+                .from(attendance)
+                .where(attendance.plan.id.eq(plan.id)
+                        .and(attendance.deletedAt.isNull()));
     }
 
 }
