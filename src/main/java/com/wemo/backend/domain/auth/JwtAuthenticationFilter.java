@@ -132,7 +132,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (!isGetMethod) return false;
 
         Map<Predicate<String>, Predicate<String>> conditions = Map.of(
-                uri -> uri.equals("/api/lightnings") || uri.startsWith("/api/lightnings?"), req -> true,
+                uri -> uri.equals("/api/lightnings") || uri.startsWith("/api/lightnings?"), req -> accessToken == null,
                 uri -> uri.matches("^/api/lightnings/\\d+$"), req -> accessToken == null,
                 uri -> uri.startsWith("/api/meetings"), req -> accessToken == null,
                 uri -> uri.matches("^/api/meetings/\\d+$"), req -> accessToken == null,

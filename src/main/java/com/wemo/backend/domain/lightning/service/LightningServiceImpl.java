@@ -67,6 +67,7 @@ public class LightningServiceImpl implements LightningService {
     /**
      * 번개모임 목록 조회
      *
+     * @param userDetails 유저 정보 객체
      * @param cursor          커서 id
      * @param size            조회 요청 개수
      * @param province        시/도
@@ -79,9 +80,12 @@ public class LightningServiceImpl implements LightningService {
      * @return 조건에 맞는 데이터 목록
      */
     @Override
-    public LightningCursorPagingResponse getLightningMeetingList(Long cursor, int size, String province, String district, Long lightningTypeId, Integer lightningTimeId, Double latitude, Double longitude, Double radius) {
+    public LightningCursorPagingResponse getLightningMeetingList(UserDetailsImpl userDetails, Long cursor, int size, String province, String district, Long lightningTypeId, Integer lightningTimeId, Double latitude, Double longitude, Double radius) {
 
-        return lightningRepository.getLightningMeetingList(cursor, size, province, district, lightningTypeId, lightningTimeId, latitude, longitude, radius);
+        return userDetails != null && !userDetails.isGuest()
+                ? lightningRepository.getLightningMeetingList(userDetails.getUsername(), cursor, size, province, district, lightningTypeId, lightningTimeId, latitude, longitude, radius)
+                : lightningRepository.getLightningMeetingList(null, cursor, size, province, district, lightningTypeId, lightningTimeId, latitude, longitude, radius);
+
     }
 
     /**
