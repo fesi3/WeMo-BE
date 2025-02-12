@@ -120,9 +120,7 @@ public class RefreshTokenManager {
         // domain 을 동적으로 설정: 로컬에서는 "localhost", 배포 환경에서는 "we-mo.store"
         String domain = request.getServerName().contains("localhost") ? "localhost" : "we-mo.store";
 
-        // 현재 시간 + 10분
-        Date expiryDate = new Date(System.currentTimeMillis() + 10 * 60 * 1000);
-//        Date expiryDate = new Date(System.currentTimeMillis() + REFRESH_TOKEN_EXPIRATION);
+        Date expiryDate = new Date(System.currentTimeMillis() + REFRESH_TOKEN_EXPIRATION);
 
         ResponseCookie cookie = ResponseCookie.from("Refresh-Token", refreshToken)
                 .domain(domain)

@@ -24,9 +24,7 @@ public class AccessTokenManager {
      */
     public void setAccessTokenInCookie(String accessToken, HttpServletRequest request, HttpServletResponse response) {
 
-        // 현재 시간 + 1분
-        Date expiryDate = new Date(System.currentTimeMillis() + 60 * 1000);
-//        Date expiryDate = new Date(System.currentTimeMillis() + ACCESS_TOKEN_EXPIRATION);
+        Date expiryDate = new Date(System.currentTimeMillis() + ACCESS_TOKEN_EXPIRATION);
 
         // domain 을 동적으로 설정: 로컬에서는 "localhost", 배포 환경에서는 "we-mo.store"
         String domain = request.getServerName().contains("localhost") ? "localhost" : "we-mo.store";
