@@ -1,5 +1,6 @@
 package com.wemo.backend.domain.lightning.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -37,10 +38,21 @@ public class LightningListResponse {
 
     private String profileImagePath;
 
+    private boolean isJoined;
+
+    @JsonProperty("isJoined")
+    public boolean getIsJoined() {
+        return isJoined;
+    }
+
     public void setLightningTime(String displayName) {
 
         this.lightningTime = displayName;
+    }
 
+    public void setIsJoined(boolean isJoined) {
+
+        this.isJoined = isJoined;
     }
 
 }
