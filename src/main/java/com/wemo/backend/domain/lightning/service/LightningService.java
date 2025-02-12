@@ -12,7 +12,7 @@ public interface LightningService {
 
     LightningResponse createLightnings(String email, LightningRequest request);
 
-    LightningCursorPagingResponse getLightningMeetingList(Long cursor, int size, String province, String district, Long lightningTypeId, Integer lightningTimeId, Double latitude, Double longitude, Double radius);
+    LightningCursorPagingResponse getLightningMeetingList(UserDetailsImpl userDetails, Long cursor, int size, String province, String district, Long lightningTypeId, Integer lightningTimeId, Double latitude, Double longitude, Double radius);
 
     LightningDetailResponse getLightningMeetingDetail(UserDetailsImpl userDetails, Long lightningId);
 

@@ -14,10 +14,12 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+@Slf4j
 @Tag(name = "Lightnings")
 @RestController
 @RequiredArgsConstructor
@@ -42,7 +44,8 @@ public class LightningController {
     @Operation(summary = "번개 모임 목록 조회", description = "번개 모임 일정의 목록을 반환합니다.")
     @ApiResponse(responseCode = "200", description = "요청한 일정 목록이 반환되었습니다.")
     @RequestMapping(value = "", method = RequestMethod.GET)
-    public ResponseEntity<SuccessResponse<LightningCursorPagingResponse>> getLightningMeetingList(@RequestParam(required = false) Long cursor,
+    public ResponseEntity<SuccessResponse<LightningCursorPagingResponse>> getLightningMeetingList(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                                                                  @RequestParam(required = false) Long cursor,
                                                                                                   @RequestParam(required = false, defaultValue = "10") int size,
                                                                                                   @RequestParam(required = false) String province,
                                                                                                   @RequestParam(required = false) String district,
@@ -52,7 +55,7 @@ public class LightningController {
                                                                                                   @RequestParam(required = false) Double longitude,
                                                                                                   @RequestParam(required = false, defaultValue = "1.0") Double radius) {
 
-        return ResponseEntity.ok(SuccessResponse.successWithData(lightningService.getLightningMeetingList(cursor, size, province, district,
+        return ResponseEntity.ok(SuccessResponse.successWithData(lightningService.getLightningMeetingList(userDetails, cursor, size, province, district,
                 lightningTypeId, lightningTimeId, latitude, longitude, radius)));
     }
 

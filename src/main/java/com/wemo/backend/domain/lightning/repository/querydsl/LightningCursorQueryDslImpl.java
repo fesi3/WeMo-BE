@@ -31,9 +31,9 @@ public class LightningCursorQueryDslImpl implements LightningCursorQueryDsl {
     }
 
     @Override
-    public LightningCursorPagingResponse getLightningMeetingList(Long cursor, int size, String province, String district, Long lightningTypeId, Integer lightningTimeId, Double latitude, Double longitude, Double radius) {
+    public LightningCursorPagingResponse getLightningMeetingList(String email, Long cursor, int size, String province, String district, Long lightningTypeId, Integer lightningTimeId, Double latitude, Double longitude, Double radius) {
 
-        log.info("번개 모임 목록 조회 요청");
+        log.info("{} 번개 모임 목록 조회 요청", (email != null) ? email : "비회원");
 
         // 커서 조건을 제외한 기본 조건 빌더
         BooleanBuilder baseConditions = new BooleanBuilder()
@@ -67,7 +67,8 @@ public class LightningCursorQueryDslImpl implements LightningCursorQueryDsl {
                                 lightning.createdAt,
                                 lightning.updatedAt,
                                 user.nickname,
-                                user.profileImagePath
+                                user.profileImagePath,
+                                Expressions.constant(false)  // 기본값 추가
                         )
                 )
                 .from(lightning)
@@ -79,7 +80,18 @@ public class LightningCursorQueryDslImpl implements LightningCursorQueryDsl {
 
         // 쿼리 결과 후, lightningTime 값에 대해 getDisplayName()을 호출하여 변환
         lightningListResponses.forEach(response -> {
-            response.setLightningTime(Enum.valueOf(DateType.class, response.getLightningTime()).getDisplayName());  // 변환된 값으로 설정
+            response.setLightningTime(Enum.valueOf(DateType.class, response.getLightningTime()).getDisplayName());
+
+            // 이메일이 null이면 참여 여부 false, 그렇지 않으면 DB에서 조회
+            boolean isJoined = (email != null) &&
+                    queryFactory
+                            .selectOne()
+                            .from(lightningJoin)
+                            .where(lightningJoin.lightning.id.eq(response.getLightningId())
+                                    .and(lightningJoin.user.email.eq(email)))
+                            .fetchFirst() != null;
+
+            response.setIsJoined(isJoined);
         });
 
         return new LightningCursorPagingResponse(lightningListResponses, lightningListResponses.size());
