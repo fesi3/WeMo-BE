@@ -79,7 +79,7 @@ public class Lightning extends Timestamped {
 
         this.lightningName = request.getLightningName();
         this.lightningType = lightningType;
-        this.dateType = DateType.fromId(request.getDateTypeId());
+        this.dateType = DateType.typeConverter(request.getLightningDate());
         this.lightningDate = request.getLightningDate();
         this.lightningContent = request.getLightningContent();
         this.lightningCapacity = request.getLightningCapacity();

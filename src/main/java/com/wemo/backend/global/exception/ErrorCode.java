@@ -17,13 +17,13 @@ public enum ErrorCode {
     INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 refreshToken 입니다."),
 
     // Category
-    CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 카테고리입니다."),
+    CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 모임 카테고리입니다."),
 
     // Meeting
     MEETING_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 모임입니다."),
     ALREADY_JOINED_MEETING(HttpStatus.BAD_REQUEST, "이미 가입된 모임입니다."),
     MEETING_PERMISSION_DENIED(HttpStatus.UNAUTHORIZED, "모임장만 가능한 기능입니다."),
-    GROUP_LEADER_CANNOT_LEAVE(HttpStatus.FORBIDDEN, "모임장은 해당 모임에서 나갈 수 없습니다."),
+    GROUP_LEADER_CANNOT_LEAVE(HttpStatus.FORBIDDEN, "본인의 모임은 탈퇴할 수 없습니다."),
     MEETING_MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "가입되지 않은 모임입니다."),
 
     // Plan
@@ -55,6 +55,7 @@ public enum ErrorCode {
 
     // LightningType
     LIGHTNING_TYPE_NOT_FOUND(HttpStatus.BAD_REQUEST, "존재하지 않는 번개모임 종류입니다."),
+    LIGHTNING_TIME_TYPE_NOT_FOUND(HttpStatus.BAD_REQUEST, "유효하지 않은 번개 모임 시간입니다. 다른 시간을 선택하세요."),
 
     // Lightning
     LIGHTNING_MEETING_NOT_FOUND(HttpStatus.BAD_REQUEST, "존재하지 않는 번개 모임입니다."),
