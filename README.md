@@ -1,10 +1,7 @@
 ## WeMo (직장인 대상 모임 서비스)
 
-### 서비스 설명
-같은 취미 또는 공통 관심사를 가진 사람들과 만나는 모임을 만들고 소통하는 커뮤니티 서비스입니다.
-
-### 배포 링크
-https://we-mo.store
+### [WeMo 바로가기](https://we-mo.store)
+[![image](https://github.com/user-attachments/assets/582458d2-0310-42b3-a7fa-52cd02ca7434)](https://we-mo.store)
 
 ## 목차
 1. [서비스 소개](#-서비스-소개)
