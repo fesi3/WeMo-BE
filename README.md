@@ -148,7 +148,9 @@ WeMo의 API 명세를 확인하려면 아래 링크를 참고해주세요.
 
 <br>
 
-## 🤔 고민한 흔적
+## 🤔 고민한 내용
+
+- **이미지 업로드 방식** - <a href="https://github.com/fesi3/WeMo-BE/wiki/%EC%9D%B4%EB%AF%B8%EC%A7%80-%EC%97%85%EB%A1%9C%EB%93%9C-%EB%B0%A9%EC%8B%9D-%EA%B3%A0%EB%AF%BC"> WIKI 이동 </a>
 
 <br>
 
