@@ -1,5 +1,6 @@
 ## WeMo (직장인 대상 모임 서비스)
 
+
 ### [WeMo 바로가기](https://we-mo.store)
 [![image](https://github.com/user-attachments/assets/582458d2-0310-42b3-a7fa-52cd02ca7434)](https://we-mo.store)
 
